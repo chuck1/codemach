@@ -1,0 +1,51 @@
+<html>
+<head>
+	<script src=\"https://code.jquery.com/jquery-1.10.2.js\"></script>
+	<style>
+		table, td {
+			border: 1px solid black;
+			border-collapse: collapse;
+		}
+		form {
+			margin: 0px;
+		}
+		input[type=text] {
+			border: none;
+		}
+	</style>
+</head>
+<body>
+
+{{ html }}
+
+<br>
+Edit a cell then hit ENTER to update its contents.<br>
+<br>
+<h3>Formulas</h3>
+cell(r,c)<br>
+<em>r</em> and <em>c</em> are the row and column indices. They can be either integers or python lists of integers.
+
+
+<!--
+<br>
+{{ form }}
+<br>
+{{ keys }}
+
+cookie_out<br>
+{{ cookie_out }}<br>
+cookie_in<br>
+{{ cookie_in }}<br>
+-->
+
+</body>
+
+<script>
+	$("input").focusout(function(){
+		var name = "#form" + $(this).attr("id");
+		$(name).submit();
+		//alert(name);
+	});
+</script>
+</html>
+

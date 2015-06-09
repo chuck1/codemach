@@ -19,8 +19,7 @@ import random
 import spreadsheet as ss
 import spreadsheet.service
 
-#with open("/var/www/html/cgi-bin/template.html", 'r') as f:
-#    temp = jinja2.Template(f.read())
+template_file_login = "/var/www/html/cgi-bin/template/login.html"
 
 name_srv_w = "/tmp/python_spreadsheet_srv_w"
 name_cli_w = "/tmp/python_spreadsheet_cli_w"
@@ -82,7 +81,7 @@ def form_sheet_ctrl():
     return f
 
 def html_login(message, cookie_out, cookie_in):
-    with open("/var/www/html/cgi-bin/template/login.html", 'r') as f:
+    with open(template_file_login, 'r') as f:
         temp = jinja2.Template(f.read())
 
     return temp.render(
