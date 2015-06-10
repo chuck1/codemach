@@ -2,7 +2,7 @@
 
 A spreadsheet web application powered by python
 
-[instance running on my home server (will often be down)](http://67.160.178.216/cgi-bin/test.py)
+[instance running on my home server (will often be down)](http://67.160.178.216/cgi-bin/cgi_spreadsheet.py)
 
 ## Features
 
