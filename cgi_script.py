@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-print "Content-Type: html/text"
-print
-
 import sys
 import os
 import Cookie

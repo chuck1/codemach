@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cp cgi_script.py ~/git/www/html/cgi-bin/spreadsheet.py -f
+cp cgi_script.py ~/git/www/html/cgi-bin/cgi_spreadsheet.py -f
 
 cp -rf template ~/git/www/html/cgi-bin/
 

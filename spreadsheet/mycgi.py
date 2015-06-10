@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: UTF-8 -*-
 
 import cgitb
 cgitb.enable()
@@ -20,6 +19,7 @@ import spreadsheet as ss
 import spreadsheet.service
 
 template_file_login = "/var/www/html/cgi-bin/template/login.html"
+template_file_sheet = "/var/www/html/cgi-bin/template/sheet.html"
 
 name_srv_w = "/tmp/python_spreadsheet_srv_w"
 name_cli_w = "/tmp/python_spreadsheet_cli_w"
@@ -91,7 +91,7 @@ def html_login(message, cookie_out, cookie_in):
             )
 
 def html_sheet(username, cookie_out, cookie_in, display_func):
-    with open("/var/www/html/cgi-bin/template.html", 'r') as f:
+    with open(template_file_sheet, 'r') as f:
         temp = jinja2.Template(f.read())
     
     sheet = get_sheet(username)
