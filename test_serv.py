@@ -2,7 +2,7 @@
 
 import sys
 
-sys.path.append("/home/chuck/git/python/projects")
+sys.path.append("/home/chuck/git/python_spreadsheet")
 
 import spreadsheet as ss
 import spreadsheet.service
