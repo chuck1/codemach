@@ -15,11 +15,16 @@ import Cookie
 import datetime
 import random
 
-import spreadsheet as ss
-import spreadsheet.service
+import python_spreadsheet as ss
+import python_spreadsheet.service
 
-template_file_login = "/var/www/html/cgi-bin/template/login.html"
-template_file_sheet = "/var/www/html/cgi-bin/template/sheet.html"
+#domain = "67.160.178.216"
+http_host = os.environ['HTTP_HOST']
+
+template_dir = "/usr/local/python_spreadsheet/templates/"
+
+template_file_login = os.path.join(template_dir, "login.html")
+template_file_sheet = os.path.join(template_dir, "sheet.html")
 
 name_srv_w = "/tmp/python_spreadsheet_srv_w"
 name_cli_w = "/tmp/python_spreadsheet_cli_w"
@@ -86,8 +91,11 @@ def html_login(message, cookie_out, cookie_in):
 
     return temp.render(
             message = message,
-            cookie_out = cookie_out,
-            cookie_in  = cookie_in,
+            #environ =   cgi.print_environ(),
+            environ =       os.environ,
+            http_host =     http_host,
+            cookie_out =    cookie_out,
+            cookie_in  =    cookie_in,
             )
 
 def html_sheet(username, cookie_out, cookie_in, display_func):
@@ -120,13 +128,13 @@ def cookie_session(usr):
     cookie = Cookie.SimpleCookie()
     cookie["session"] = random.randint(0,1000000000)
     #cookie["session"]["domain"] = "127.0.0.1"
-    cookie["session"]["domain"] = "67.160.178.216"
+    cookie["session"]["domain"] = http_host
     cookie["session"]["path"] = "/"
     cookie["session"]["expires"] = expiration.strftime("%a, %d-%b-%Y %H:%M:%S PST")
 
     cookie["username"] = usr
     #cookie["username"]["domain"] = "127.0.0.1"
-    cookie["username"]["domain"] = "67.160.178.216"
+    cookie["username"]["domain"] = http_host
     cookie["username"]["path"] = "/"
     cookie["username"]["expires"] = expiration.strftime("%a, %d-%b-%Y %H:%M:%S PST")
 

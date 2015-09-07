@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-import spreadsheet as ss
+import python_spreadsheet as ss
 
-s = ss.Sheet()
+s = ss.sheet.Sheet()
 
-s.set(1,1,"hi")
+s.set_cell(1,1,"hi")
 
+func = lambda c,s: c.str_value(s)
 
-print s.html("")
+print s.html(func)
 

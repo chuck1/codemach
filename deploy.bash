@@ -1,10 +1,12 @@
 #!/bin/bash
 
-cp cgi_script.py ~/git/www/html/cgi-bin/cgi_spreadsheet.py -f
+dir=/home/chuck/home/var/www/source/secret/cgi-bin
 
-cp -rf template ~/git/www/html/cgi-bin/
+cp cgi_script.py $dir/cgi_spreadsheet.py -f
 
-cd ~/git/www
+cp -rf templates $dir/
 
-sudo ./copy.bash
+#cd ~/git/www
+
+#sudo ./copy.bash
 

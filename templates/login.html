@@ -9,11 +9,21 @@ The login system is still under development. Entering an unknown username and pa
 	<input type="submit" value="login" name="btn_login">
 </form>
 
-<!--
+{% if debug %}
+
+<br>
+form
+<br>
+{{ form }}
+<br>
+http host
+<br>
+{{ http_host }}
+<br>
 cookie_out<br>
 {{ cookie_out }}<br>
 cookie_in<br>
 {{ cookie_in }}<br>
--->
 
+{% endif %}
 

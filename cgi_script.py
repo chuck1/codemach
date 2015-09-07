@@ -6,8 +6,8 @@ import Cookie
 
 sys.path.append("/home/chuck/git/python_spreadsheet")
 
-import spreadsheet as ss
-import spreadsheet.mycgi
+import python_spreadsheet as ss
+import python_spreadsheet.mycgi
 
 c = Cookie.SimpleCookie(os.environ.get("HTTP_COOKIE"))
 

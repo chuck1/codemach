@@ -9,8 +9,8 @@ import struct
 import signal
 import datetime
 
-import spreadsheet as ss
-import spreadsheet.sheet
+import python_spreadsheet as ss
+import python_spreadsheet.sheet
 
 name_srv_w = "/tmp/python_spreadsheet_srv_w"
 name_cli_w = "/tmp/python_spreadsheet_cli_w"
@@ -179,7 +179,7 @@ class Service(object):
         req = pickle.loads(s)
         #a.fromstring(s)
     
-        print 's =',req.s
+        print 'req.s =',req.s
         
         if req.usr:
             # get or create sheet for user
@@ -247,7 +247,8 @@ class Service(object):
             self.write('0')
             raise Stop()
         else:
-            print "unknown command or forgot to set req.usr"
+            raise ValueError("unknown command or forgot to set req.usr. req.s = {}".format(
+                repr(req.s)))
 
         #print a
 

@@ -69,7 +69,10 @@ class Cell(object):
         if self.dtype == 'formula':
             #func_cell = lambda r,c: sheet.get_cell(r,c).get_value(sheet)
             func_cell = lambda r,c: sheet.get_cell_value(r,c)
-            _globals = {'cell':func_cell}
+            _globals = {
+                    '__builtins__':[],
+                    'cell':func_cell,
+                    }
             return eval(self.v[1:], _globals)
         else:
             return self.v
@@ -187,6 +190,9 @@ class Sheet(object):
         return td
 
     def html(self, func):
+        """
+        func function used to render cell (value, formular, etc)
+        """
 
         table = et.Element('table')
 

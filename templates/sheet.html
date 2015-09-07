@@ -25,18 +25,25 @@ Edit a cell then hit ENTER to update its contents.<br>
 cell(r,c)<br>
 <em>r</em> and <em>c</em> are the row and column indices. They can be either integers or python lists of integers.
 
-
-<!--
+{% if debug %}
+<br>
+form
 <br>
 {{ form }}
 <br>
+keys
+<br>
 {{ keys }}
-
-cookie_out<br>
-{{ cookie_out }}<br>
-cookie_in<br>
-{{ cookie_in }}<br>
--->
+<br>
+cookie_out
+<br>
+{{ cookie_out }}
+<br>
+cookie_in
+<br>
+{{ cookie_in }}
+<br>
+{% endif %}
 
 </body>
 
