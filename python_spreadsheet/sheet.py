@@ -92,7 +92,11 @@ class Cell(object):
         return str(self.dtype)
     
     def str_value(self, sheet):
-        return str(self.get_value(sheet))
+        v = self.get_value(sheet)
+        if v is not None:
+            return str(v)
+        else:
+            return ''
     
     def str_raw(self):
         return str(self.v)
@@ -156,7 +160,12 @@ class Sheet(object):
 
     def get_cell_value(self, r, c):
         if isinstance(r, int) and isinstance(c, int):
-            return self.get_cell(r,c).get_value(self)
+            try:
+                ret = self.get_cell(r,c).get_value(self)
+            except RuntimeError as e:
+                ret = e.message
+
+            return ret
         else:
             cells = self.get_cells(r,c)
 
