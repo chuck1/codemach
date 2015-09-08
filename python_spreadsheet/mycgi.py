@@ -182,13 +182,13 @@ def gen(cookie_in):
     
     if display:
         if display == 'type':
-            display_func = lambda c,sheet: c.str_type()
+            display_func = lambda c,sheet,y,x: c.str_type()
         elif display == 'value':
-            display_func = lambda c,sheet: c.str_value(sheet)
+            display_func = lambda c,sheet,y,x: c.str_value(sheet,y,x)
         elif display == 'raw':
-            display_func = lambda c,sheet: c.str_raw()
+            display_func = lambda c,sheet,y,x: c.str_raw()
         else:
-            display_func = lambda c,sheet: c.str_value(sheet)
+            display_func = lambda c,sheet,y,x: c.str_value(sheet,y,x)
 
 
     debug_lines += ["display = {}".format(repr(display))]
@@ -225,7 +225,7 @@ def gen(cookie_in):
                 )
     
     elif 'btn show raw' in keys:
-        display_func = lambda c,sheet: c.str_raw()
+        display_func = lambda c,sheet,y,x: c.str_raw()
 
         # set cookie saving display option
         cookie_item(
@@ -242,7 +242,7 @@ def gen(cookie_in):
                 debug_lines,
                 )
     elif 'btn show' in keys:
-        display_func = lambda c,sheet: c.str_value(sheet)
+        display_func = lambda c,sheet,y,x: c.str_value(sheet,y,x)
 
         # set cookie saving display option
         cookie_item(
@@ -260,7 +260,7 @@ def gen(cookie_in):
                 )
 
     elif 'btn show type' in keys:
-        display_func = lambda c,sheet: c.str_type()
+        display_func = lambda c,sheet,y,x: c.str_type()
 
         # set cookie saving display option
         cookie_item(
@@ -335,7 +335,7 @@ def gen(cookie_in):
                         username,
                         cookie_session(username),
                         cookie_in,
-                        lambda c,sheet: c.str_value(sheet),
+                        display_func,
                         debug_lines,
                         )
     
@@ -364,7 +364,7 @@ def gen(cookie_in):
                     username,
                     Cookie.SimpleCookie(),
                     cookie_in,
-                    lambda c,sheet: c.str_value(sheet),
+                    display_func,
                     debug_lines,
                     )
 

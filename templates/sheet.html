@@ -7,13 +7,36 @@
 
 {{ html }}
 
-<br>
-Edit a cell then hit ENTER to update its contents.<br>
-<br>
-<h3>Formulas</h3>
-cell(r,c)<br>
-<em>r</em> and <em>c</em> are the row and column indices. They can be either integers or python lists of integers.
+<h2>Help</h2>
 
+Edit a cell then hit ENTER to update its contents.
+
+<h3>Formulas</h3>
+
+<dl>
+	<dt>cell(r,c)</dt>
+	<dd>
+		Return a value or list of values of the cell or cells.
+		<em>r</em> and <em>c</em> are the row and column indices.
+		They can be either integers or python lists of integers.
+	</dd>
+	<dt>row()</dt>
+	<dd>return the row index of the current cell</dd>
+	<dt>col()</dt>
+	<dd>return the column index of the current cell</dd>
+</dl>
+
+The following
+<a href="https://docs.python.org/2/library/functions.html">builtin python functions</a>
+are available.
+
+<ul>
+	<li>abs</li>
+	<li>all</li>
+	<li>any</li>
+	<li>range</li>
+	<li>sum</li>
+</ul>
 
 <h2>debug</h2>
 <div class="debug">

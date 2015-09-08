@@ -65,18 +65,26 @@ class Cell(object):
                         self.dtype = 'str'
                         self.v = s
 
-    def get_value(self, sheet):
+    def get_value(self, sheet, y, x):
         if self.dtype == 'formula':
             #func_cell = lambda r,c: sheet.get_cell(r,c).get_value(sheet)
             func_cell = lambda r,c: sheet.get_cell_value(r,c)
+            func_row = lambda: y
+            func_col = lambda: x
 
             approved_builtins = {
-                    'range':range,
+                    'abs':      abs,
+                    'all':      all,
+                    'any':      any,
+                    'range':    range,
+                    'sum':      sum,
                     }
 
             _globals = {
                     '__builtins__': approved_builtins,
                     'cell':         func_cell,
+                    'row':          func_row,
+                    'col':          func_col,
                     }
 
             try:
@@ -91,8 +99,8 @@ class Cell(object):
     def str_type(self):
         return str(self.dtype)
     
-    def str_value(self, sheet):
-        v = self.get_value(sheet)
+    def str_value(self, sheet, r, c):
+        v = self.get_value(sheet, r, c)
         if v is not None:
             return str(v)
         else:
@@ -161,7 +169,7 @@ class Sheet(object):
     def get_cell_value(self, r, c):
         if isinstance(r, int) and isinstance(c, int):
             try:
-                ret = self.get_cell(r,c).get_value(self)
+                ret = self.get_cell(r,c).get_value(self, r, c)
             except RuntimeError as e:
                 ret = e.message
 
@@ -169,7 +177,7 @@ class Sheet(object):
         else:
             cells = self.get_cells(r,c)
 
-            f = np.vectorize(lambda c: c.get_value(self))
+            f = np.vectorize(lambda c: c.get_value(self, r, c))
             
             #print "vectorize"
             #print cells
@@ -182,7 +190,7 @@ class Sheet(object):
             except ValueError:
                 return "ValueError"
 
-    def html_col(self, row, r, c, func):
+    def html_col(self, row, r, c, display_func):
 
         td = 0
         td = et.Element('td')
@@ -204,7 +212,7 @@ class Sheet(object):
         if c < len(row):
             if row[c]:
                 #t.attrib["value"] = row[c].__unicode__()
-                t.attrib["value"] = func(row[c], self)
+                t.attrib["value"] = display_func(row[c], self, r, c)
             else:
                 t.attrib["value"] = ""
         else:
