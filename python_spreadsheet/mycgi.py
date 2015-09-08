@@ -189,6 +189,8 @@ def gen(cookie_in):
             display_func = lambda c,sheet,y,x: c.str_raw()
         else:
             display_func = lambda c,sheet,y,x: c.str_value(sheet,y,x)
+    else:
+        display_func = lambda c,sheet,y,x: c.str_value(sheet,y,x)
 
 
     debug_lines += ["display = {}".format(repr(display))]
