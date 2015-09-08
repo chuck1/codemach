@@ -37,13 +37,26 @@ class Request(object):
 class Stop(Exception):
     pass
 
+class User(object):
+    def __init__(self):
+        self.sheets = {}
+
+    def get_sheet(self, s):
+        print "get_sheet({})".format(repr(s))
+        try:
+            sheet = self.sheets[s]
+        except:
+            sheet = ss.sheet.Sheet()
+            self.sheets[s] = sheet
+        return sheet
+
 class Service(object):
     def __init__(self):
         try:
             self.load()
             print "sheets loaded"
         except:
-            self.sheets = {}
+            self.users = {}
             print "sheets not loaded"
 
         self.fifo_name_srv_w = "/tmp/python_spreadsheet_srv_w"
@@ -81,12 +94,12 @@ class Service(object):
     def save(self):
         fn = os.path.join(os.path.dirname(__file__),'data','sheets.bin')
         with open(fn, 'wb') as f:
-            pickle.dump(self.sheets, f)
+            pickle.dump(self.users, f)
 
     def load(self):
         fn = os.path.join(os.path.dirname(__file__),'data','sheets.bin')
         with open(fn, 'rb') as f:
-            self.sheets = pickle.load(f)
+            self.users = pickle.load(f)
 
     def write(self, s):
         with open(self.fifo_name_srv_w, 'wb') as f:
@@ -102,6 +115,15 @@ class Service(object):
         c = int(m.group(2))
         return r,c
 
+    def get_user(self, u):
+        print "get_user({})".format(repr(u))
+        try:
+            user = self.users[u]
+        except:
+            user = User()
+            self.users[u] = user
+        return user
+
     def blocking_read(self):
         #a = array.array('i')
 
@@ -113,13 +135,8 @@ class Service(object):
         
         if req.usr:
             # get or create sheet for user
-            try:
-                sheet = self.sheets[req.usr]
-            except:
-                sheet = ss.sheet.Sheet()
-                self.sheets[req.usr] = sheet
-            
-        
+            user = self.get_user(req.usr)
+            sheet = user.get_sheet('sheet0')
 
             if req.s == 'get sheet':
                 s_out = pickle.dumps(sheet)
