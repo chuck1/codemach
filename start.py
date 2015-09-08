@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+import signal, os
 import sys
 import argparse
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-b', action='store_true')
@@ -19,6 +21,14 @@ import python_spreadsheet as ss
 import python_spreadsheet.service
 
 s = ss.service.Service()
+
+"""
+def handler(signum, frame):
+    print 'Signal handler called with signal', signum
+    s.stop = True
+
+signal.signal(signal.SIGTERM, handler)
+"""
 
 s.run()
 

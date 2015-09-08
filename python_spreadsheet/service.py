@@ -257,6 +257,7 @@ class Service(object):
         t = datetime.datetime.now() + datetime.timedelta(minutes=1)
         
         while True:
+            # save every minute
             if datetime.datetime.now() > t:
                 self.save()
                 t = datetime.datetime.now() + datetime.timedelta(minutes=1)
@@ -264,6 +265,9 @@ class Service(object):
             try:
                 self.blocking_read()
             except Stop:
+                break
+            except IOError:
+                print "got ioerror"
                 break
 
 

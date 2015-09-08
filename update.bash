@@ -1,14 +1,13 @@
 #!/bin/bash
 
-stop python_spreadsheet
 
+./setup.py install --force > /dev/null
 
-./setup.py install --force
-
-cp python_spreadsheet.conf /etc/init/
+cp python_spreadsheet.conf /etc/init/ -f
 
 ./deploy.bash
 
 
+stop python_spreadsheet
 start python_spreadsheet
 

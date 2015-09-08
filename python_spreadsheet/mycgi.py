@@ -74,6 +74,11 @@ def form_sheet_ctrl():
         })
     i = et.SubElement(f, 'input', attrib={
         'type':'submit',
+        'name':'btn show raw',
+        'value':'show raw',
+        })
+    i = et.SubElement(f, 'input', attrib={
+        'type':'submit',
         'name':'btn show',
         'value':'show',
         })
@@ -98,7 +103,7 @@ def html_login(message, cookie_out, cookie_in):
             cookie_in  =    cookie_in,
             )
 
-def html_sheet(username, cookie_out, cookie_in, display_func):
+def html_sheet(username, cookie_out, cookie_in, display_func, debug_lines=[]):
     with open(template_file_sheet, 'r') as f:
         temp = jinja2.Template(f.read())
     
@@ -107,7 +112,8 @@ def html_sheet(username, cookie_out, cookie_in, display_func):
     return temp.render(
         cookie_out = cookie_out,
         cookie_in  = cookie_in,
-        html       = et.tostring(form_sheet_ctrl()) + sheet.html(display_func)
+        html       = et.tostring(form_sheet_ctrl()) + sheet.html(display_func),
+        debug       = "\n".join(l+"<br>" for l in debug_lines)
         )
 
 def render_login(cookie_out, cookie_in, message):
@@ -116,27 +122,41 @@ def render_login(cookie_out, cookie_in, message):
     print
     print html_login(message, cookie_out, cookie_in)
 
-def render_sheet(username, cookie_out, cookie_in, display_func):
+def render_sheet(username, cookie_out, cookie_in, display_func, debug_lines=[]):
     print "Content-Type: text/html"
     print cookie_out.output()
     print
-    print html_sheet(username, cookie_out, cookie_in, display_func)
+    print html_sheet(username, cookie_out, cookie_in, display_func, debug_lines)
 
+def cookie_item(cookie, expiration, k, v,):
+    cookie[k] = v
+    cookie[k]["domain"] = http_host
+    cookie[k]["path"] = "/"
+    cookie[k]["expires"] = expiration.strftime("%a, %d-%b-%Y %H:%M:%S PST")
 
 def cookie_session(usr):
     expiration = datetime.datetime.now() + datetime.timedelta(minutes=30)
     cookie = Cookie.SimpleCookie()
-    cookie["session"] = random.randint(0,1000000000)
-    #cookie["session"]["domain"] = "127.0.0.1"
-    cookie["session"]["domain"] = http_host
-    cookie["session"]["path"] = "/"
-    cookie["session"]["expires"] = expiration.strftime("%a, %d-%b-%Y %H:%M:%S PST")
 
-    cookie["username"] = usr
-    #cookie["username"]["domain"] = "127.0.0.1"
-    cookie["username"]["domain"] = http_host
-    cookie["username"]["path"] = "/"
-    cookie["username"]["expires"] = expiration.strftime("%a, %d-%b-%Y %H:%M:%S PST")
+    cookie_item(
+            cookie,
+            expiration,
+            "session",
+            random.randint(0,1000000000),)
+
+    cookie_item(
+            cookie,
+            expiration,
+            "username",
+            usr)
+
+    """
+    cookie_item(
+            cookie,
+            expiration,
+            "username",
+            usr)
+    """
 
     return cookie
 
@@ -148,14 +168,37 @@ def gen(cookie_in):
     keys = form.keys()
     #cookie_in = Cookie.SimpleCookie(os.environ.get("HTTP_COOKIE"))
     
+    debug_lines = []
+
     try:
         username = cookie_in["username"].value
     except:
         username = None
+
+    try:
+        display = cookie_in["display"].value
+    except:
+        display = None
     
+    if display:
+        if display == 'type':
+            display_func = lambda c,sheet: c.str_type()
+        elif display == 'value':
+            display_func = lambda c,sheet: c.str_value(sheet)
+        elif display == 'raw':
+            display_func = lambda c,sheet: c.str_raw()
+        else:
+            display_func = lambda c,sheet: c.str_value(sheet)
+
+
+    debug_lines += ["display = {}".format(repr(display))]
+
     ########################################################
+
     # checking how this page was called
     
+    cookie_out = Cookie.SimpleCookie()
+    expiration = datetime.datetime.now() + datetime.timedelta(minutes=30)
     
     if 'btn add row' in keys:
         req = ss.service.Request('add row', username)
@@ -165,7 +208,8 @@ def gen(cookie_in):
                 username,
                 Cookie.SimpleCookie(),
                 cookie_in,
-                lambda c,sheet: c.str_value(sheet)
+                display_func,
+                debug_lines,
                 )
     
     elif 'btn add col' in keys:
@@ -176,17 +220,61 @@ def gen(cookie_in):
                 username,
                 Cookie.SimpleCookie(),
                 cookie_in,
-                lambda c,sheet: c.str_value(sheet)
+                display_func,
+                debug_lines,
                 )
     
-    elif 'btn show type' in keys:
-        display_func = lambda c,sheet: c.str_type()
-    
+    elif 'btn show raw' in keys:
+        display_func = lambda c,sheet: c.str_raw()
+
+        # set cookie saving display option
+        cookie_item(
+                cookie_out,
+                expiration,
+                "display",
+                "raw")
+        
         render_sheet(
                 username,
-                Cookie.SimpleCookie(),
+                cookie_out,
                 cookie_in,
-                lambda c,sheet: c.str_type()
+                display_func,
+                debug_lines,
+                )
+    elif 'btn show' in keys:
+        display_func = lambda c,sheet: c.str_value(sheet)
+
+        # set cookie saving display option
+        cookie_item(
+                cookie_out,
+                expiration,
+                "display",
+                "value")
+        
+        render_sheet(
+                username,
+                cookie_out,
+                cookie_in,
+                display_func,
+                debug_lines,
+                )
+
+    elif 'btn show type' in keys:
+        display_func = lambda c,sheet: c.str_type()
+
+        # set cookie saving display option
+        cookie_item(
+                cookie_out,
+                expiration,
+                "display",
+                "type")
+        
+        render_sheet(
+                username,
+                cookie_out,
+                cookie_in,
+                display_func,
+                debug_lines,
                 )
     
     elif ('cell' in keys) and ('text' in keys):
@@ -194,12 +282,31 @@ def gen(cookie_in):
         req.cell = form['cell'].value
         req.text = form['text'].value
         req.do()
-        
+
+        debug_lines += ["cell = {}".format(repr(req.cell))]
+        debug_lines += ["text = {}".format(repr(req.text))]
+
         render_sheet(
                 username,
                 Cookie.SimpleCookie(),
                 cookie_in,
-                lambda c,sheet: c.str_value(sheet)
+                display_func,
+                debug_lines,
+                )
+    elif ('cell' in keys):
+        debug_lines += ["cell = {}".format(repr(form['cell'].value))]
+
+        req = ss.service.Request('set cell', username)
+        req.cell = form['cell'].value
+        req.text = None
+        req.do()
+
+        render_sheet(
+                username,
+                Cookie.SimpleCookie(),
+                cookie_in,
+                display_func,
+                debug_lines,
                 )
     
     elif 'btn_login' in keys:
@@ -225,10 +332,11 @@ def gen(cookie_in):
                         "invalid password")
             elif req.res == 'login success':
                 render_sheet(
-                username,
+                        username,
                         cookie_session(username),
                         cookie_in,
-                        lambda c,sheet: c.str_value(sheet)
+                        lambda c,sheet: c.str_value(sheet),
+                        debug_lines,
                         )
     
     elif 'btn logout' in keys:
@@ -256,7 +364,8 @@ def gen(cookie_in):
                     username,
                     Cookie.SimpleCookie(),
                     cookie_in,
-                    lambda c,sheet: c.str_value(sheet)
+                    lambda c,sheet: c.str_value(sheet),
+                    debug_lines,
                     )
 
 

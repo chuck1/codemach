@@ -1,10 +1,13 @@
 #!/bin/bash
 
-dir=/home/chuck/home/var/www/source/secret/cgi-bin
+www=/home/chuck/home/var/www/source
+dir=$www/secret/cgi-bin/python_spreadsheet
 
-cp cgi_script.py $dir/cgi_spreadsheet.py -f
+mkdir -p $dir
 
-cp -rf templates $dir/
+cp -f html/* $dir
+
+cp -f html/style.css $www/style/python_spreadsheet.css
 
 #cd ~/git/www
 

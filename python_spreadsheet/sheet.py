@@ -69,19 +69,33 @@ class Cell(object):
         if self.dtype == 'formula':
             #func_cell = lambda r,c: sheet.get_cell(r,c).get_value(sheet)
             func_cell = lambda r,c: sheet.get_cell_value(r,c)
-            _globals = {
-                    '__builtins__':[],
-                    'cell':func_cell,
+
+            approved_builtins = {
+                    'range':range,
                     }
-            return eval(self.v[1:], _globals)
+
+            _globals = {
+                    '__builtins__': approved_builtins,
+                    'cell':         func_cell,
+                    }
+
+            try:
+                ret = eval(self.v[1:], _globals)
+            except NameError as e:
+                return e.message
+            else:
+                return ret
         else:
             return self.v
     
     def str_type(self):
         return str(self.dtype)
-
+    
     def str_value(self, sheet):
         return str(self.get_value(sheet))
+    
+    def str_raw(self):
+        return str(self.v)
 
 class Sheet(object):
     def __init__(self):
