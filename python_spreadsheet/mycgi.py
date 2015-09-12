@@ -19,7 +19,8 @@ import python_spreadsheet as ss
 import python_spreadsheet.service
 
 #domain = "67.160.178.216"
-http_host = os.environ['HTTP_HOST']
+def get_http_host():
+    return os.environ['HTTP_HOST']
 
 template_dir = "/usr/local/python_spreadsheet/templates/"
 
@@ -98,7 +99,7 @@ def html_login(message, cookie_out, cookie_in):
             message = message,
             #environ =   cgi.print_environ(),
             environ =       os.environ,
-            http_host =     http_host,
+            http_host =     get_http_host(),
             cookie_out =    cookie_out,
             cookie_in  =    cookie_in,
             )
@@ -130,7 +131,7 @@ def render_sheet(username, cookie_out, cookie_in, display_func, debug_lines=[]):
 
 def cookie_item(cookie, expiration, k, v,):
     cookie[k] = v
-    cookie[k]["domain"] = http_host
+    cookie[k]["domain"] = get_http_host()
     cookie[k]["path"] = "/"
     cookie[k]["expires"] = expiration.strftime("%a, %d-%b-%Y %H:%M:%S PST")
 
@@ -163,7 +164,9 @@ def cookie_session(usr):
 ###################################################3333
 
 def gen(cookie_in):
-
+    """
+    main function called by cgi_script
+    """
     form = cgi.FieldStorage()
     keys = form.keys()
     #cookie_in = Cookie.SimpleCookie(os.environ.get("HTTP_COOKIE"))

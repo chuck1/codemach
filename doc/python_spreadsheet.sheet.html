@@ -1,0 +1,131 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module python_spreadsheet.sheet</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="python_spreadsheet.html"><font color="#ffffff">python_spreadsheet</font></a>.sheet</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/chuck/home/git/python_spreadsheet/python_spreadsheet/sheet.py">/home/chuck/home/git/python_spreadsheet/python_spreadsheet/sheet.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="array.html">array</a><br>
+<a href="datetime.html">datetime</a><br>
+<a href="xml.etree.ElementTree.html">xml.etree.ElementTree</a><br>
+</td><td width="25%" valign=top><a href="md5.html">md5</a><br>
+<a href="numpy.html">numpy</a><br>
+<a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="pickle.html">pickle</a><br>
+<a href="re.html">re</a><br>
+<a href="signal.html">signal</a><br>
+</td><td width="25%" valign=top><a href="struct.html">struct</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="python_spreadsheet.sheet.html#Cell">Cell</a>
+</font></dt><dt><font face="helvetica, arial"><a href="python_spreadsheet.sheet.html#Sheet">Sheet</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Cell">class <strong>Cell</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Cell-__init__"><strong>__init__</strong></a>(self, s<font color="#909090">=None</font>)</dt></dl>
+
+<dl><dt><a name="Cell-get_value"><strong>get_value</strong></a>(self, sheet, y, x)</dt></dl>
+
+<dl><dt><a name="Cell-set_value"><strong>set_value</strong></a>(self, s)</dt></dl>
+
+<dl><dt><a name="Cell-str_raw"><strong>str_raw</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Cell-str_type"><strong>str_type</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Cell-str_value"><strong>str_value</strong></a>(self, sheet, r, c)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Sheet">class <strong>Sheet</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Sheet-__init__"><strong>__init__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Sheet-add_col"><strong>add_col</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Sheet-add_row"><strong>add_row</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Sheet-get_cell"><strong>get_cell</strong></a>(self, r, c)</dt></dl>
+
+<dl><dt><a name="Sheet-get_cell_value"><strong>get_cell_value</strong></a>(self, r, c)</dt></dl>
+
+<dl><dt><a name="Sheet-get_cells"><strong>get_cells</strong></a>(self, r, c)</dt></dl>
+
+<dl><dt><a name="Sheet-html"><strong>html</strong></a>(self, func)</dt><dd><tt>func&nbsp;function&nbsp;used&nbsp;to&nbsp;render&nbsp;cell&nbsp;(value,&nbsp;formular,&nbsp;etc)</tt></dd></dl>
+
+<dl><dt><a name="Sheet-html_col"><strong>html_col</strong></a>(self, row, r, c, display_func)</dt></dl>
+
+<dl><dt><a name="Sheet-set_cell"><strong>set_cell</strong></a>(self, r, c, v)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-cli_read"><strong>cli_read</strong></a>()</dt></dl>
+ <dl><dt><a name="-cli_write"><strong>cli_write</strong></a>(s)</dt></dl>
+ <dl><dt><a name="-match_float"><strong>match_float</strong></a>(s)</dt></dl>
+ <dl><dt><a name="-match_int"><strong>match_int</strong></a>(s)</dt></dl>
+ <dl><dt><a name="-strhex"><strong>strhex</strong></a>(s)</dt></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>__warningregistry__</strong> = {('the md5 module is deprecated; use hashlib instead', &lt;type 'exceptions.DeprecationWarning'&gt;, 7): True}<br>
+<strong>name_cli_w</strong> = '/tmp/python_spreadsheet_cli_w'<br>
+<strong>name_srv_w</strong> = '/tmp/python_spreadsheet_srv_w'</td></tr></table>
+</body></html>
