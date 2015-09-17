@@ -162,6 +162,7 @@ class Sheet(object):
 
     def get_cells(self,r,c):
         try:
+            #return self.table[c][r]
             return self.table[r,c]
         except:
             return "index error"
@@ -175,20 +176,45 @@ class Sheet(object):
 
             return ret
         else:
-            cells = self.get_cells(r,c)
+            R,C = np.meshgrid(r,c)
 
-            f = np.vectorize(lambda c: c.get_value(self, r, c))
-            
-            #print "vectorize"
-            #print cells
+            cells = self.get_cells(R,C)
 
-            try:
-                a = f(cells)
-                return a
-            except TypeError:
-                return "TypeError"
-            except ValueError:
-                return "ValueError"
+            #return str(np.shape(cells))
+
+            return self.get_cell_value_1(cells, R, C)
+
+    def get_cell_value_1(self, cells, R, C):
+        
+        #f = np.vectorize(lambda c: c.get_value(self, r, c), otypes=[np.float, np.int])
+        #f = np.vectorize(lambda c: c.get_value(self, r, c))
+        f = np.vectorize(lambda cell,r,c: cell.get_value(self, r, c), otypes=[object])
+        
+        #print "vectorize"
+        #print cells
+        
+        """        
+        values = [None]*len(cells)
+       
+        
+        #return str(np.shape(R))+str(np.shape(C))+str(np.shape(cells))
+    
+        for cell,i,r,c in zip(cells, range(len(cells)), R, C):
+            if isinstance(cell, Cell):
+                values[i] = cell.get_value(self, r, c)
+            else:
+                values[i] = self.get_cell_value_1(cell, r, c)
+
+        return values
+        return str(cells)
+        """
+        try:
+            a = f(cells,R,C)
+            return a
+        except TypeError:
+            return "TypeError"
+        except ValueError as e:
+            return "ValueError:"+e.message
 
     def html_col(self, row, r, c, display_func):
 
