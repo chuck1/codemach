@@ -221,7 +221,10 @@ class Sheet(object):
         td = 0
         td = et.Element('td')
         
-        form = et.SubElement(td, 'form', attrib={'id':"form{}_{}".format(r,c)})
+        form = et.SubElement(td, 'form', attrib={
+            'id':"form{}_{}".format(r,c),
+            'class':'sheet',
+            })
         
         t = et.SubElement(form, 'input', attrib={
             'id'  :"{}_{}".format(r,c),
@@ -262,7 +265,7 @@ class Sheet(object):
             
             table.append(tr)
 
-        return et.tostring(table)
+        return et.tostring(table, method="html")
 
 
 

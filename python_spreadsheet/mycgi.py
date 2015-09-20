@@ -35,6 +35,8 @@ template_file_sheet = os.path.join(template_dir, "sheet.html")
 name_srv_w = "/tmp/python_spreadsheet_srv_w"
 name_cli_w = "/tmp/python_spreadsheet_cli_w"
 
+debug = False
+
 def detect_type(s):
     pat = '^\d+$'
     m = re.match(pat, s)
@@ -103,6 +105,8 @@ def form_sheet_ctrl(sessid):
 
     return f
 
+
+
 def debug_default(
         debug_lines,
         cookie_out,
@@ -130,7 +134,7 @@ def html_login(
     return temp.render(
             message     = message,
             debug_lines = "\n".join("<pre>"+l+"</pre>" for l in debug_lines),
-            debug       = True,
+            debug       = debug,
             )
 
 def html_sheet(
@@ -152,12 +156,13 @@ def html_sheet(
     sheet = get_sheet(sessid)
     
     html  = et.tostring(form_sheet_ctrl(sessid))
+    html += "\n"
     html += sheet.html(display_func)
 
     return temp.render(
         html            = html,
         debug_lines = "\n".join("<pre>"+l+"</pre>" for l in debug_lines),
-        debug           = True,
+        debug           = debug,
         )
 
 def render_login(
@@ -287,58 +292,40 @@ def gen(cookie_in):
     
     cookie_out = Cookie.SimpleCookie()
     expiration = datetime.datetime.now() + datetime.timedelta(minutes=30)
- 
-    if 'btn add row' in keys:
-        req = ss.service.Request('add row', sessid)
-        req.do()
-    
-        render_sheet(
-                sessid,
-                Cookie.SimpleCookie(),
-                cookie_in,
-                display_func,
-                debug_lines,
-                )
-    
-    elif 'btn add col' in keys:
-        req = ss.service.Request('add col', sessid)
-        req.do()
-    
-        render_sheet(
-                sessid,
-                Cookie.SimpleCookie(),
-                cookie_in,
-                display_func,
-                debug_lines,
-                )
-    
-    elif 'btn show raw' in keys:
-        display_func = lambda c,sheet,y,x: c.str_raw()
+   
+    sheet_actions = [
+            'btn add row',
+            'btn add col',
+            'btn show raw',
+            'btn show type',
+            'btn show']
 
-        # set cookie saving display option
-        cookie_item(
-                cookie_out,
-                expiration,
-                "display",
-                "raw")
-        
-        render_sheet(
-                sessid,
-                cookie_out,
-                cookie_in,
-                display_func,
-                debug_lines,
-                )
-    elif 'btn show' in keys:
-        display_func = lambda c,sheet,y,x: c.str_value(sheet,y,x)
+    if set(sheet_actions).intersection(set(keys)):
+        if 'btn add row' in keys:
+            req = ss.service.Request('add row', sessid)
+            req.do()
+    
+        elif 'btn add col' in keys:
+            req = ss.service.Request('add col', sessid)
+            req.do()
+    
+        elif 'btn show raw' in keys:
+            display_func = lambda c,sheet,y,x: c.str_raw()
 
-        # set cookie saving display option
-        cookie_item(
-                cookie_out,
-                expiration,
-                "display",
-                "value")
-        
+            cookie_item(cookie_out, expiration, "display", "raw")
+
+        elif 'btn show' in keys:
+            display_func = lambda c,sheet,y,x: c.str_value(sheet,y,x)
+
+            cookie_item(cookie_out, expiration, "display", "value")
+
+        elif 'btn show type' in keys:
+            display_func = lambda c,sheet,y,x: c.str_type()
+
+            cookie_item(cookie_out, expiration, "display", "type")
+        else:
+            raise ValueError()
+
         render_sheet(
                 sessid,
                 cookie_out,
@@ -347,23 +334,6 @@ def gen(cookie_in):
                 debug_lines,
                 )
 
-    elif 'btn show type' in keys:
-        display_func = lambda c,sheet,y,x: c.str_type()
-
-        # set cookie saving display option
-        cookie_item(
-                cookie_out,
-                expiration,
-                "display",
-                "type")
-        
-        render_sheet(
-                sessid,
-                cookie_out,
-                cookie_in,
-                display_func,
-                debug_lines,
-                )
     
     elif ('cell' in keys) and ('text' in keys):
         req = ss.service.Request('set cell', sessid)
@@ -378,7 +348,7 @@ def gen(cookie_in):
 
         render_sheet(
                 sessid,
-                Cookie.SimpleCookie(),
+                cookie_out,
                 cookie_in,
                 display_func,
                 debug_lines,
@@ -449,21 +419,19 @@ def gen(cookie_in):
             debug_lines,
             )
     else:
-        try:
-            ses = cookie_in["session"]
-        except (Cookie.CookieError, KeyError):
-            render_login(
-                    "session not set",
-                    Cookie.SimpleCookie(),
-                    cookie_in,
-                    debug_lines,
-                    )
-        else:
+        if sessid:
             render_sheet(
                     sessid,
                     Cookie.SimpleCookie(),
                     cookie_in,
                     display_func,
+                    debug_lines,
+                    )
+        else:
+            render_login(
+                    "session not set",
+                    Cookie.SimpleCookie(),
+                    cookie_in,
                     debug_lines,
                     )
 
