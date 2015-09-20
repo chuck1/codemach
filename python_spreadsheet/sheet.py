@@ -103,6 +103,7 @@ class Cell(object):
         v = self.get_value(sheet, r, c)
         if v is not None:
             return str(v)
+            #return repr(v)
         else:
             return ''
     
@@ -216,7 +217,7 @@ class Sheet(object):
         except ValueError as e:
             return "ValueError:"+e.message
 
-    def html_col(self, row, r, c, display_func):
+    def html_col(self, row, r, c, display_func, sessid):
 
         td = 0
         td = et.Element('td')
@@ -237,6 +238,11 @@ class Sheet(object):
             'name':'cell',
             'value':"{}_{}".format(r,c),
             })
+        h = et.SubElement(form, 'input', attrib={
+            'type':'hidden',
+            'name':'sessid',
+            'value':str(sessid),
+            })
         
         if c < len(row):
             if row[c]:
@@ -249,7 +255,7 @@ class Sheet(object):
 
         return td
 
-    def html(self, func):
+    def html(self, func, sessid):
         """
         func function used to render cell (value, formular, etc)
         """
@@ -261,7 +267,7 @@ class Sheet(object):
             tr = et.Element('tr')
 
             for c in range(np.shape(self.table)[1]):
-                tr.append(self.html_col(row, r, c, func))
+                tr.append(self.html_col(row, r, c, func, sessid))
             
             table.append(tr)
 

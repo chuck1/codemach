@@ -157,7 +157,7 @@ def html_sheet(
     
     html  = et.tostring(form_sheet_ctrl(sessid))
     html += "\n"
-    html += sheet.html(display_func)
+    html += sheet.html(display_func, sessid)
 
     return temp.render(
         html            = html,
