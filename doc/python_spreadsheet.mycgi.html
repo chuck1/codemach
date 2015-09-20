@@ -24,13 +24,14 @@
 <a href="cgitb.html">cgitb</a><br>
 </td><td width="25%" valign=top><a href="datetime.html">datetime</a><br>
 <a href="xml.etree.ElementTree.html">xml.etree.ElementTree</a><br>
+<a href="getpass.html">getpass</a><br>
 <a href="jinja2.html">jinja2</a><br>
-<a href="os.html">os</a><br>
-</td><td width="25%" valign=top><a href="pickle.html">pickle</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+<a href="pickle.html">pickle</a><br>
 <a href="python_spreadsheet.html">python_spreadsheet</a><br>
 <a href="random.html">random</a><br>
-<a href="re.html">re</a><br>
-</td><td width="25%" valign=top><a href="python_spreadsheet.html">python_spreadsheet</a><br>
+</td><td width="25%" valign=top><a href="re.html">re</a><br>
+<a href="python_spreadsheet.html">python_spreadsheet</a><br>
 <a href="sys.html">sys</a><br>
 </td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -40,17 +41,18 @@
     
 <tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><dl><dt><a name="-cookie_item"><strong>cookie_item</strong></a>(cookie, expiration, k, v)</dt></dl>
- <dl><dt><a name="-cookie_session"><strong>cookie_session</strong></a>(usr)</dt></dl>
+ <dl><dt><a name="-cookie_session"><strong>cookie_session</strong></a>(usr, sess)</dt></dl>
+ <dl><dt><a name="-debug_default"><strong>debug_default</strong></a>(debug_lines, cookie_out, cookie_in)</dt></dl>
  <dl><dt><a name="-detect_type"><strong>detect_type</strong></a>(s)</dt></dl>
- <dl><dt><a name="-form_sheet_ctrl"><strong>form_sheet_ctrl</strong></a>()</dt></dl>
+ <dl><dt><a name="-form_sheet_ctrl"><strong>form_sheet_ctrl</strong></a>(sessid)</dt></dl>
  <dl><dt><a name="-gen"><strong>gen</strong></a>(cookie_in)</dt><dd><tt>main&nbsp;function&nbsp;called&nbsp;by&nbsp;cgi_script</tt></dd></dl>
- <dl><dt><a name="-get_http_host"><strong>get_http_host</strong></a>()</dt><dd><tt>#domain&nbsp;=&nbsp;"67.160.178.216"</tt></dd></dl>
- <dl><dt><a name="-get_sheet"><strong>get_sheet</strong></a>(username)</dt></dl>
- <dl><dt><a name="-html_login"><strong>html_login</strong></a>(message, cookie_out, cookie_in)</dt></dl>
- <dl><dt><a name="-html_sheet"><strong>html_sheet</strong></a>(username, cookie_out, cookie_in, display_func, debug_lines<font color="#909090">=[]</font>)</dt></dl>
+ <dl><dt><a name="-get_http_host"><strong>get_http_host</strong></a>()</dt></dl>
+ <dl><dt><a name="-get_sheet"><strong>get_sheet</strong></a>(sessid)</dt></dl>
+ <dl><dt><a name="-html_login"><strong>html_login</strong></a>(message, cookie_out, cookie_in, debug_lines)</dt></dl>
+ <dl><dt><a name="-html_sheet"><strong>html_sheet</strong></a>(sessid, cookie_out, cookie_in, display_func, debug_lines)</dt></dl>
  <dl><dt><a name="-read"><strong>read</strong></a>()</dt></dl>
- <dl><dt><a name="-render_login"><strong>render_login</strong></a>(cookie_out, cookie_in, message)</dt></dl>
- <dl><dt><a name="-render_sheet"><strong>render_sheet</strong></a>(username, cookie_out, cookie_in, display_func, debug_lines<font color="#909090">=[]</font>)</dt></dl>
+ <dl><dt><a name="-render_login"><strong>render_login</strong></a>(message, cookie_out, cookie_in, debug_lines)</dt></dl>
+ <dl><dt><a name="-render_sheet"><strong>render_sheet</strong></a>(sessid, cookie_out, cookie_in, display_func, debug_lines)</dt></dl>
  <dl><dt><a name="-write"><strong>write</strong></a>(s)</dt></dl>
  <dl><dt><a name="-write_read"><strong>write_read</strong></a>(lst)</dt></dl>
 </td></tr></table><p>

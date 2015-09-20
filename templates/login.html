@@ -1,29 +1,30 @@
+<html>
+<head>
+<link 
+rel="stylesheet" 
+type="text/css" href="/style/python_spreadsheet.css">
+</head>
+<body>
 
 {{ message }}<br><br>
-The login system is still under development. Entering an unknown username and password will create a new account.<br>
+The login system is still under development.
+Entering an unknown username and password will create a new account.
+<br>
 <form method="post">
 	<label for="user">user</label>
-	<input id="user "type="text" name="user"></input><br>
+	<input id="user" type="text" name="user"></input><br>
 	<label for="pass">pass</label>
-	<input id="pass "type="text" name="pass"></input><br>
+	<input id="pass" type="text" name="pass"></input><br>
 	<input type="submit" value="login" name="btn_login">
 </form>
 
 {% if debug %}
-
-<br>
-form
-<br>
-{{ form }}
-<br>
-http host
-<br>
-{{ http_host }}
-<br>
-cookie_out<br>
-{{ cookie_out }}<br>
-cookie_in<br>
-{{ cookie_in }}<br>
-
+<h2>debug</h2>
+<div class="debug">
+{{ debug_lines }}
+</div>
 {% endif %}
+
+</body>
+</html>
 

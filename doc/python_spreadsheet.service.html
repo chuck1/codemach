@@ -25,9 +25,10 @@
 <a href="os.html">os</a><br>
 <a href="pickle.html">pickle</a><br>
 </td><td width="25%" valign=top><a href="python_spreadsheet.html">python_spreadsheet</a><br>
+<a href="random.html">random</a><br>
 <a href="re.html">re</a><br>
-<a href="signal.html">signal</a><br>
-</td><td width="25%" valign=top><a href="python_spreadsheet.html">python_spreadsheet</a><br>
+</td><td width="25%" valign=top><a href="signal.html">signal</a><br>
+<a href="python_spreadsheet.html">python_spreadsheet</a><br>
 <a href="struct.html">struct</a><br>
 </td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -42,6 +43,7 @@
 <dl>
 <dt><font face="helvetica, arial"><a href="python_spreadsheet.service.html#Request">Request</a>
 </font></dt><dt><font face="helvetica, arial"><a href="python_spreadsheet.service.html#Service">Service</a>
+</font></dt><dt><font face="helvetica, arial"><a href="python_spreadsheet.service.html#Session">Session</a>
 </font></dt><dt><font face="helvetica, arial"><a href="python_spreadsheet.service.html#User">User</a>
 </font></dt></dl>
 </dd>
@@ -60,7 +62,7 @@
     
 <tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%">Methods defined here:<br>
-<dl><dt><a name="Request-__init__"><strong>__init__</strong></a>(self, s, usr<font color="#909090">=None</font>)</dt></dl>
+<dl><dt><a name="Request-__init__"><strong>__init__</strong></a>(self, s, sessid<font color="#909090">=None</font>)</dt></dl>
 
 <dl><dt><a name="Request-do"><strong>do</strong></a>(self)</dt></dl>
 
@@ -80,9 +82,11 @@ Data descriptors defined here:<br>
     
 <tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%">Methods defined here:<br>
-<dl><dt><a name="Service-__init__"><strong>__init__</strong></a>(self)</dt></dl>
+<dl><dt><a name="Service-__init__"><strong>__init__</strong></a>(self, f)</dt></dl>
 
 <dl><dt><a name="Service-blocking_read"><strong>blocking_read</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Service-create_session"><strong>create_session</strong></a>(self, u)</dt></dl>
 
 <dl><dt><a name="Service-get_user"><strong>get_user</strong></a>(self, u)</dt></dl>
 
@@ -97,6 +101,24 @@ Data descriptors defined here:<br>
 <dl><dt><a name="Service-save"><strong>save</strong></a>(self)</dt></dl>
 
 <dl><dt><a name="Service-write"><strong>write</strong></a>(self, s)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Session">class <strong>Session</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Session-__init__"><strong>__init__</strong></a>(self, user)</dt></dl>
 
 <hr>
 Data descriptors defined here:<br>

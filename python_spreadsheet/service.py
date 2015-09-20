@@ -7,6 +7,7 @@ import numpy as np
 import struct
 import signal
 import datetime
+import random
 
 import python_spreadsheet as ss
 import python_spreadsheet.sheet
@@ -25,13 +26,12 @@ def cli_write(s):
 
 
 class Request(object):
-    def __init__(self, s, usr=None):
+    def __init__(self, s, sessid=None):
         self.s = s
-        self.usr = usr
-
+        self.sessid = sessid
+        
     def do(self):
         cli_write(pickle.dumps(self))
-
         self.res = cli_read()
 
 class Stop(Exception):
@@ -50,14 +50,23 @@ class User(object):
             self.sheets[s] = sheet
         return sheet
 
+class Session(object):
+    def __init__(self, user):
+        self.sessid = random.randint(0,1000000000)
+        self.user = user
+
 class Service(object):
-    def __init__(self):
+    def __init__(self, f):
         try:
             self.load()
             print "sheets loaded"
         except:
             self.users = {}
             print "sheets not loaded"
+        
+        self.sessions = {}
+        
+        self.logfile = f
 
         self.fifo_name_srv_w = "/tmp/python_spreadsheet_srv_w"
         self.fifo_name_cli_w = "/tmp/python_spreadsheet_cli_w"
@@ -66,10 +75,10 @@ class Service(object):
             print 'signal handler called with signal', signum
             if (signum == signal.SIGTERM) or (signum == signal.SIGINT):
                 self.save()
+                self.f.close()
 
         signal.signal(signal.SIGTERM, signal_handler)
         signal.signal(signal.SIGINT,  signal_handler)
-        
 
         try:
             os.remove(self.fifo_name_srv_w)
@@ -124,6 +133,15 @@ class Service(object):
             self.users[u] = user
         return user
 
+    def create_session(self, u):
+
+        sess = Session(u)
+        self.sessions[sess.sessid] = sess
+
+        print "created session {} {}".format(repr(sess.sessid), repr(u))
+
+        return sess
+
     def blocking_read(self):
         #a = array.array('i')
 
@@ -131,11 +149,20 @@ class Service(object):
         req = pickle.loads(s)
         #a.fromstring(s)
     
-        print 'req.s =',req.s
+        print 'req.s      =',req.s
+        print 'req.sessid =',req.sessid
         
-        if req.usr:
+        if req.sessid:
+            print "sessid = {}".format(req.sessid)
+            try:
+                sess = self.sessions[req.sessid]
+            except KeyError as e:
+                print "session not found {}".format(repr(str(req.sessid)))
+                self.write('error:' + e.message)
+                return
+            
             # get or create sheet for user
-            user = self.get_user(req.usr)
+            user = self.get_user(sess.user)
             sheet = user.get_sheet('sheet0')
 
             if req.s == 'get sheet':
@@ -177,27 +204,33 @@ class Service(object):
             
             print 'usr',u
             print 'pwd',p
-
+            
             try:
                 ss.security.check_pwd(u,p)
             except ss.security.InvalidUsr:
                 print 'invalid usr'
                 ss.security.create_usr(u,p)
-                self.write('login success')
+                
+                sess = self.create_session(u)
+
+                self.write("login success,{}".format(sess.sessid))
             except ss.security.InvalidPwd:
                 print 'invalid pwd'
                 self.write('invalid pwd')
             else:
+                # create new session
+                sess = self.create_session(u)
                 print 'success'
-                self.write('login success')
+                self.write("login success,{}".format(sess.sessid))
+
         elif req.s == 'stop':
             self.write('0')
             raise Stop()
         else:
-            raise ValueError("unknown command or forgot to set req.usr. req.s = {}".format(
-                repr(req.s)))
+            err_str  = "unknown command or forgot to "
+            err_str += "set req.usr. req.s = {}".format(repr(req.s))
 
-        #print a
+            self.write('error:' + err_str)
 
     def run(self):
         
@@ -210,6 +243,7 @@ class Service(object):
                 t = datetime.datetime.now() + datetime.timedelta(minutes=1)
 
             try:
+                print "waiting for data"
                 self.blocking_read()
             except Stop:
                 break

@@ -10,11 +10,6 @@ cp -f html/*.py $cgi_dir
 
 cp -f html/style.css $www/style/python_spreadsheet.css
 
-#cd ~/git/www
-
-#sudo ./copy.bash
-
-
 pydoc -w python_spreadsheet
 pydoc -w python_spreadsheet.sheet
 pydoc -w python_spreadsheet.mycgi

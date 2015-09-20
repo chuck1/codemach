@@ -5,7 +5,8 @@ import os
 from distutils.core import setup
 #from setuptools import setup, find_packages
 
-template_files = list(os.path.join('templates',x) for x in os.listdir('templates'))
+template_files = list(
+        os.path.join('templates',x) for x in os.listdir('templates'))
 
 setup(
     name=           'python_spreadsheet',
