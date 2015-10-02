@@ -1,0 +1,14 @@
+table, td {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+form.sheet {
+	margin: 0px;
+}
+form.sheet input[type=text] {
+	border: none;
+}
+.debug {
+	font-family:"Courier New", Courier, monospace
+}
+
