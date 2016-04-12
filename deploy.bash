@@ -1,22 +1,26 @@
 #!/bin/bash
 
-www=/home/chuck/home/var/www/source
-cgi_dir=$www/cgi-bin/python_spreadsheet
-dir=$www/projects/programming/python_spreadsheet
+#cgi_dir=$www/cgi-bin/python_spreadsheet
 
-mkdir -p $dir
+#dir=$www/projects/programming/python_spreadsheet
 
-cp -f html/*.py $cgi_dir
+www=/var/www/html/python-spreadsheet
 
-cp -f html/style.css $www/style/python_spreadsheet.css
+mkdir -p $www
+mkdir -p $www/bin
+mkdir -p $www/style
 
-pydoc -w python_spreadsheet
-pydoc -w python_spreadsheet.sheet
-pydoc -w python_spreadsheet.mycgi
-pydoc -w python_spreadsheet.service
-pydoc -w python_spreadsheet.security
+cp -f html/*.py $www/bin
 
-mv *.html doc
+cp -f html/style.css $www/style
 
-cp -rf doc $dir
+#pydoc -w python_spreadsheet
+#pydoc -w python_spreadsheet.sheet
+#pydoc -w python_spreadsheet.mycgi
+#pydoc -w python_spreadsheet.service
+#pydoc -w python_spreadsheet.security
+
+#mv *.html doc
+
+#cp -rf doc $dir
 
