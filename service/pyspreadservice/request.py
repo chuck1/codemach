@@ -13,6 +13,7 @@ import mysock
 
 import sheet
 
+from pyspreadservice import *
 
 class Request(object):
     def __init__(self, session_id):
@@ -49,6 +50,15 @@ class RequestSheet(Request):
             return None
 
     def on_session_recv(self, sock, session):
+
+        try:
+            df = self.display_func
+        except:
+            pass
+        else:
+            session.sheet.display_data.display_func = df
+            session.sheet_save()
+        
         send_response(sock, ResponseSheet(session.session_id, session.sheet))
 
 
@@ -83,21 +93,17 @@ class RequestSheetAddRow(Request):
 
         session.sheet_save()
 
-class RequestSheetShowFormula(Request):
+class RequestSheetAddCol(Request):
     def __init__(self, session_key):
-        super(RequestSheetAddRow, self).__init__(session_key)
+        super(RequestSheetAddCol, self).__init__(session_key)
 
     def on_session_recv(self, sock, session):
         
-        session.sheet.add_row()
+        session.sheet.add_col()
 
         send_response(sock, ResponseSheet(session.session_id, session.sheet))
 
         session.sheet_save()
-
-
-
-
 
 
 

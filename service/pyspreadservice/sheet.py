@@ -57,28 +57,21 @@ class Cell(object):
 
     def get_value(self, sheet, y, x):
         if self.dtype == 'formula':
-            #func_cell = lambda r,c: sheet.get_cell(r,c).get_value(sheet)
+
             func_cell = lambda r,c: sheet.get_cell_value(r,c)
             func_row = lambda: y
             func_col = lambda: x
-
-            approved_builtins = {
-                    'abs':      abs,
-                    'all':      all,
-                    'any':      any,
-                    'range':    range,
-                    'sum':      sum,
-                    }
-
-            _globals = {
-                    '__builtins__': approved_builtins,
-                    'cell':         func_cell,
-                    'row':          func_row,
-                    'col':          func_col,
-                    }
-
+            
+            global_objects = dict(sheet.global_objects)
+            
+            global_objects.update({
+                    "cell": func_cell,
+                    "row": func_row,
+                    "col": func_col,
+                    })
+            
             try:
-                ret = eval(self.v[1:], _globals)
+                ret = eval(self.v[1:], global_objects)
             except NameError as e:
                 return e.message
             else:
@@ -105,6 +98,8 @@ def display_func_value(cell, sheet, y, x):
 def display_func_formula(cell, sheet, y, x):
     return cell.str_raw()
 
+
+
 class DisplayData(object):
     def __init__(self):
         self.display_func = display_func_value
@@ -115,6 +110,18 @@ class Sheet(object):
         #self.table = np.array([[Cell()]], dtype=Cell)
         
         self.display_data = DisplayData()
+
+        self._builtins = {
+                    'abs':      abs,
+                    'all':      all,
+                    'any':      any,
+                    'range':    range,
+                    'sum':      sum,
+                    }
+
+        self.global_objects = {
+                    '__builtins__': self._builtins,
+                    }
 
     def add_row(self):
         l = np.shape(self.table)[1]
@@ -178,9 +185,15 @@ class Sheet(object):
 
             return ret
         else:
-            R,C = np.meshgrid(r,c)
-
+            R,C = np.meshgrid(r,c,indexing='ij')
             cells = self.get_cells(R,C)
+
+            print "get cell value"
+            print "r", repr(r)
+            print "c", repr(c)
+            print "R", repr(R)
+            print "C", repr(C)
+            print "shape(cells)", np.shape(cells)
 
             #return str(np.shape(cells))
 
@@ -268,10 +281,29 @@ class Sheet(object):
         csrf_token = django.middleware.csrf.get_token(http_request)
 
         table = et.Element('table')
+    
+        # header
+        tr = et.Element('tr')
+        
+        tr.append(et.Element('td'))
+        
+        for c in range(np.shape(self.table)[1]):
+            th = et.Element('th')
+            th.text = str(c)
+            tr.append(th)
+        
+        table.append(tr)
+
+        # body
 
         for row,r in zip(self.table, range(len(self.table))):
             
             tr = et.Element('tr')
+
+            th = et.Element('th')
+            th.text = str(r)
+            tr.append(th)
+
 
             for c in range(np.shape(self.table)[1]):
                 tr.append(self.html_col(row, r, c, csrf_token))

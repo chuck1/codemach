@@ -3,6 +3,11 @@
 
 Second attempt at a web-based python powered spreadsheet
 
+## Requirements
+
+ * [Django](https://www.djangoproject.com/)
+ * github.com/chuck1/python\_mysock
+
 ## Structure
 
  * django site
@@ -15,5 +20,7 @@ Second attempt at a web-based python powered spreadsheet
 
 ## Testing
 
-To test, open two terminals. In one, run "./service/start.py". In the other, navigate to pyspread\_site and run "python manage.py runserver 0.0.0.0 9001".
+To test, open two terminals. 
+In one, run "./service/start.py". 
+In the other, navigate to pyspread\_site and run "python manage.py runserver 0.0.0.0 9001".
 

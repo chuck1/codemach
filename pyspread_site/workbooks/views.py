@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 import pyspreadservice
+import pyspreadservice.request
 
 # Create your views here.
 
@@ -17,7 +18,7 @@ def cell_change(http_request):
     print "cell", repr(cell)
     print "text", repr(text)
 
-    request = pyspreadservice.RequestCellSet(http_request.session.session_key)
+    request = pyspreadservice.request.RequestCellSet(http_request.session.session_key)
     request.cell = cell
     request.text = text
 
@@ -30,7 +31,7 @@ def cell_change(http_request):
 
 def sheet_add_row(http_request):
 
-    request = pyspreadservice.RequestSheetAddRow(http_request.session.session_key)
+    request = pyspreadservice.request.RequestSheetAddRow(http_request.session.session_key)
 
     response = pyspreadservice.send_request(request)
 
@@ -38,7 +39,7 @@ def sheet_add_row(http_request):
 
 def sheet_add_col(http_request):
 
-    request = pyspreadservice.RequestSheetAddCol(http_request.session.session_key)
+    request = pyspreadservice.request.RequestSheetAddCol(http_request.session.session_key)
 
     response = pyspreadservice.send_request(request)
 
@@ -46,7 +47,7 @@ def sheet_add_col(http_request):
 
 def sheet_show_value(http_request):
 
-    request = pyspreadservice.RequestSheet(http_request.session.session_key)
+    request = pyspreadservice.request.RequestSheet(http_request.session.session_key, None)
     request.display_func = pyspreadservice.sheet.display_func_value
 
     response = pyspreadservice.send_request(request)
@@ -55,7 +56,7 @@ def sheet_show_value(http_request):
 
 def sheet_show_formula(http_request):
 
-    request = pyspreadservice.RequestSheet(http_request.session.session_key)
+    request = pyspreadservice.request.RequestSheet(http_request.session.session_key, None)
     request.display_func = pyspreadservice.sheet.display_func_formula
 
     response = pyspreadservice.send_request(request)
@@ -83,7 +84,7 @@ def test(http_request):
 
 
 
-    request2 = pyspreadservice.RequestSheet(http_request.session.session_key, "sheet1")
+    request2 = pyspreadservice.request.RequestSheet(http_request.session.session_key, "sheet1")
 
     response = pyspreadservice.send_request(request2)
 
