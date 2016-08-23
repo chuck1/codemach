@@ -174,23 +174,7 @@ class Server(object):
 
         self.socketserver = SocketServer(self, "", server_port)
 
-        
         self.sessions = {}
- 
-        """
-        self.logfile = f
-
-        def signal_handler(signum, frame):
-            print 'signal handler called with signal', signum
-            if (signum == signal.SIGTERM) or (signum == signal.SIGINT):
-                self.save()
-                self.f.close()
-
-        signal.signal(signal.SIGTERM, signal_handler)
-        signal.signal(signal.SIGINT,  signal_handler)
-
-        """
-
 
     def create_session(self, session_key, sheet_filename):
         
@@ -219,56 +203,6 @@ class Server(object):
         print "session found"
         
         req.on_session_recv(sock, session)
-
-
-        """
-
-            elif req.s == 'add row':
-                sheet.add_row()
-                self.write('0')
-        
-            elif req.s == 'add col':
-                sheet.add_col()
-                self.write('0')
-
-            else:
-                self.write('unknown command')
-
-        elif req.s == 'login':
-            u = req.u
-            p = req.p
-            
-            print 'usr',u
-            print 'pwd',p
-            
-            try:
-                ss.security.check_pwd(u,p)
-            except ss.security.InvalidUsr:
-                print 'invalid usr'
-                ss.security.create_usr(u,p)
-                
-                sess = self.create_session(u)
-
-                self.write("login success,{}".format(sess.sessid))
-            except ss.security.InvalidPwd:
-                print 'invalid pwd'
-                self.write('invalid pwd')
-            else:
-                # create new session
-                sess = self.create_session(u)
-                print 'success'
-                self.write("login success,{}".format(sess.sessid))
-
-        elif req.s == 'stop':
-            self.write('0')
-            raise Stop()
-        else:
-            err_str  = "unknown command or forgot to "
-            err_str += "set req.usr. req.s = {}".format(repr(req.s))
-
-            self.write('error:' + err_str)
-
-        """
 
     def main_loop(self):
 
