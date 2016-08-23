@@ -6,10 +6,11 @@ import argparse
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-b', action='store_true')
+#parser.add_argument('-b', action='store_true')
 
 args = parser.parse_args()
 
+"""
 f = None
 
 if args.b:
@@ -18,11 +19,11 @@ if args.b:
     sys.stderr = f
 
 sys.path.append("/home/chuck/git/python_spreadsheet")
+"""
 
-import python_spreadsheet as ss
-import python_spreadsheet.service
+import pyspreadservice
 
-s = ss.service.Service(f)
+server = pyspreadservice.Server()
 
 """
 def handler(signum, frame):
@@ -32,5 +33,5 @@ def handler(signum, frame):
 signal.signal(signal.SIGTERM, handler)
 """
 
-s.run()
+server.main_loop()
 

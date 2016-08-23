@@ -9,17 +9,7 @@ import struct
 import signal
 import datetime
 
-name_srv_w = "/tmp/python_spreadsheet_srv_w"
-name_cli_w = "/tmp/python_spreadsheet_cli_w"
-
-def cli_read():
-    with open(name_srv_w, 'rb') as f:
-        return f.read()
-
-def cli_write(s):
-    with open(name_cli_w, 'wb') as f:
-        f.write(s)
-
+import django
 
 def strhex(s):
     return " ".join("{:02x}".format(ord(c)) for c in s)
@@ -110,10 +100,21 @@ class Cell(object):
     def str_raw(self):
         return str(self.v)
 
+def display_func_value(cell, sheet, y, x):
+    return cell.str_value(sheet, y, x)
+def display_func_formula(cell, sheet, y, x):
+    return cell.str_raw()
+
+class DisplayData(object):
+    def __init__(self):
+        self.display_func = display_func_value
+
 class Sheet(object):
     def __init__(self):
         self.table = np.array([[Cell()]])
         #self.table = np.array([[Cell()]], dtype=Cell)
+        
+        self.display_data = DisplayData()
 
     def add_row(self):
         l = np.shape(self.table)[1]
@@ -217,16 +218,25 @@ class Sheet(object):
         except ValueError as e:
             return "ValueError:"+e.message
 
-    def html_col(self, row, r, c, display_func, sessid):
+    def html_col(self, row, r, c, csrf_token):
 
         td = 0
         td = et.Element('td')
         
-        form = et.SubElement(td, 'form', attrib={
-            'id':"form{}_{}".format(r,c),
-            'class':'sheet',
+        form = et.SubElement(
+                td, 
+                'form', attrib={
+                    'id':"form{}_{}".format(r,c),
+                    "method": "post",
+                    'class':'sheet',
+                    })
+ 
+        h = et.SubElement(form, 'input', attrib={
+            'type': 'hidden',
+            'name': "csrfmiddlewaretoken",
+            'value': csrf_token,
             })
-        
+       
         t = et.SubElement(form, 'input', attrib={
             'id'  :"{}_{}".format(r,c),
             'type':"text",
@@ -238,16 +248,11 @@ class Sheet(object):
             'name':'cell',
             'value':"{}_{}".format(r,c),
             })
-        h = et.SubElement(form, 'input', attrib={
-            'type':'hidden',
-            'name':'sessid',
-            'value':str(sessid),
-            })
         
         if c < len(row):
             if row[c]:
                 #t.attrib["value"] = row[c].__unicode__()
-                t.attrib["value"] = display_func(row[c], self, r, c)
+                t.attrib["value"] = self.display_data.display_func(row[c], self, r, c)
             else:
                 t.attrib["value"] = ""
         else:
@@ -255,10 +260,12 @@ class Sheet(object):
 
         return td
 
-    def html(self, func, sessid):
+    def html(self, http_request):
         """
         func function used to render cell (value, formular, etc)
         """
+
+        csrf_token = django.middleware.csrf.get_token(http_request)
 
         table = et.Element('table')
 
@@ -267,11 +274,36 @@ class Sheet(object):
             tr = et.Element('tr')
 
             for c in range(np.shape(self.table)[1]):
-                tr.append(self.html_col(row, r, c, func, sessid))
+                tr.append(self.html_col(row, r, c, csrf_token))
             
             table.append(tr)
 
         return et.tostring(table, method="html")
+
+
+
+
+
+"""
+    if display:
+        if display == 'type':
+            display_func = lambda c,sheet,y,x: c.str_type()
+        elif display == 'value':
+            display_func = lambda c,sheet,y,x: c.str_value(sheet,y,x)
+        else:
+            display_func = lambda c,sheet,y,x: c.str_value(sheet,y,x)
+    else:
+        display_func = lambda c,sheet,y,x: c.str_value(sheet,y,x)
+"""
+
+
+
+
+
+
+
+
+
 
 
 

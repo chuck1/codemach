@@ -9,64 +9,125 @@ import signal
 import datetime
 import random
 
+import mysock
+
+import sheet
 
 server_port = 9000
 
-
-def cli_read():
-    with open(name_srv_w, 'rb') as f:
-        return f.read()
-
-def cli_write(s):
-    with open(name_cli_w, 'wb') as f:
-        f.write(s)
-
+def parse_cell(s):
+    m = re.match('^(\d+)_(\d+)$', s)
+    r = int(m.group(1))
+    c = int(m.group(2))
+    return r,c
 
 class Request(object):
-    #def __init__(self, s, sessid=None):
-    #    self.s = s
-    #    self.sessid = sessid
-        
-    #def do(self):
-    #    cli_write(pickle.dumps(self))
-    #    self.res = cli_read()
-    pass
+    def __init__(self, session_id):
+        self.session_id = session_id
 
-class RequestNewSession(object):
-    def __init__(self, sheet_filename):
+    def get_session(self, service, sock):
+
+        try:
+            return service.sessions[self.session_id]
+        except KeyError as e:
+            return self.on_get_session_error(service, sock, e)
+
+    def on_get_session_error(self, service, sock, err):
+        print "error", repr(err), repr(err.message)
+        send_response(sock, ResponseError(err.message))
+        return None
+    
+    def on_session_recv(self, sock, session):
+        pass
+
+class RequestSheet(Request):
+    def __init__(self, session_key, sheet_filename):
+        super(RequestSheet, self).__init__(session_key)
         self.sheet_filename = sheet_filename
         
+    def on_get_session_error(self, service, sock, err):
+        print "error", repr(err), repr(err.message)
 
-class Stop(Exception):
+        try:
+            return service.create_session(self.session_id, self.sheet_filename)
+        except Exception as e:
+            print "send error", repr(e), repr(e.message)
+            send_response(sock, ResponseError(e.message))
+            return None
+
+    def on_session_recv(self, sock, session):
+        send_response(sock, ResponseSheet(session.session_id, session.sheet))
+
+
+class RequestCellSet(Request):
+    def __init__(self, session_key):
+        super(RequestCellSet, self).__init__(session_key)
+
+    def on_session_recv(self, sock, session):
+
+        print 'cell =', self.cell
+        print 'text =', self.text
+
+        r, c = self.cell
+
+        print 'r,c = ', r, c
+      
+        session.sheet.set_cell(r, c, self.text)
+
+        send_response(sock, ResponseSheet(session.session_id, session.sheet))
+
+        session.sheet_save()
+
+class RequestSheetAddRow(Request):
+    def __init__(self, session_key):
+        super(RequestSheetAddRow, self).__init__(session_key)
+
+    def on_session_recv(self, sock, session):
+        
+        session.sheet.add_row()
+
+        send_response(sock, ResponseSheet(session.session_id, session.sheet))
+
+        session.sheet_save()
+
+
+class Response(object):
     pass
 
-class User(object):
-    def __init__(self):
-        self.sheets = {}
+class ResponseError(Response):
+    def __init__(self, message):
+        self.message = message
 
-    def get_sheet(self, s):
-        print "get_sheet({})".format(repr(s))
-        try:
-            sheet = self.sheets[s]
-        except:
-            sheet = ss.sheet.Sheet()
-            self.sheets[s] = sheet
-        return sheet
+
+class ResponseSheet(Response):
+    def __init__(self, session_id, sheet):
+        self.session_id = session_id
+        self.sheet = sheet
+
+    
+
 
 class Session(object):
-    def __init__(self, sheet_filename):
-        self.session_id = random.randint(0,1000000000)
+    def __init__(self, session_key, sheet_filename):
+        self.session_id = session_key
         self.sheet_filename = sheet_filename
-        self.sheet = self.sheet_load()
+        
+        self.sheet_load()
        
     def sheet_fullpath(self):
         return os.path.join(os.path.dirname(__file__),'data','sheets',self.sheet_filename)
 
     def sheet_load(self):
-        with open(self.sheet_fullpath(), 'rb') as f:
-            self.sheet = pickle.load(f)
+        try:
+            with open(self.sheet_fullpath(), 'rb') as f:
+                self.sheet = pickle.load(f)
+        except IOError as e:
+            print "sheet doesnt exist, creating new sheet", repr(self.sheet_filename)
+            self.sheet = sheet.Sheet()
 
     def sheet_save(self):
+        print "saving sheet", repr(self.sheet_filename)
+
         with open(self.sheet_fullpath(), 'wb') as f:
             pickle.dump(self.sheet, f)
 
@@ -80,36 +141,44 @@ class SocketServer(mysock.Server):
     def on_recv(self):
         # self.s
         # self.data
+
+        self.service.on_recv(self.s, self.data)
     
 class SocketClient(mysock.Client):
 
     def __init__(self):
-        pass
+        super(SocketClient, self).__init__()
 
-    def on_recv(self):
-        # self.s
-        # self.data
-    
+    def connect2(self):
+        self.connect("localhost", server_port)
+
+def send_response(sock, res):
+    sock.send(pickle.dumps(res))
+
+def send_request(req):
+    client = SocketClient()
+    client.connect2()
+
+    client.send(pickle.dumps(req))
+
+    data = client.recv()
+
+    print "client received", repr(data)
+
+    response = pickle.loads(data)
+
+    return response
+
 class Server(object):
-    def __init__(self, f):
+    def __init__(self):
 
-        self.socketserver = mysock.Server("", server_port)
+        self.socketserver = SocketServer(self, "", server_port)
 
-        
-
-        #try:
-        #    self.load()
-        #    print "sheets loaded"
-        #except:
-        #    self.users = {}
-        #    print "sheets not loaded"
         
         self.sessions = {}
-        
+ 
+        """
         self.logfile = f
-
-        self.fifo_name_srv_w = "/tmp/python_spreadsheet_srv_w"
-        self.fifo_name_cli_w = "/tmp/python_spreadsheet_cli_w"
 
         def signal_handler(signum, frame):
             print 'signal handler called with signal', signum
@@ -120,86 +189,39 @@ class Server(object):
         signal.signal(signal.SIGTERM, signal_handler)
         signal.signal(signal.SIGINT,  signal_handler)
 
-        try:
-            os.remove(self.fifo_name_srv_w)
-            print self.fifo_name_srv_w, "removed"
-            os.remove(self.fifo_name_cli_w)
-            print self.fifo_name_cli_w, "removed"
-        except Exception as e:
-            print e
-            pass
-
-        try:
-            um = os.umask(000)
-            print "umask was",um
-            os.mkfifo(self.fifo_name_srv_w, 0777)
-            print self.fifo_name_srv_w, "created"
-            os.mkfifo(self.fifo_name_cli_w, 0777)
-            print self.fifo_name_cli_w, "created"
-            os.umask(um)
-        except OSError:
-            pass
+        """
 
 
+    def create_session(self, session_key, sheet_filename):
+        
+        for s in self.sessions:
+            if s.sheet_filename == sheet_filename:
+                raise Exception("sheet already open")
 
-    def write(self, s):
-        with open(self.fifo_name_srv_w, 'wb') as f:
-            f.write(s)
-    
-    def read(self):
-        with open(self.fifo_name_cli_w, 'rb') as f:
-            return f.read()
-
-    def parse_cell(self, s):
-        m = re.match('^(\d+)_(\d+)$', s)
-        r = int(m.group(1))
-        c = int(m.group(2))
-        return r,c
-
-    def get_user(self, u):
-        print "get_user({})".format(repr(u))
-        try:
-            user = self.users[u]
-        except:
-            user = User()
-            self.users[u] = user
-        return user
-
-    def create_session(self, sheet_filename):
-
-        s = Session(sheet_filename)
-        self.sessions[s.sessid] = s
-
-        print "created session {} {}".format(repr(s.sessid), repr(sheet_filename))
+        s = Session(session_key, sheet_filename)
+        self.sessions[s.session_id] = s
+        
+        print "created session {} {}".format(repr(s.session_id), repr(sheet_filename))
 
         return s
 
-    def blocking_read(self):
-        #a = array.array('i')
-
-        s = self.read()
-        req = pickle.loads(s)
-        #a.fromstring(s)
-    
-        print 'req.s      =',req.s
-        print 'req.sessid =',req.sessid
+    def on_recv(self, sock, data):
         
-        if req.sessid:
-            print "sessid = {}".format(req.sessid)
-            try:
-                sess = self.sessions[req.sessid]
-            except KeyError as e:
-                print "session not found {}".format(repr(str(req.sessid)))
-                self.write('error:' + e.message)
-                return
-            
-            # get or create sheet for user
-            user = self.get_user(sess.user)
-            sheet = user.get_sheet('sheet0')
+        req = pickle.loads(data)
+    
+        print "req.session_id =", req.session_id
 
-            if req.s == 'get sheet':
-                s_out = pickle.dumps(sheet)
-                self.write(s_out)
+        session = req.get_session(self, sock)
+
+        if session is None: return
+
+
+        print "session found"
+        
+        req.on_session_recv(sock, session)
+
+
+        """
 
             elif req.s == 'add row':
                 sheet.add_row()
@@ -209,24 +231,6 @@ class Server(object):
                 sheet.add_col()
                 self.write('0')
 
-            elif req.s == 'set cell':
-                #cell = self.read()
-                #text = self.read()
-                #print 'cell =',cell,'text =',text
-            
-                cell = req.cell
-                text = req.text
-            
-                self.write('0')
-           
-                print 'cell =',cell
-                print 'text =',text
-
-                r,c = self.parse_cell(cell)
-
-                print 'r,c = ',r,c
-      
-                sheet.set_cell(r, c, text)
             else:
                 self.write('unknown command')
 
@@ -264,12 +268,16 @@ class Server(object):
 
             self.write('error:' + err_str)
 
-    
+        """
 
-    def run(self):
+    def main_loop(self):
+
+        print "main loop"
 
         t = datetime.datetime.now() + datetime.timedelta(minutes=1)
-        
+       
+        self.socketserver.main_loop()
+
         while True:
             # save every minute
             if datetime.datetime.now() > t:
@@ -284,5 +292,7 @@ class Server(object):
             except IOError:
                 print "got ioerror"
                 break
+
+
 
 
