@@ -12,7 +12,6 @@ import sys
 # But when buffer get to high or delay go too down, you can broke things
 buffer_size = 4096
 delay = 0.0001
-forward_to = ('192.168.56.2', 8000)
 
 class Forward:
     def __init__(self):
@@ -35,22 +34,25 @@ class Client(Comm):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))
 
-    def read(self):
+    def recv(self):
         return self.sock.recv(10000)
 
 class Server(Comm):
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, class_client):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server.bind((host, port))
         self.server.listen(200)
+
+        self.class_client = class_client
 
         self.input_list = []
 
     def run(self):
         self.input_list.append(self.server)
         while 1:
+            print('main loop')
             time.sleep(delay)
             ss = select.select
             inputready, outputready, exceptready = ss(self.input_list, [], [])
@@ -64,27 +66,26 @@ class Server(Comm):
                     self.on_close(s)
                     break
                 else:
-                    self.do_read(s, b)
+                    #self.do_recv(s, b)
+                    s.do_recv(b)
 
     def on_accept(self):
         clientsock, clientaddr = self.server.accept()
         
         print(clientaddr, "has connected")
-        self.input_list.append(clientsock)
+        c = self.class_client(clientsock)
+        self.input_list.append(c)
 
     def on_close(self, s):
         print(s.getpeername(), "has disconnected")
         #remove objects from input_list
         self.input_list.remove(s)
 
-    def do_read(self, s, b):
+    """
+    def do_recv(self, s, b):
         # here we can parse and/or modify the data before send forward
         print("bytes:",b)
+    """
 
-if __name__ == '__main__':
-        server = TheServer('', 8001)
-        try:
-            server.main_loop()
-        except KeyboardInterrupt:
-            print("Ctrl C - Stopping server")
-            sys.exit(1)
+
+
