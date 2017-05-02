@@ -28,6 +28,8 @@ class Cell(object):
 class Sheet(object):
     def __init__(self):
         self.cells = numpy.empty((0,0),dtype=object)
+        self.ensure_size(0,0)
+
         self.globals = {'__builtins__':{'__import__':self.builtin___import__}}
         self.string_exec = None
     

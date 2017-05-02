@@ -31,9 +31,11 @@ class GetCellData(Packet):
         sheet = sock.server.get_sheet(self.sheet_id)
         
         def f(c):
+            if c is None:
+                return sheets_backend.Cell('','')
             return sheets_backend.Cell(c.string,str(c.value))
 
-        fv = numpy.vectorize(f)
+        fv = numpy.vectorize(f, otypes=[sheets_backend.Cell])
 
         cells = fv(sheet.cells)
 
