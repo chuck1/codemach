@@ -10,35 +10,29 @@ import sys
 
 # Changing the buffer_size and delay, you can improve the speed and bandwidth.
 # But when buffer get to high or delay go too down, you can broke things
-buffer_size = 4096
+BUFFER_SIZE = 4096
 delay = 0.0001
 
-class Forward:
-    def __init__(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+class Common(object):
+    def send(self, b):
+        return self.sock.send(b)
+    def recv(self):
+        return self.sock.recv(BUFFER_SIZE)
 
-    def start(self, host, port):
-        try:
-            self.sock.connect((host, port))
-            return self.sock
-        except Exception as e:
-            print(e)
-            return False
-
-class Comm(object):
-    def write(self, b):
-        self.sock.send(b)
-
-class Client(Comm):
+class Client(Common):
     def __init__(self, host, port):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))
 
-    def recv(self):
-        return self.sock.recv(10000)
+class ClientSocket(Common):
+    def __init__(self, server, sock):
+        self.server = server
+        self.sock = sock
 
-class Server(Comm):
+    def fileno(self):
+        return self.sock.fileno()
 
+class Server(object):
     def __init__(self, host, port, class_client):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -61,7 +55,7 @@ class Server(Comm):
                     self.on_accept()
                     break
 
-                b = s.recv(buffer_size)
+                b = s.recv()
                 if len(b) == 0:
                     self.on_close(s)
                     break
@@ -73,11 +67,11 @@ class Server(Comm):
         clientsock, clientaddr = self.server.accept()
         
         print(clientaddr, "has connected")
-        c = self.class_client(clientsock)
+        c = self.class_client(self, clientsock)
         self.input_list.append(c)
 
     def on_close(self, s):
-        print(s.getpeername(), "has disconnected")
+        print(s.sock.getpeername(), "has disconnected")
         #remove objects from input_list
         self.input_list.remove(s)
 
