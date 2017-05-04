@@ -14,6 +14,12 @@ def cells_values(ret):
         return c.value
     return numpy.vectorize(f, otypes=[str])(cells).tolist()
 
+def cells_array(ret):
+    cells = ret.cells
+    def f(c):
+        return json.dumps([c.string, c.value])
+    return numpy.vectorize(f, otypes=[str])(cells).tolist()
+
 def index(request):
 
     sp = sheets_backend.sockets.SheetProxy('0')
@@ -21,13 +27,12 @@ def index(request):
     print(ret)
     print(repr(ret.cells))
 
-    values = cells_values(ret)
+    cells = cells_values(ret)
+    cells = cells_array(ret)
     
-    print(repr(values))
+    print('cells',repr(cells))
     
-    print(numpy.shape(values))
-
-    context = {'cells':json.dumps(values)}
+    context = {'cells':json.dumps(cells)}
     return render(request, 'sheets_app/index.html', context)
 
 def set_cell(request):
@@ -46,9 +51,27 @@ def set_cell(request):
 
     print('ret',ret)
     
-    values = cells_values(ret)
+    cells = cells_values(ret)
+    cells = cells_array(ret)
     
-    print(values)
+    print('cells',cells)
 
-    return JsonResponse({'cells':values})
+    return JsonResponse({'cells':cells})
+
+def add_column(request):
+    if not request.GET['i']:
+        i = None
+    else:
+        i = int(request.GET['i'])
+
+    sp = sheets_backend.sockets.SheetProxy('0')
+
+    ret = sp.add_column(i)
+
+    ret = sp.get_cell_data()
+    
+    cells = cells_array(ret)
+
+    return JsonResponse({'cells':cells})
+
 

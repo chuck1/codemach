@@ -9,6 +9,8 @@
 <body>
 <h1>Sheets</h1>
 
+<button onclick="add_column()">add column</button>
+
 <div id="tablediv"></div>
 
 <script>
@@ -28,7 +30,11 @@ console.log(hooks);
 var hot = new Handsontable(container, {
 	data: data_ref,
 	rowHeaders: true,
-	colHeaders: true
+	colHeaders: true,
+	cells: function (row, col, prop) {
+		this.renderer = customRenderer;
+	}
+	//columns: [{renderer:customRenderer}]
 });
 
 /*
@@ -39,22 +45,41 @@ hooks.forEach(function(h){
 });
 */
 
-hot.addHook('beforeBeginEditing', function() {
-	console.log('beforeBeginEditing');
+hot.addHook('afterBeginEditingTEST', function() {
+	console.log('onBeginEditing -----------------------');
+});
+hot.addHook('modifyData', function() {
+	if(arguments[3] == 'set') {
+		console.log('modifyData -----------------------');
+		console.log(arguments);
+		var o = arguments[2];
+		o.value = JSON.stringify([o.value,'']);
+	}
+});
+hot.addHook('afterSetDataAtCell', function() {
+	console.log('afterSetDataAtCell -----------------------');
+});
+hot.addHook('beforeValidate', function() {
+	console.log('beforeValidate -----------------------');
+});
+hot.addHook('afterValidate', function() {
+	console.log('afterValidate -----------------------');
 });
 
 hot.addHook('afterBeginEditing', function() {
-	console.log(arguments);
+	console.log('afterBeginEditing ------------------------');
+	//console.log(arguments);
 	r = arguments[0];
 	c = arguments[1];
 	d = data_ref[r][c];
-	console.log(d);
-	data_ref[r][c] = 'hello';
-	hot.render();
+	//console.log(d);
+	//data_ref[r][c] = 'hello';
+	//hot.render();
 });
 
 hot.addHook('afterChange', function() {
-	arguments[0].forEach(function(args){
+	console.log('afterChange ------------------------');
+	arguments[0].forEach(function(args) {
 		console.log(args);
 
 		$.ajax({
@@ -81,6 +106,63 @@ hot.addHook('afterChange', function() {
 	});
 });
 
+
+function replaceTag(tag) {
+	var tagsToReplace = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;'
+	};
+	console.log('replaceTag',tag);
+	return tagsToReplace[tag] || tag;
+}
+
+function safe_tags_replace(str) {
+	console.log('safe_tags_replace',str);
+	return str.replace(/[&<>]/g, replaceTag);
+}
+
+function customRenderer (instance, td, row, col, prop, value, cellProperties) {
+	console.log('customRenderer');
+	console.log('  value      ',value);
+	console.log('  value type ',typeof value);
+	if(typeof value == 'string') {
+		var j = JSON.parse(value);
+		console.log('  object     ',j);
+		//var escaped = Handsontable.helper.stringify(j[1]);
+		//var escaped = escape(j[1]);
+		//var escaped = j[1];
+		var escaped = safe_tags_replace(j[1]);
+		console.log('  escaped    ',escaped);
+		td.innerHTML = escaped;
+     	} else if(value == null) {
+		// encountered when dragging to create new rows
+     		td.innerHTML = '';
+	} else {
+		td.innerHTML = value[0];
+	}
+
+	//Handsontable.renderers.TextRenderer.apply(this, arguments);
+}
+
+function add_column() {
+	$.ajax({
+		url: '/sheets/add_column',
+		data: {'i':null},
+		dataType: 'json',
+		success: function (data_new) {
+			console.log(data_new.cells);
+
+			data_ref.splice(0,data_ref.length);
+
+			data_new.cells.forEach(function(c){
+				data_ref.push(c);
+			});
+
+			hot.render();
+		}
+	});
+}
 
 </script>
 </body>

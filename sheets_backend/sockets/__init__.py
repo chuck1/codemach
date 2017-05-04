@@ -22,6 +22,18 @@ class SetCell(Packet):
 
         sock.send(pickle.dumps(Echo()))
 
+class AddColumn(Packet):
+    def __init__(self, sheet_id, i):
+        self.sheet_id = sheet_id
+        self.i = i
+    
+    def __call__(self, sock):
+        sheet = sock.server.get_sheet(self.sheet_id)
+        ret = sheet.add_column(self.i)
+        print(ret)
+
+        sock.send(pickle.dumps(Echo()))
+
 class GetCellData(Packet):
     def __init__(self, sheet_id):
         self.sheet_id = sheet_id
@@ -92,6 +104,8 @@ class SheetProxy(sheets_backend.SheetProxy, mysocket.Client):
         self.send(pickle.dumps(GetCellData(self.sheet_id)))
         return self.recv_packet()
 
-
+    def add_column(self, i):
+        self.send(pickle.dumps(AddColumn(self.sheet_id, i)))
+        return self.recv_packet()
 
 

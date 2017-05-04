@@ -120,7 +120,7 @@ USE_TZ = True
 
 STATICFILES_DIRS = [
         os.path.join(BASE_DIR, "static"),
-        '/home/crymal/node_modules/handsontable/dist',]
+        '/home/crymal/git/handsontable/dist',]
 
 STATIC_URL = '/static/'
 

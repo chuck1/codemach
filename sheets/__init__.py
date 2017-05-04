@@ -3,6 +3,19 @@
 import numpy
 import traceback
 
+APPROVED_MODULES = [
+        'math']
+
+APPROVED_DEFAULT_BUILTINS = {
+        'list': list,
+        'range': range,
+        'sum': sum,
+        }
+
+class CellHelper(object):
+    def __init__(self, r, c):
+        self.r = r
+        self.c = c
 
 class Cell(object):
     def __init__(self,r,c):
@@ -33,7 +46,17 @@ class Cell(object):
             self.code = None
             self.comp_exc = e
 
-    def calc(self,sheet):
+    def get_globals(self, sheet):
+        
+        g = {
+                'cell': CellHelper(self.r, self.c),
+                }
+        
+        g.update(sheet.get_globals())
+        
+        return g
+
+    def calc(self, sheet):
         
         if self.comp_exc is not None:
             self.value = str(self.comp_exc)
@@ -43,22 +66,29 @@ class Cell(object):
             self.value = ''
             return
 
+        g = self.get_globals(sheet)
+
         try:
-            self.value = eval(self.code,sheet.get_globals())
+            self.value = eval(self.code, g)
         except Exception as e:
             self.value = str(e)
 
 class Sheet(object):
     def __init__(self):
         self.cells = numpy.empty((0,0),dtype=object)
+        
         self.ensure_size(0,0)
+        
+        approved_builtins = {
+                '__import__': self.builtin___import__,
+                }
+        approved_builtins.update(APPROVED_DEFAULT_BUILTINS)
 
-        self.globals = {'__builtins__':{'__import__':self.builtin___import__}}
+        self.globals = {'__builtins__': approved_builtins}
+        
         self.string_exec = None
     
     def builtin___import__(self, name, globals=None, locals=None, fromlist=(), level=0):
-        approved_modules = [
-                'math']
         name_split = name.split('.')
         """
         print('name    ',name)
@@ -67,7 +97,7 @@ class Sheet(object):
         print('fromlist',fromlist)
         print('level   ',level)
         """
-        if not name_split[0] in approved_modules:
+        if not name_split[0] in APPROVED_MODULES:
             raise ImportError("module '{}' is not allowed".format(name_split[0]))
 
         return __import__(name, globals, locals, fromlist, level)
@@ -94,7 +124,13 @@ class Sheet(object):
             self.cells[r,c] = Cell(r,c)
 
         self.cells[r,c].set_string(self,s)
-    
+
+    def add_column(self, i):
+        if i is None:
+            i = numpy.shape(self.cells)[1]
+
+        self.cells = numpy.insert(self.cells, i, None, axis=1)
+
     def get_globals(self):
         return self.globals
 
