@@ -5,5 +5,6 @@ from . import views
 
 urlpatterns = [
             url(r'^$', views.index, name='index'),
+            url(r'^set_cell$', views.set_cell, name='set_cell'),
             ]
 

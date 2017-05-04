@@ -17,13 +17,36 @@ class Cell(object):
         self.calc(sheet)
         
     def comp(self):
-        self.code = compile(
-                self.string,
-                "<cell {},{}>".format(self.r,self.c),
-                'eval')
+
+        self.comp_exc = None
+
+        if not self.string:
+            self.code = None
+            return
+        
+        try:
+            self.code = compile(
+                    self.string,
+                    "<cell {},{}>".format(self.r,self.c),
+                    'eval')
+        except Exception as e:
+            self.code = None
+            self.comp_exc = e
 
     def calc(self,sheet):
-        self.value = eval(self.code,sheet.get_globals())
+        
+        if self.comp_exc is not None:
+            self.value = str(self.comp_exc)
+            return
+
+        if not self.code:
+            self.value = ''
+            return
+
+        try:
+            self.value = eval(self.code,sheet.get_globals())
+        except Exception as e:
+            self.value = str(e)
 
 class Sheet(object):
     def __init__(self):
