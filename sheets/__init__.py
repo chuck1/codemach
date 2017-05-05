@@ -23,6 +23,9 @@ class Cell(object):
         self.r = r
         self.c = c
 
+    def __getstate__(self):
+        return dict((k, getattr(self, k)) for k in ['string', 'value'])
+
     def set_string(self,sheet,s):
         if s == self.string: return
         self.string = s
@@ -47,13 +50,10 @@ class Cell(object):
             self.comp_exc = e
 
     def get_globals(self, sheet):
-        
         g = {
                 'cell': CellHelper(self.r, self.c),
                 }
-        
         g.update(sheet.get_globals())
-        
         return g
 
     def calc(self, sheet):

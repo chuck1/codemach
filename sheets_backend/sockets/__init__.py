@@ -22,6 +22,8 @@ class SetCell(Packet):
 
         sock.send(pickle.dumps(Echo()))
 
+        sock.server.save_sheet(self.sheet_id)
+
 class AddColumn(Packet):
     def __init__(self, sheet_id, i):
         self.sheet_id = sheet_id
@@ -73,13 +75,9 @@ class ClientSocket(mysocket.ClientSocket):
 
     def do_recv(self, b):
         print('sheets_backend.sockets.ClientSocket do_recv',repr(b))
-
         o = pickle.loads(b)
-
         print(o)
-
         o(self)
-
 
 class Server(sheets_backend.Server, mysocket.Server):
     def __init__(self, storage):
