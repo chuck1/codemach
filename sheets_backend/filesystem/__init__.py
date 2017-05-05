@@ -5,8 +5,24 @@ import sheets
 import sheets_backend
 
 class Storage(sheets_backend.Storage):
-    folder = '/home/crymal/sheets'
+    #folder = '/home/crymal/sheets'
     
+    def __init__(self, folder):
+        self.folder = folder
+        self.sheets = {}
+
+    def get_sheet(self, sheet_id):
+        if not sheet_id in self.sheets:
+            self.sheets[sheet_id] = self.read(sheet_id)
+        
+        return self.sheets[sheet_id]
+
+    def save_sheet(self, sheet_id):
+        if not sheet_id in self.sheets:
+            raise RuntimeError('attempt to save sheet that is not loaded')
+
+        self.write(sheet_id, self.sheets[sheet_id])
+
     def read(self, sheet_id):
         """
         :param sheet_id: sheet id
@@ -24,6 +40,8 @@ class Storage(sheets_backend.Storage):
         
         if not isinstance(o, sheets.Sheet):
             raise TypeError()
+
+        return o
 
     def write(self, sheet_id, sheet):
         """

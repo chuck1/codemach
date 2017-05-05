@@ -33,14 +33,12 @@ class Server(object):
         :param storage: a Storage object
         """
         self.storage = storage
-        
-        self.sheets = {}
 
     def get_sheet(self, sheet_id):
-        if not sheet_id in self.sheets:
-            self.sheets[sheet_id] = self.storage.read(sheet_id)
-        
-        return self.sheets[sheet_id]
+        return self.storage.get_sheet(sheet_id)
+
+    def save_sheet(self, sheet_id):
+        return self.storage.save_sheet(sheet_id)
 
 class SheetProxy(object):
     """
