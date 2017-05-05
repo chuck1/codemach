@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 
+import json
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -37,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'sheets_app'
+    'sheets_app',
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +52,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 ROOT_URLCONF = 'web_sheets_django.urls'
 
@@ -124,8 +132,9 @@ STATICFILES_DIRS = [
 
 STATIC_URL = '/static/'
 
+client_secrets = json.loads(open(os.path.join(BASE_DIR, 'client_secrets.json'), 'r').read())
 
-
-
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = client_secrets['client_id']
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = client_secrets['client_secret']
 
 

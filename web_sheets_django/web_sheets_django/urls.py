@@ -19,4 +19,6 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^sheets/', include('sheets_app.urls')),
     url(r'^admin/', admin.site.urls),
+    url('', include('social_django.urls', namespace='social')),
 ]
+
