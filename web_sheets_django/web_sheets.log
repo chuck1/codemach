@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "socket_server.py", line 12, in <module>
+    test()
+  File "socket_server.py", line 8, in test
+    server = sheets_backend.sockets.Server(storage)
+  File "/home/chuck/git/web_sheet/sheets_backend/sockets/__init__.py", line 87, in __init__
+    mysocket.Server.__init__(self, '', int(os.environ['PORT_WEB_SHEETS_SOCKET']), ClientSocket)
+  File "/home/chuck/git/test_python/Modules/mysocket/__init__.py", line 39, in __init__
+    self.server.bind((host, port))
+OSError: [Errno 98] Address already in use
