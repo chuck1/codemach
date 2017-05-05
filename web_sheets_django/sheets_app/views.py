@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 
+import django.contrib.auth
+
 import json
 import numpy
 
@@ -21,6 +23,9 @@ def cells_array(ret):
     return numpy.vectorize(f, otypes=[str])(cells).tolist()
 
 def index(request):
+    u = django.contrib.auth.get_user(request)
+    print('user',repr(u))
+    print(u.__dict__)
 
     sp = sheets_backend.sockets.SheetProxy('0')
     ret = sp.get_cell_data()

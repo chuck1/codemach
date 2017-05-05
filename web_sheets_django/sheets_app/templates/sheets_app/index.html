@@ -8,8 +8,9 @@
 
 <body>
 
-<a href="{% url "social:begin" "google-oauth2" %}">Google</a>	
-	
+<a href="{% url "social:begin" "google-oauth2" %}?next={% url "index" %}">Google login</a>	
+<a href="{% url "logout" %}">logout</a>	
+
 <h1>Sheets</h1>
 
 <button onclick="add_column()">add column</button>
@@ -86,7 +87,7 @@ hot.addHook('afterChange', function() {
 		console.log(args);
 
 		$.ajax({
-			url: '/sheets/set_cell',
+			url: '/sheets/sheets/set_cell',
 			data: {
 				'r': args[0],
 				'c': args[1],
@@ -150,7 +151,7 @@ function customRenderer (instance, td, row, col, prop, value, cellProperties) {
 
 function add_column() {
 	$.ajax({
-		url: '/sheets/add_column',
+		url: '/sheets/sheets/add_column',
 		data: {'i':null},
 		dataType: 'json',
 		success: function (data_new) {

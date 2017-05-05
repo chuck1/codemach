@@ -15,10 +15,18 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+import django.contrib.auth.views
+from django.conf import settings
 
 urlpatterns = [
     url(r'^sheets/', include('sheets_app.urls')),
     url(r'^admin/', admin.site.urls),
     url('', include('social_django.urls', namespace='social')),
+    url(r'^logout/', django.contrib.auth.views.logout, name='logout'),
 ]
+
+if True:
+	urlpatterns = [
+		url(r'^sheets/', include(urlpatterns)),
+	]
 

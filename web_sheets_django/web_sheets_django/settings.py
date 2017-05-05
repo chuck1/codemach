@@ -58,6 +58,25 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'social_core.pipeline.social_auth.associate_by_email',
+)
+
+SOCIAL_AUTH_DISCONNECT_PIPELINE = (
+    'social_core.pipeline.disconnect.allowed_to_disconnect',
+    'social_core.pipeline.disconnect.get_entries',
+    'social_core.pipeline.disconnect.revoke_tokens',
+    'social_core.pipeline.disconnect.disconnect',
+)
+
 ROOT_URLCONF = 'web_sheets_django.urls'
 
 TEMPLATES = [
@@ -130,11 +149,14 @@ STATICFILES_DIRS = [
         os.path.join(BASE_DIR, "static"),
         os.path.join(os.environ['HOME'], 'git/handsontable/dist'),]
 
-STATIC_URL = '/static/'
+STATIC_URL = '/sheets/static/'
 
 client_secrets = json.loads(open(os.path.join(BASE_DIR, 'client_secrets.json'), 'r').read())
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = client_secrets['client_id']
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = client_secrets['client_secret']
+
+
+
 
 
