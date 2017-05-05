@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'core',
     'sheets_app',
     'social_django',
 ]
@@ -68,6 +69,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
     'social_core.pipeline.social_auth.associate_by_email',
+    'sheets_app.views.mypipeline',
 )
 
 SOCIAL_AUTH_DISCONNECT_PIPELINE = (
@@ -157,6 +159,6 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = client_secrets['client_id']
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = client_secrets['client_secret']
 
 
-
+AUTH_USER_MODEL = 'core.User'
 
 

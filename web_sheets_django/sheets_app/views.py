@@ -10,6 +10,18 @@ import sheets_backend.sockets
 
 # Create your views here.
 
+
+def mypipeline(backend, strategy, details, response, user=None, *args, **kwargs):
+    print('mypipline')
+    print('backend ',backend)
+    print('strategy',strategy)
+    print('details ',details)
+    print('response',response)
+    print('user    ',user)
+
+    user.profile_image_url = response['image'].get('url')
+    user.save()
+
 def cells_values(ret):
     cells = ret.cells
     def f(c):
@@ -25,7 +37,8 @@ def cells_array(ret):
 def index(request):
     u = django.contrib.auth.get_user(request)
     print('user',repr(u))
-    print(u.__dict__)
+    for k, v in u.__dict__.items():
+        print('  ', k, v)
 
     sp = sheets_backend.sockets.SheetProxy('0')
     ret = sp.get_cell_data()
@@ -37,7 +50,7 @@ def index(request):
     
     print('cells',repr(cells))
     
-    context = {'cells':json.dumps(cells)}
+    context = {'cells':json.dumps(cells), 'user':u}
     return render(request, 'sheets_app/index.html', context)
 
 def set_cell(request):
