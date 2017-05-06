@@ -79,14 +79,10 @@ class Sheet(object):
         
         self.ensure_size(0,0)
         
-        approved_builtins = {
-                '__import__': self.builtin___import__,
-                }
-        approved_builtins.update(APPROVED_DEFAULT_BUILTINS)
-
-        self.globals = {'__builtins__': approved_builtins}
-        
         self.string_exec = None
+    
+    def __getstate__(self):
+        return dict((k, getattr(self, k)) for k in ['cells', 'string_exec'])
     
     def builtin___import__(self, name, globals=None, locals=None, fromlist=(), level=0):
         name_split = name.split('.')
@@ -132,6 +128,13 @@ class Sheet(object):
         self.cells = numpy.insert(self.cells, i, None, axis=1)
 
     def get_globals(self):
+        approved_builtins = {
+                '__import__': self.builtin___import__,
+                }
+
+        approved_builtins.update(APPROVED_DEFAULT_BUILTINS)
+
+        self.globals = {'__builtins__': approved_builtins}
         return self.globals
 
     def set_exec(self,s):

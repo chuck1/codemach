@@ -19,11 +19,23 @@
 
 <div id="tablediv"></div>
 
+<textarea id="exec_edit" rows="10" cols="50"></textarea>
+<button onclick="set_exec()">compile</button>
+
+{% csrf_token %}
+
 <script>
+
+var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
 
 //var data = [["", "Ford", "Volvo", "Toyota", "Honda"],["2016", 10, 11, 12, 13],["2017", 20, 11, 14, 13],["2018", 30, 15, 12, 13]];
 
+var sheet_id = '{{ sheet_id }}';
 var data = {% autoescape off %}{{ cells }}{% endautoescape %};
+
+var url_add_column = '{% url 'add_column' sheet_id %}';
+var url_set_cell = '{% url 'set_cell' sheet_id %}';
+var url_set_exec = '{% url 'set_exec' sheet_id %}';
 
 var data_ref = data;
 
@@ -89,7 +101,7 @@ hot.addHook('afterChange', function() {
 		console.log(args);
 
 		$.ajax({
-			url: '/sheets/sheets/set_cell',
+			url: url_set_cell,
 			data: {
 				'r': args[0],
 				'c': args[1],
@@ -151,24 +163,34 @@ function customRenderer (instance, td, row, col, prop, value, cellProperties) {
 	//Handsontable.renderers.TextRenderer.apply(this, arguments);
 }
 
-function add_column() {
-	$.ajax({
-		url: '/sheets/sheets/add_column',
-		data: {'i':null},
-		dataType: 'json',
-		success: function (data_new) {
-			console.log(data_new.cells);
+function apply_data(data_new) {
+	console.log(data_new.cells);
 
-			data_ref.splice(0,data_ref.length);
+	data_ref.splice(0,data_ref.length);
 
-			data_new.cells.forEach(function(c){
-				data_ref.push(c);
+	data_new.cells.forEach(function(c){
+			data_ref.push(c);
 			});
 
-			hot.render();
-		}
+	hot.render();
+}
+
+function add_column() {
+	$.ajax({
+		url: url_add_column,
+		data: {'i':null},
+		dataType: 'json',
+		success: apply_data
 	});
 }
+
+function set_exec() {
+	var text = document.getElementById("exec_edit").value;
+	$.post(url_set_exec, {'text':text, 'csrfmiddlewaretoken':csrftoken},
+		apply_data);
+}
+
+
 
 </script>
 </body>

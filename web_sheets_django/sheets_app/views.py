@@ -34,7 +34,6 @@ def cells_array(ret):
         return json.dumps([c.string, c.value])
     return numpy.vectorize(f, otypes=[str])(cells).tolist()
 
-
 def index(request):
     user = django.contrib.auth.get_user(request)
     print('index')
@@ -64,39 +63,49 @@ def sheet(request, sheet_id):
     
     print('cells',repr(cells))
     
-    context = {'cells':json.dumps(cells), 'user':u}
+    context = {
+        'cells':json.dumps(cells), 
+        'user':u,
+        'sheet_id': sheet_id
+        }
     return render(request, 'sheets_app/sheet.html', context)
 
-def set_cell(request):
+def set_cell(request, sheet_id):
     r = int(request.GET['r'])
     c = int(request.GET['c'])
     s = request.GET['s']
  
-    print('set_cell')
-    print(repr(r),repr(c),repr(s))
-   
-    sp = sheets_backend.sockets.SheetProxy('0')
+    sp = sheets_backend.sockets.SheetProxy(sheet_id)
 
     ret = sp.set_cell(r, c, s)
 
     ret = sp.get_cell_data()
-
-    print('ret',ret)
     
-    cells = cells_values(ret)
     cells = cells_array(ret)
-    
-    print('cells',cells)
 
     return JsonResponse({'cells':cells})
 
-def add_column(request):
+def set_exec(request, sheet_id):
+    s = request.POST['text']
+    print('set exec')
+    print(repr(s))
+    sp = sheets_backend.sockets.SheetProxy(sheet_id)
+
+    ret = sp.set_exec(s)
+
+    ret = sp.get_cell_data()
+    
+    cells = cells_array(ret)
+
+    return JsonResponse({'cells':cells})
+
+def add_column(request, sheet_id):
     if not request.GET['i']:
         i = None
     else:
         i = int(request.GET['i'])
 
-    sp = sheets_backend.sockets.SheetProxy('0')
+    sp = sheets_backend.sockets.SheetProxy(sheet_id)
 
     ret = sp.add_column(i)
 
