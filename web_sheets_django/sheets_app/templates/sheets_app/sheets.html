@@ -1,0 +1,175 @@
+{% load static %}
+
+<head>
+<link rel="stylesheet" media="screen" href="{% static 'handsontable.full.css' %}">
+<script type="text/javascript" src="{% static 'handsontable.full.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+</head>
+
+<body>
+
+<a href="{% url "social:begin" "google-oauth2" %}?next={% url "index" %}">Google login</a>	
+<a href="{% url "logout" %}">logout</a>	
+
+<img src="{{ user.profile_image_url }}">
+
+<h1>Sheets</h1>
+
+<button onclick="add_column()">add column</button>
+
+<div id="tablediv"></div>
+
+<script>
+
+//var data = [["", "Ford", "Volvo", "Toyota", "Honda"],["2016", 10, 11, 12, 13],["2017", 20, 11, 14, 13],["2018", 30, 15, 12, 13]];
+
+var data = {% autoescape off %}{{ cells }}{% endautoescape %};
+
+var data_ref = data;
+
+var container = document.getElementById('tablediv');
+
+var hooks = Handsontable.hooks.getRegistered();
+
+console.log(hooks);
+
+var hot = new Handsontable(container, {
+	data: data_ref,
+	rowHeaders: true,
+	colHeaders: true,
+	cells: function (row, col, prop) {
+		this.renderer = customRenderer;
+	}
+	//columns: [{renderer:customRenderer}]
+});
+
+/*
+hooks.forEach(function(h){
+	hot.addHook(h,function(){
+		console.log(h);
+	});
+});
+*/
+
+hot.addHook('afterBeginEditingTEST', function() {
+	console.log('onBeginEditing -----------------------');
+});
+hot.addHook('modifyData', function() {
+	if(arguments[3] == 'set') {
+		console.log('modifyData -----------------------');
+		console.log(arguments);
+		var o = arguments[2];
+		o.value = JSON.stringify([o.value,'']);
+	}
+});
+hot.addHook('afterSetDataAtCell', function() {
+	console.log('afterSetDataAtCell -----------------------');
+});
+hot.addHook('beforeValidate', function() {
+	console.log('beforeValidate -----------------------');
+});
+hot.addHook('afterValidate', function() {
+	console.log('afterValidate -----------------------');
+});
+
+hot.addHook('afterBeginEditing', function() {
+	console.log('afterBeginEditing ------------------------');
+	//console.log(arguments);
+	r = arguments[0];
+	c = arguments[1];
+	d = data_ref[r][c];
+	//console.log(d);
+	//data_ref[r][c] = 'hello';
+	//hot.render();
+});
+
+hot.addHook('afterChange', function() {
+	console.log('afterChange ------------------------');
+	arguments[0].forEach(function(args) {
+		console.log(args);
+
+		$.ajax({
+			url: '/sheets/sheets/set_cell',
+			data: {
+				'r': args[0],
+				'c': args[1],
+				's': args[3]
+			},
+			dataType: 'json',
+			success: function (data_new) {
+				console.log(data_new.cells);
+				
+				data_ref.splice(0,data_ref.length);
+
+				data_new.cells.forEach(function(c){
+					data_ref.push(c);
+				});
+
+				hot.render();
+			}
+		});
+
+	});
+});
+
+
+function replaceTag(tag) {
+	var tagsToReplace = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;'
+	};
+	console.log('replaceTag',tag);
+	return tagsToReplace[tag] || tag;
+}
+
+function safe_tags_replace(str) {
+	console.log('safe_tags_replace',str);
+	return str.replace(/[&<>]/g, replaceTag);
+}
+
+function customRenderer (instance, td, row, col, prop, value, cellProperties) {
+	console.log('customRenderer');
+	console.log('  value      ',value);
+	console.log('  value type ',typeof value);
+	if(typeof value == 'string') {
+		var j = JSON.parse(value);
+		console.log('  object     ',j);
+		//var escaped = Handsontable.helper.stringify(j[1]);
+		//var escaped = escape(j[1]);
+		//var escaped = j[1];
+		var escaped = safe_tags_replace(j[1]);
+		console.log('  escaped    ',escaped);
+		td.innerHTML = escaped;
+     	} else if(value == null) {
+		// encountered when dragging to create new rows
+     		td.innerHTML = '';
+	} else {
+		td.innerHTML = value[0];
+	}
+
+	//Handsontable.renderers.TextRenderer.apply(this, arguments);
+}
+
+function add_column() {
+	$.ajax({
+		url: '/sheets/sheets/add_column',
+		data: {'i':null},
+		dataType: 'json',
+		success: function (data_new) {
+			console.log(data_new.cells);
+
+			data_ref.splice(0,data_ref.length);
+
+			data_new.cells.forEach(function(c){
+				data_ref.push(c);
+			});
+
+			hot.render();
+		}
+	});
+}
+
+</script>
+</body>
+

@@ -34,13 +34,27 @@ def cells_array(ret):
         return json.dumps([c.string, c.value])
     return numpy.vectorize(f, otypes=[str])(cells).tolist()
 
+
 def index(request):
+    user = django.contrib.auth.get_user(request)
+    print('index')
+    print('user is auth', user.is_authenticated())
+
+    if user.is_authenticated():
+        sheet_ids = [sheet.sheet_id for sheet in user.sheet_user_creator.all()]
+    else:
+        sheet_ids = []
+    
+    context = {'user': user, 'sheet_ids': sheet_ids}
+    return render(request, 'sheets_app/index.html', context)
+
+def sheet(request, sheet_id):
     u = django.contrib.auth.get_user(request)
     print('user',repr(u))
     for k, v in u.__dict__.items():
         print('  ', k, v)
 
-    sp = sheets_backend.sockets.SheetProxy('0')
+    sp = sheets_backend.sockets.SheetProxy(sheet_id)
     ret = sp.get_cell_data()
     print(ret)
     print(repr(ret.cells))
@@ -51,7 +65,7 @@ def index(request):
     print('cells',repr(cells))
     
     context = {'cells':json.dumps(cells), 'user':u}
-    return render(request, 'sheets_app/index.html', context)
+    return render(request, 'sheets_app/sheet.html', context)
 
 def set_cell(request):
     r = int(request.GET['r'])
