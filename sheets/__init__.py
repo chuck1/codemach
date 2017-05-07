@@ -3,11 +3,26 @@
 import numpy
 import traceback
 
+import sys
+from io import StringIO
+import contextlib
+
+@contextlib.contextmanager
+def stdoutIO(stdout = None):
+    old = sys.stdout
+    if stdout is None:
+        stdout = StringIO()
+    sys.stdout = stdout
+    yield stdout
+    sys.stdout = old
+
 APPROVED_MODULES = [
         'math']
 
 APPROVED_DEFAULT_BUILTINS = {
+        'globals':globals,
         'list': list,
+        'print':print,
         'range': range,
         'sum': sum,
         }
@@ -24,7 +39,7 @@ class Cell(object):
         self.c = c
 
     def __getstate__(self):
-        return dict((k, getattr(self, k)) for k in ['string', 'value'])
+        return dict((k, getattr(self, k)) for k in ['r', 'c', 'string', 'value'])
 
     def set_string(self,sheet,s):
         if s == self.string: return
@@ -57,9 +72,12 @@ class Cell(object):
         return g
 
     def calc(self, sheet):
+        # code has not yet been compiled
+        if not hasattr(self, 'comp_exc'):
+            self.comp()
         
         if self.comp_exc is not None:
-            self.value = str(self.comp_exc)
+            self.value = 'compile error '+str(self.comp_exc)
             return
 
         if not self.code:
@@ -71,7 +89,7 @@ class Cell(object):
         try:
             self.value = eval(self.code, g)
         except Exception as e:
-            self.value = str(e)
+            self.value = 'eval error' + str(e)
 
 class Sheet(object):
     def __init__(self):
@@ -79,12 +97,13 @@ class Sheet(object):
         
         self.ensure_size(0,0)
         
-        self.string_exec = None
+        self.script = ''
     
     def __getstate__(self):
-        return dict((k, getattr(self, k)) for k in ['cells', 'string_exec'])
+        return dict((k, getattr(self, k)) for k in ['cells', 'script', 'script_output'])
     
-    def builtin___import__(self, name, globals=None, locals=None, fromlist=(), level=0):
+    def builtin___import__(self, name, globals=None, locals=None, 
+            fromlist=(), level=0):
         name_split = name.split('.')
         """
         print('name    ',name)
@@ -128,41 +147,67 @@ class Sheet(object):
         self.cells = numpy.insert(self.cells, i, None, axis=1)
 
     def get_globals(self):
+        if not hasattr(self, 'glo'):
+            self.script_exec()
+        return self.glo
+
+    def reset_globals(self):
         approved_builtins = {
-                '__import__': self.builtin___import__,
-                }
+                '__import__': self.builtin___import__,}
 
         approved_builtins.update(APPROVED_DEFAULT_BUILTINS)
 
-        self.globals = {'__builtins__': approved_builtins}
-        return self.globals
+        self.glo = {'__builtins__': approved_builtins}
+
+    def eval_all(self):
+        def f(cell):
+            if cell is None: return
+            cell.calc(self)
+        numpy.vectorize(f)(self.cells)
 
     def set_exec(self,s):
-        if s == self.string_exec: return
+        if s == self.script: return
+        self.script = s
+        self.script_exec()
 
-        self.string_exec = s
+    def script_exec(self):
+
+        self.reset_globals()
 
         try:
             self.code_exec = compile(
-                    self.string_exec,
-                    '<string exec>',
+                    self.script,
+                    '<script>',
                     'exec')
         except Exception as e:
-            self.compile_exception_exec = traceback.format_exc()
-            raise e
+            self.compile_exception_exec = e
+            self.script_output = traceback.format_exc()
+            return
         else:
             self.compile_exception_exec = None
 
+        print('script', repr(self.script))
 
-        try:
-            exec(self.code_exec,self.get_globals())
-        except Exception as e:
-            self.exec_exception_exec = traceback.format_exc()
-            raise e
-        else:
-            self.exec_exception_exec = None
+        print('before script exec globals =', self.glo)
+        print()
+
+        with stdoutIO() as s:
+            try:
+                exec(self.code_exec, self.glo)
+            except Exception as e:
+                self.exec_exception_exec = e
+                exc_string = traceback.format_exc()
+            else:
+                self.exec_exception_exec = None
+                exc_string = ''
         
+        self.script_output = s.getvalue() + '\n%%%%%%%%%\n' + exc_string
 
-
+        print('s',repr(s.getvalue()))
+            
+        self.eval_all()
+        
+        print()
+        print('after script exec globals =', self.glo)
 
 

@@ -19,16 +19,21 @@
 
 <div id="tablediv"></div>
 
-<textarea id="exec_edit" rows="10" cols="50"></textarea>
-<button onclick="set_exec()">compile</button>
+<div>
+<textarea id="script" rows="10" cols="50">{% autoescape off %}{{ script }}{% endautoescape %}</textarea>
+</div>
+
+<button onclick="set_exec()">execute</button>
+
+<div>
+<textarea id="script_output" rows="10" cols="50">{% autoescape off %}{{ script_output }}{% endautoescape %}</textarea>
+</div>
 
 {% csrf_token %}
 
 <script>
 
 var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
-
-//var data = [["", "Ford", "Volvo", "Toyota", "Honda"],["2016", 10, 11, 12, 13],["2017", 20, 11, 14, 13],["2018", 30, 15, 12, 13]];
 
 var sheet_id = '{{ sheet_id }}';
 var data = {% autoescape off %}{{ cells }}{% endautoescape %};
@@ -174,7 +179,12 @@ function apply_data(data_new) {
 
 	hot.render();
 }
-
+function apply_sheet_data(data_new) {
+	console.log(data_new);
+        apply_data(data_new);
+        $("#script").val(data_new.script);
+        $("#script_output").val(data_new.script_output);
+}
 function add_column() {
 	$.ajax({
 		url: url_add_column,
@@ -183,14 +193,12 @@ function add_column() {
 		success: apply_data
 	});
 }
-
 function set_exec() {
-	var text = document.getElementById("exec_edit").value;
-	$.post(url_set_exec, {'text':text, 'csrfmiddlewaretoken':csrftoken},
-		apply_data);
+	var text = $("#script").val();
+        var post_data = {'text':text, 'csrfmiddlewaretoken':csrftoken};
+        //var post_data = {text:text, csrfmiddlewaretoken:csrftoken};
+	$.post(url_set_exec, post_data, apply_sheet_data);
 }
-
-
 
 </script>
 </body>

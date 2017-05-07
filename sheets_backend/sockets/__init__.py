@@ -70,6 +70,37 @@ class GetCellData(Packet):
 
         sock.send(pickle.dumps(ReturnCells(cells)))
 
+def convert_cells(sheet):
+        def f(c):
+            if c is None:
+                return sheets_backend.Cell('','')
+            return sheets_backend.Cell(c.string,str(c.value))
+
+        fv = numpy.vectorize(f, otypes=[sheets_backend.Cell])
+
+        return fv(sheet.cells)
+
+class GetSheetData(Packet):
+    def __init__(self, sheet_id):
+        self.sheet_id = sheet_id
+    
+    def __call__(self, sock):
+        sheet = sock.server.get_sheet(self.sheet_id)
+        cells = convert_cells(sheet)
+
+        if not hasattr(sheet, 'script_output'):
+            sheet.script_exec()
+
+        sock.send(pickle.dumps(ReturnSheetData(cells, sheet.script, sheet.script_output)))
+
+class ReturnSheetData(Packet):
+    def __init__(self, cells, script, script_output):
+        self.cells = cells
+        self.script = script
+        self.script_output = script_output
+    def __call__(self, sock):
+        print(self,sock)
+
 class ReturnCells(Packet):
     def __init__(self, cells):
         self.cells = cells
@@ -115,6 +146,10 @@ class SheetProxy(sheets_backend.SheetProxy, mysocket.Client):
         self.send(pickle.dumps(SetExec(self.sheet_id, s)))
         return self.recv_packet()
 
+    def get_sheet_data(self):
+        self.send(pickle.dumps(GetSheetData(self.sheet_id)))
+        return self.recv_packet()
+    
     def get_cell_data(self):
         self.send(pickle.dumps(GetCellData(self.sheet_id)))
         return self.recv_packet()
