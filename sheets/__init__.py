@@ -98,6 +98,7 @@ class Sheet(object):
         self.ensure_size(0,0)
         
         self.script = ''
+        self.script_output = ''
     
     def __getstate__(self):
         return dict((k, getattr(self, k)) for k in ['cells', 'script', 'script_output'])

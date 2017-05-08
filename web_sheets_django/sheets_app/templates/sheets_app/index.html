@@ -12,9 +12,15 @@
 
 <img src="{{ user.profile_image_url }}">
 
+<form action="{% url 'sheet_new' %}" method="post">
+{% csrf_token %}
+<input type="textbox" name="sheet_name">
+<input type="submit" value="new sheet">
+</form>
+
 <table>
-{% for sheet_id in sheet_ids %}
-<tr><td><a href="{% url "sheet" sheet_id %}">{{ sheet_id }}</a></td></tr>
+{% for sheet_id, sheet_name in sheets %}
+<tr><td><a href="{% url "sheet" sheet_id %}">{{ sheet_name }}</a></td></tr>
 {% endfor %}
 </table>
 

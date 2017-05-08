@@ -5,11 +5,28 @@ import sheets
 import sheets_backend
 
 class Storage(sheets_backend.Storage):
-    #folder = '/home/crymal/sheets'
     
     def __init__(self, folder):
         self.folder = folder
         self.sheets = {}
+
+    def sheet_next_id(self):
+        with open(os.path.join(self.folder, 'sheet_id.txt'), 'r') as f:
+            i = int(f.read())
+        
+        i += 1
+
+        with open(os.path.join(self.folder, 'sheet_id.txt'), 'w') as f:
+            f.write(str(i))
+
+        return i
+
+    def sheet_new(self):
+        o = sheets.Sheet()
+        i = self.sheet_next_id()
+        self.sheets[i] = o
+        self.write(i, o)
+        return i, o
 
     def get_sheet(self, sheet_id):
         if not sheet_id in self.sheets:
@@ -31,9 +48,7 @@ class Storage(sheets_backend.Storage):
         """
         filename = os.path.join(self.folder, str(sheet_id)+'.bin')
         
-        if not os.path.exists(filename):
-            o = sheets.Sheet()
-            return o
+        #if not os.path.exists(filename):
 
         with open(filename, 'rb') as f:
             o = pickle.loads(f.read())

@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 
 import django.contrib.auth
@@ -8,8 +9,12 @@ import numpy
 
 import sheets_backend.sockets
 
+import sheets_app.models as models
+
 # Create your views here.
 
+def get_user_sheet_id(user, sheet_id):
+    return str(user.id) + '_' + sheet_id
 
 def mypipeline(backend, strategy, details, response, user=None, *args, **kwargs):
     print('mypipline')
@@ -40,11 +45,11 @@ def index(request):
     print('user is auth', user.is_authenticated())
 
     if user.is_authenticated():
-        sheet_ids = [sheet.sheet_id for sheet in user.sheet_user_creator.all()]
+        sheets = [(sheet.sheet_id, sheet.sheet_name) for sheet in user.sheet_user_creator.all()]
     else:
-        sheet_ids = []
+        sheets = []
     
-    context = {'user': user, 'sheet_ids': sheet_ids}
+    context = {'user': user, 'sheets': sheets}
     return render(request, 'sheets_app/index.html', context)
 
 def sheet(request, sheet_id):
@@ -121,5 +126,23 @@ def add_column(request, sheet_id):
     cells = cells_array(ret)
 
     return JsonResponse({'cells':cells})
+
+@login_required
+def sheet_new(request):
+    sheet_name = request.POST['sheet_name']
+
+    c = sheets_backend.sockets.Client()
+
+    ret = c.sheet_new()
+
+    s = models.Sheet()
+    s.user_creator = request.user
+    s.sheet_id = ret.i
+    s.sheet_name = sheet_name
+    s.save()
+
+    return redirect('sheet', s.sheet_id)
+
+
 
 

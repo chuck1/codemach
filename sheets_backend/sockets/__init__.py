@@ -1,6 +1,7 @@
 import os
 import pickle
 import numpy
+import traceback
 
 import mysocket
 import sheets_backend
@@ -91,10 +92,24 @@ class GetSheetData(Packet):
         if not hasattr(sheet, 'script_output'):
             sheet.script_exec()
 
-        sock.send(pickle.dumps(ReturnSheetData(cells, sheet.script, sheet.script_output)))
+        sock.send(pickle.dumps(ReturnSheetData(self.sheet_id, cells, sheet.script, sheet.script_output)))
+
+class RequestSheetNew(Packet):
+    def __init__(self): pass
+    
+    def __call__(self, sock):
+        i, sheet = sock.server.storage.sheet_new()
+
+        cells = convert_cells(sheet)
+
+        if not hasattr(sheet, 'script_output'):
+            sheet.script_exec()
+
+        sock.send(pickle.dumps(ReturnSheetData(i, cells, sheet.script, sheet.script_output)))
 
 class ReturnSheetData(Packet):
-    def __init__(self, cells, script, script_output):
+    def __init__(self, i, cells, script, script_output):
+        self.i = i
         self.cells = cells
         self.script = script
         self.script_output = script_output
@@ -121,12 +136,29 @@ class ClientSocket(mysocket.ClientSocket):
         print('sheets_backend.sockets.ClientSocket do_recv',repr(b))
         o = pickle.loads(b)
         print(o)
-        o(self)
+        try:
+            o(self)
+        except Exception as e:
+            print('error processing packet', repr(o))
+            traceback.print_exc()
 
 class Server(sheets_backend.Server, mysocket.Server):
     def __init__(self, storage):
         sheets_backend.Server.__init__(self, storage)
         mysocket.Server.__init__(self, '', int(os.environ['PORT_WEB_SHEETS_SOCKET']), ClientSocket)
+
+class Client(mysocket.Client):
+    def __init__(self):
+        mysocket.Client.__init__(self, '', int(os.environ['PORT_WEB_SHEETS_SOCKET']))
+
+    def recv_packet(self):
+        o = pickle.loads(self.recv())
+        if not isinstance(o, Packet): raise TypeError()
+        return o
+    
+    def sheet_new(self):
+        self.send(pickle.dumps(RequestSheetNew()))
+        return self.recv_packet()
     
 class SheetProxy(sheets_backend.SheetProxy, mysocket.Client):
     def __init__(self, sheet_id):
