@@ -41,7 +41,6 @@ def cells_array(ret):
         return json.dumps([c.string, c.value])
     return numpy.vectorize(f, otypes=[str])(cells).tolist()
 
-
 def index(request):
     if not request.user.is_authenticated():
         return HttpResponseRedirect(reverse('social:begin', args=['google-oauth2',])+'?next='+reverse('index'))
@@ -149,7 +148,6 @@ def sheet_new(request):
     s.save()
 
     return redirect('sheet', s.sheet_id)
-
 
 
 

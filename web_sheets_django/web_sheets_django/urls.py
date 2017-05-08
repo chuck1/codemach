@@ -15,14 +15,31 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+import django.contrib.auth
 import django.contrib.auth.views
 from django.conf import settings
+import django.urls
+import django.shortcuts
+
+class LogoutView(django.contrib.auth.views.LogoutView):
+    def get(self, request, *args, **kwargs):
+        print('LogoutView')
+        #url = django.urls.reverse('social:begin', args=['google-oauth2']) + '?next=' + django.urls.reverse('sheets:index')
+        #return django.contrib.auth.views.logout_then_login(request, login_url=url)
+        django.contrib.auth.logout(request)
+        print('go to index')
+        return django.shortcuts.redirect('index')
+
+class IndexView(django.views.generic.TemplateView):
+    template_name = "index.html"
 
 urlpatterns = [
-    url(r'^sheets/', include('sheets_app.urls')),
-    url(r'^admin/', admin.site.urls),
-    url('', include('social_django.urls', namespace='social')),
-    url(r'^logout/', django.contrib.auth.views.logout, name='logout'),
+        url(r'^$', IndexView.as_view(), name='index'),
+        url(r'^sheets/', include('sheets_app.urls', namespace='sheets')),
+        url(r'^admin/', admin.site.urls),
+        url('', include('social_django.urls', namespace='social')),
+        #url(r'^logout/', django.contrib.auth.views.logout, name='logout'),
+        url(r'^logout/', LogoutView.as_view(), name='logout'),
 ]
 
 if True:

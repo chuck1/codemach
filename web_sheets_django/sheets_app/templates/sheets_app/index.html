@@ -7,13 +7,11 @@
 
 <body>
 
-<a href="{% url "social:begin" "google-oauth2" %}?next={% url "index" %}">Google login</a>	
-<a href="/sheets/login/google-oauth2?prompt=select_account&next={% url "index" %}">Google login 2</a>	
 <a href="{% url "logout" %}">logout</a>	
 
 <img src="{{ user.profile_image_url }}">
 
-<form action="{% url 'sheet_new' %}" method="post">
+<form action="{% url "sheets:sheet_new" %}" method="post">
 {% csrf_token %}
 <input type="textbox" name="sheet_name">
 <input type="submit" value="new sheet">
@@ -21,7 +19,7 @@
 
 <table>
 {% for sheet_id, sheet_name in sheets %}
-<tr><td><a href="{% url "sheet" sheet_id %}">{{ sheet_name }}</a></td></tr>
+<tr><td><a href="{% url "sheets:sheet" sheet_id %}">{{ sheet_name }}</a></td></tr>
 {% endfor %}
 </table>
 

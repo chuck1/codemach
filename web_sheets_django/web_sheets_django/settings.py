@@ -84,7 +84,7 @@ ROOT_URLCONF = 'web_sheets_django.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -149,7 +149,8 @@ USE_TZ = True
 
 STATICFILES_DIRS = [
         os.path.join(BASE_DIR, "static"),
-        os.path.join(os.environ['HOME'], 'git/handsontable/dist'),]
+        os.path.join(os.environ['HOME'], 'git/handsontable/dist'),
+        os.path.join(os.environ['HOME'], 'static'),]
 
 STATIC_URL = '/sheets/static/'
 
