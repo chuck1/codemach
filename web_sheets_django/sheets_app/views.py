@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 
 import django.contrib.auth
 
@@ -39,10 +41,15 @@ def cells_array(ret):
         return json.dumps([c.string, c.value])
     return numpy.vectorize(f, otypes=[str])(cells).tolist()
 
+
 def index(request):
+    if not request.user.is_authenticated():
+        return HttpResponseRedirect(reverse('social:begin', args=['google-oauth2',])+'?next='+reverse('index'))
+
     user = django.contrib.auth.get_user(request)
     print('index')
-    print('user is auth', user.is_authenticated())
+    print('GET',list(request.GET.items()))
+
 
     if user.is_authenticated():
         sheets = [(sheet.sheet_id, sheet.sheet_name) for sheet in user.sheet_user_creator.all()]

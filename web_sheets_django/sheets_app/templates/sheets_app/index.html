@@ -8,6 +8,7 @@
 <body>
 
 <a href="{% url "social:begin" "google-oauth2" %}?next={% url "index" %}">Google login</a>	
+<a href="/sheets/login/google-oauth2?prompt=select_account&next={% url "index" %}">Google login 2</a>	
 <a href="{% url "logout" %}">logout</a>	
 
 <img src="{{ user.profile_image_url }}">

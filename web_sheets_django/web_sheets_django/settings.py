@@ -157,8 +157,9 @@ client_secrets = json.loads(open(os.path.join(BASE_DIR, 'client_secrets.json'), 
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = client_secrets['client_id']
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = client_secrets['client_secret']
-
+SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {'prompt':'select_account'}
 
 AUTH_USER_MODEL = 'core.User'
+
 
 
