@@ -11,4 +11,26 @@ a.google_signin:hover {
 a.google_signin:active {
 	background-image: url("/sheets/static/signin-assets/google_signin_buttons/web/1x/btn_google_signin_light_pressed_web.png");
 }
+body {
+	font-family: monospace;
+	margin: 0;
+}
+div.top {
+	background-color: #aaaaff;
+	overflow: auto;
+	padding: 0px;
+	margin: 0px;
+}
+div.top h1 {
+	padding: 0;
+}
+div.left {
+	float: left;
+	background-color: #aaffcc;
+	
+}
+div.right {
+	float: right;
+	background-color: #aaffaa;
+}
 

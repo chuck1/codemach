@@ -1,18 +1,12 @@
+{% extends "base.html" %}
 {% load static %}
 
-<head>
-<link rel="stylesheet" media="screen" href="{% static 'web_sheets/default.css' %}">
-</head>
 
-<body>
-
-<h1>Web Sheets</h1>
+{% block body %}
 
 <p>A web-based Python spreadsheet app.</p>
 
-<a class="google_signin" href="{% url "social:begin" "google-oauth2" %}?next={% url "sheets:index" %}"></a>
-
 <a href="http://github.com/chuck1/web_sheets">GitHub page</a>
 
-</body>
+{% endblock %}
 
