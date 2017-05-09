@@ -30,6 +30,10 @@ defines all the methods of Sheet that a client needs.
 Derived versions of this class can use different backends for
 storage and access of actual Sheet objects.
 
+# Production Server
 
+ * change folder and file permission to allow database write
+ * set WSGI python path for my custom modules
+ * remove references to my environment variables
 
 
