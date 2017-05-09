@@ -16,7 +16,6 @@ The sheet app handles the viewing and modification of spreadsheets.
 ## sheets Module
 
 The data and methods for the spreads themselves.
-This module is independent of all others
 
 ## sheets\_backend Module
 
