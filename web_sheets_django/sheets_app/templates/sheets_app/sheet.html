@@ -1,21 +1,12 @@
+{% extends "base.html" %}
 {% load static %}
 
-<head>
-<link rel="stylesheet" media="screen" href="{% static 'handsontable.full.css' %}">
-<script type="text/javascript" src="{% static 'handsontable.full.js' %}"></script>
-<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
-</head>
+{% block body %}
 
-<body>
-
-<a href="{% url "social:begin" "google-oauth2" %}?next={% url "index" %}">Google login</a>	
-<a href="{% url "logout" %}">logout</a>	
-
-<img src="{{ user.profile_image_url }}">
-
-<h1>Sheets</h1>
-
-<button onclick="add_column()">add column</button>
+<div class="toolbar">
+	<div><h2>{{ sheet.sheet_name }}</h2></div>
+	<div><button onclick="add_column()">add column</button></div>
+</div>
 
 <div id="tablediv"></div>
 
@@ -35,12 +26,12 @@
 
 var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
 
-var sheet_id = '{{ sheet_id }}';
+var sheet_id = '{{ sheet.sheet_id }}';
 var data = {% autoescape off %}{{ cells }}{% endautoescape %};
 
-var url_add_column = '{% url 'add_column' sheet_id %}';
-var url_set_cell = '{% url 'set_cell' sheet_id %}';
-var url_set_exec = '{% url 'set_exec' sheet_id %}';
+var url_add_column = '{% url 'sheets:add_column' sheet.id %}';
+var url_set_cell = '{% url 'sheets:set_cell' sheet.id %}';
+var url_set_exec = '{% url 'sheets:set_exec' sheet.id %}';
 
 var data_ref = data;
 
@@ -201,5 +192,6 @@ function set_exec() {
 }
 
 </script>
-</body>
+
+{% endblock %}
 

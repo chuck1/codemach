@@ -21,6 +21,8 @@ from django.conf import settings
 import django.urls
 import django.shortcuts
 
+import web_sheets_django.views
+
 class LogoutView(django.contrib.auth.views.LogoutView):
     def get(self, request, *args, **kwargs):
         print('LogoutView')
@@ -30,15 +32,12 @@ class LogoutView(django.contrib.auth.views.LogoutView):
         print('go to index')
         return django.shortcuts.redirect('index')
 
-class IndexView(django.views.generic.TemplateView):
-    template_name = "index.html"
 
 urlpatterns = [
-        url(r'^$', IndexView.as_view(), name='index'),
+        url(r'^$', web_sheets_django.views.IndexView.as_view(), name='index'),
         url(r'^sheets/', include('sheets_app.urls', namespace='sheets')),
         url(r'^admin/', admin.site.urls),
         url('', include('social_django.urls', namespace='social')),
-        #url(r'^logout/', django.contrib.auth.views.logout, name='logout'),
         url(r'^logout/', LogoutView.as_view(), name='logout'),
 ]
 

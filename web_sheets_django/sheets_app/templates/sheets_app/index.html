@@ -1,15 +1,7 @@
+{% extends "base.html" %}
 {% load static %}
 
-<head>
-<script type="text/javascript" src="{% static 'handsontable.full.js' %}"></script>
-<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
-</head>
-
-<body>
-
-<a href="{% url "logout" %}">logout</a>	
-
-<img src="{{ user.profile_image_url }}">
+{% block body %}
 
 <form action="{% url "sheets:sheet_new" %}" method="post">
 {% csrf_token %}
@@ -18,10 +10,9 @@
 </form>
 
 <table>
-{% for sheet_id, sheet_name in sheets %}
-<tr><td><a href="{% url "sheets:sheet" sheet_id %}">{{ sheet_name }}</a></td></tr>
+{% for sheet in sheets %}
+<tr><td><a href="{% url "sheets:sheet" sheet.id %}">{{ sheet.sheet_name }}</a></td></tr>
 {% endfor %}
 </table>
 
-</body>
-
+{% endblock %}

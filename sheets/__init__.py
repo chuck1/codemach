@@ -20,9 +20,12 @@ APPROVED_MODULES = [
         'math']
 
 APPROVED_DEFAULT_BUILTINS = {
-        'globals':globals,
+        '__build_class__': __build_class__,
+        '__name__': 'module',
+        'globals': globals,
         'list': list,
-        'print':print,
+        'object': object,
+        'print': print,
         'range': range,
         'sum': sum,
         }
@@ -56,10 +59,7 @@ class Cell(object):
             return
         
         try:
-            self.code = compile(
-                    self.string,
-                    "<cell {},{}>".format(self.r,self.c),
-                    'eval')
+            self.code = compile(self.string, "<cell {},{}>".format(self.r,self.c), 'eval')
         except Exception as e:
             self.code = None
             self.comp_exc = e
@@ -77,7 +77,7 @@ class Cell(object):
             self.comp()
         
         if self.comp_exc is not None:
-            self.value = 'compile error '+str(self.comp_exc)
+            self.value = 'compile error: '+str(self.comp_exc)
             return
 
         if not self.code:
@@ -89,7 +89,7 @@ class Cell(object):
         try:
             self.value = eval(self.code, g)
         except Exception as e:
-            self.value = 'eval error' + str(e)
+            self.value = 'eval error: ' + str(e)
 
 class Sheet(object):
     def __init__(self):
@@ -176,13 +176,13 @@ class Sheet(object):
         self.reset_globals()
 
         try:
-            self.code_exec = compile(
-                    self.script,
-                    '<script>',
-                    'exec')
+            self.code_exec = compile(self.script, '<script>', 'exec')
         except Exception as e:
             self.compile_exception_exec = e
-            self.script_output = traceback.format_exc()
+            l = traceback.format_exc().split("\n")
+            l.pop(1)
+            l.pop(1)
+            self.script_output = "\n".join(l)
             return
         else:
             self.compile_exception_exec = None
@@ -197,12 +197,17 @@ class Sheet(object):
                 exec(self.code_exec, self.glo)
             except Exception as e:
                 self.exec_exception_exec = e
-                exc_string = traceback.format_exc()
+                #tack = traceback.extract_stack()
+                exc_string = traceback.format_exc().split('\n')
+                exc_string.pop(1)
+                exc_string.pop(1)
+                exc_string = "\n".join(exc_string)
+                #xc_string = traceback.format_list(stack)
             else:
                 self.exec_exception_exec = None
                 exc_string = ''
-        
-        self.script_output = s.getvalue() + '\n%%%%%%%%%\n' + exc_string
+       
+        self.script_output = s.getvalue() + "".join(exc_string)
 
         print('s',repr(s.getvalue()))
             

@@ -4,20 +4,30 @@
 	<h1>Web Sheets</h1>
 </div>
 <div class="right">
-	{% if user %}
-	<a 
-	class="select_account" 
-	href="{% url "social:begin" "google-oauth2" %}?next={{ url_select_account_rediret }}">
-	select account
-	</a>
-	<a href="{% url "logout" %}?next={{ url_logout_rediret }}">
-	logout
-	</a>
-	<img src="{{ user.profile_image_url }}">
+	{% if user.is_authenticated %}
+	
+	<div class="dropdown">
+	<!--<button onclick="myFunction()" class="dropbtn">-->
+	<img onclick="myFunction()" src="{{ user.profile_image_url }}" class="dropbtn">
+	</button>
+	<div id="myDropdown" class="dropdown-content">
+		<a href="{% url "sheets:index" %}">My Sheets</a>
+		<a
+		class="select_account" 
+		href="{% url "social:begin" "google-oauth2" %}?next={{ url_select_account_redirect }}">
+		select account
+		</a>
+		<a href="{% url "logout" %}?next={{ url_logout_redirect }}">
+		logout
+		</a>
+	</div>
+	</div>
+
+
 	{% else %}
 	<a 
 	class="login" 
-	href="{% url "social:begin" "google-oauth2" %}?next={{ url_login_rediret }}">
+	href="{% url "social:begin" "google-oauth2" %}?next={{ url_login_redirect }}">
 	</a>
 	{% endif %}
 </div>

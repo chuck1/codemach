@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.urls import reverse
 from django.http import HttpResponseRedirect
@@ -51,7 +51,7 @@ def index(request):
 
 
     if user.is_authenticated():
-        sheets = [(sheet.sheet_id, sheet.sheet_name) for sheet in user.sheet_user_creator.all()]
+        sheets = list(user.sheet_user_creator.all())
     else:
         sheets = []
     
@@ -59,12 +59,18 @@ def index(request):
     return render(request, 'sheets_app/index.html', context)
 
 def sheet(request, sheet_id):
+    if not request.user.is_authenticated():
+        return HttpResponseRedirect(reverse('social:begin', args=['google-oauth2',])+'?next='+reverse('index'))
+    
+    sheet = get_object_or_404(models.Sheet, pk=sheet_id)
+    
     u = django.contrib.auth.get_user(request)
+    
     print('user',repr(u))
     for k, v in u.__dict__.items():
         print('  ', k, v)
 
-    sp = sheets_backend.sockets.SheetProxy(sheet_id)
+    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id)
     
     ret = sp.get_sheet_data()
 
@@ -80,7 +86,7 @@ def sheet(request, sheet_id):
         'script': ret.script,
         'script_output': ret.script_output,
         'user': u,
-        'sheet_id': sheet_id
+        'sheet': sheet
         }
     return render(request, 'sheets_app/sheet.html', context)
 
@@ -88,8 +94,10 @@ def set_cell(request, sheet_id):
     r = int(request.GET['r'])
     c = int(request.GET['c'])
     s = request.GET['s']
+
+    sheet = get_object_or_404(models.Sheet, pk=sheet_id)
  
-    sp = sheets_backend.sockets.SheetProxy(sheet_id)
+    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id)
 
     ret = sp.set_cell(r, c, s)
 
@@ -106,7 +114,9 @@ def set_exec(request, sheet_id):
     s = request.POST['text']
     print('set exec')
     print(repr(s))
-    sp = sheets_backend.sockets.SheetProxy(sheet_id)
+    sheet = get_object_or_404(models.Sheet, pk=sheet_id)
+ 
+    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id)
 
     ret = sp.set_exec(s)
 
@@ -123,7 +133,9 @@ def add_column(request, sheet_id):
     else:
         i = int(request.GET['i'])
 
-    sp = sheets_backend.sockets.SheetProxy(sheet_id)
+    sheet = get_object_or_404(models.Sheet, pk=sheet_id)
+ 
+    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id)
 
     ret = sp.add_column(i)
 
@@ -147,7 +159,7 @@ def sheet_new(request):
     s.sheet_name = sheet_name
     s.save()
 
-    return redirect('sheet', s.sheet_id)
+    return redirect('sheets:sheet', s.id)
 
 
 
