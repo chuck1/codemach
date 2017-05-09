@@ -35,8 +35,8 @@ storage and access of actual Sheet objects.
 
 # Accessing Sheet Data
 
-    sheet = SheetProxy(sheet_id, port)
+    sheet = sheets_backend.sockets.SheetProxy(sheet_id, port)
     sheet.set_cell(0, 0, 'hello')
     ret = sheet.get_sheet_data()
 
-
+This code will only work if there is a sockets server running at the port specified and a sheet with id sheet_id exists.
