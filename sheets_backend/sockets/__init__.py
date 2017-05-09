@@ -143,13 +143,13 @@ class ClientSocket(mysocket.ClientSocket):
             traceback.print_exc()
 
 class Server(sheets_backend.Server, mysocket.Server):
-    def __init__(self, storage):
+    def __init__(self, storage, port):
         sheets_backend.Server.__init__(self, storage)
-        mysocket.Server.__init__(self, '', int(os.environ['PORT_WEB_SHEETS_SOCKET']), ClientSocket)
+        mysocket.Server.__init__(self, '', port, ClientSocket)
 
 class Client(mysocket.Client):
-    def __init__(self):
-        mysocket.Client.__init__(self, '', int(os.environ['PORT_WEB_SHEETS_SOCKET']))
+    def __init__(self, port):
+        mysocket.Client.__init__(self, '', port)
 
     def recv_packet(self):
         o = pickle.loads(self.recv())
@@ -161,8 +161,8 @@ class Client(mysocket.Client):
         return self.recv_packet()
     
 class SheetProxy(sheets_backend.SheetProxy, mysocket.Client):
-    def __init__(self, sheet_id):
-        mysocket.Client.__init__(self, '', int(os.environ['PORT_WEB_SHEETS_SOCKET']))
+    def __init__(self, sheet_id, port):
+        mysocket.Client.__init__(self, '', port)
         self.sheet_id = sheet_id
 
     def recv_packet(self):

@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from django.conf import settings
 
 import django.contrib.auth
 
@@ -70,7 +71,7 @@ def sheet(request, sheet_id):
     for k, v in u.__dict__.items():
         print('  ', k, v)
 
-    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id)
+    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id, settings.WEB_SHEETS_PORT)
     
     ret = sp.get_sheet_data()
 
@@ -97,7 +98,7 @@ def set_cell(request, sheet_id):
 
     sheet = get_object_or_404(models.Sheet, pk=sheet_id)
  
-    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id)
+    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id, settings.WEB_SHEETS_PORT)
 
     ret = sp.set_cell(r, c, s)
 
@@ -116,7 +117,7 @@ def set_exec(request, sheet_id):
     print(repr(s))
     sheet = get_object_or_404(models.Sheet, pk=sheet_id)
  
-    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id)
+    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id, settings.WEB_SHEETS_PORT)
 
     ret = sp.set_exec(s)
 
@@ -135,7 +136,7 @@ def add_column(request, sheet_id):
 
     sheet = get_object_or_404(models.Sheet, pk=sheet_id)
  
-    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id)
+    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id, settings.WEB_SHEETS_PORT)
 
     ret = sp.add_column(i)
 

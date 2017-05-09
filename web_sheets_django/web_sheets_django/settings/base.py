@@ -11,24 +11,13 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-
 import json
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'm#pamqthg_1urzudrx_9nbxfx51@_t=g0tlx8sxhm+*n__i2a$'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = json.loads(open(os.path.join(BASE_DIR, 'secrets.json')).read())['secret_key']
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -130,8 +119,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/1.11/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
@@ -143,24 +130,31 @@ USE_L10N = True
 
 USE_TZ = True
 
+STATICFILES_DIRS = []
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.11/howto/static-files/
+STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-        os.path.join(BASE_DIR, "static"),
-        os.path.join(os.environ['HOME'], 'git/handsontable/dist'),
-        os.path.join(os.environ['HOME'], 'static'),]
-
-STATIC_URL = '/sheets/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "production", "static")
 
 client_secrets = json.loads(open(os.path.join(BASE_DIR, 'client_secrets.json'), 'r').read())
+secrets = json.loads(open(os.path.join(BASE_DIR, 'secrets.json'), 'r').read())
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = client_secrets['client_id']
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = client_secrets['client_secret']
 SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {'prompt':'select_account'}
 
 AUTH_USER_MODEL = 'core.User'
+
+# trying HTTPS
+#SESSION_COOKIE_SECURE = True
+#CSRF_COOKIE_SECURE = True
+#SECURE_SSL_REDIRECT = True
+
+import sys
+sys.path.append('/home/chuck/git/web_sheets')
+
+WEB_SHEETS_PORT = secrets['WEB_SHEETS_PORT']
+
 
 
 

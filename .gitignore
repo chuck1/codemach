@@ -2,3 +2,4 @@
 *.sqlite3
 client_secrets.json
 log
+web_sheets_django/production/

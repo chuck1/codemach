@@ -41,7 +41,7 @@ urlpatterns = [
         url(r'^logout/', LogoutView.as_view(), name='logout'),
 ]
 
-if True:
+if False:
 	urlpatterns = [
 		url(r'^sheets/', include(urlpatterns)),
 	]
