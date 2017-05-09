@@ -1,29 +1,24 @@
+# Web Sheets
 
+A web-based python spreadsheet app.
 
-# Website
+## Website
 
 The website itself is powered by Django.
 The sheet app handles the viewing and modification of spreadsheets.
 
-## accessing sheets
+### accessing sheets
 
-    try:
-        sheet = SheetProxy(sheet_id)
-    except  as e:
-        # handle specific error
-    
-    sheet.get_all()
+    sheet = SheetProxy(sheet_id, port)
+    sheet.set_cell(0, 0, 'hello')
+    ret = sheet.get_sheet_data()
 
-    sheet.set((1,1),new_cell_contents)
-    
-    
-
-# sheets Module
+## sheets Module
 
 The data and methods for the spreads themselves.
 This module is independent of all others
 
-# sheets\_backend Module
+## sheets\_backend Module
 
 This module defines an abstract class SheetProxy that
 defines all the methods of Sheet that a client needs.
