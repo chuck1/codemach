@@ -10,6 +10,11 @@ The script runs before cells are evaluated and the globals dictionary from the s
 
 For now, the goal is to keep the sheets module as small as possible.
 So features that would require additional code but could be implemented by the user will not be added.
+I will, however, provide as many examples of ideas for user-implemented features as possible.
+
+One example is formatting.
+I could add an extra field for each cell or for a column that defines a formatting function to be applied to the cell output.
+However, there are many ways that the user could implement this.
 
 # Components
 ## Website
