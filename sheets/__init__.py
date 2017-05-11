@@ -5,7 +5,9 @@ import sys
 import io
 
 APPROVED_MODULES = [
-        'math']
+        "math",
+        "numpy",
+        ]
 
 APPROVED_DEFAULT_BUILTINS = {
         '__build_class__': __build_class__,
@@ -171,9 +173,9 @@ class Sheet(object):
 
     def cells_strings(self):
         def f(c):
-            if c is None: return None
+            if c is None: return ""
             return c.string
-        return numpy.vectorize(f, otypes=[object])(self.cells).tolist()
+        return numpy.array(numpy.vectorize(f, otypes=[str])(self.cells).tolist())
 
     def set_exec(self,s):
         if s == self.script: return
@@ -220,5 +222,33 @@ class Sheet(object):
        
         self.script_output = out.getvalue() + "".join(exc_string)
 
+        # inspect the cells global
+        try:
+            cells = self.glo["cells"]
+
+            print()
+            print("after script exec")
+            print("cells")
+            print(repr(cells))
+
+            if not isinstance(cells, numpy.ndarray):
+                raise TypeError("cells is not a numpy array")
+
+            print("ndim:", repr(cells.ndim))
+
+            if cells.ndim != 2:
+                raise TypeError("cells does not have dimension of 2")
+
+            print("dtype:", repr(cells.dtype))
+
+            if cells.dtype != numpy.dtype("<U1"):
+                raise TypeError("cells dtype is not '<U1'")
+
+        except Exception as e:
+            print(e)
+
         self.eval_all()
+
+
+
 
