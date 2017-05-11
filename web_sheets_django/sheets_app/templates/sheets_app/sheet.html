@@ -12,6 +12,7 @@
 <div class="toolbar">
 	<div><h2>{{ sheet.sheet_name }}</h2></div>
 	<div><button onclick="add_column()">add column</button></div>
+	<div><button onclick="add_row()">add row</button></div>
 </div>
 
 <div id="tablediv"></div>
@@ -35,9 +36,10 @@ var data = {% autoescape off %}{{ cells }}{% endautoescape %};
 
 var sheet_id = '{{ sheet.sheet_id }}';
 
-var url_add_column = '{% url 'sheets:add_column' sheet.id %}';
-var url_set_cell = '{% url 'sheets:set_cell' sheet.id %}';
-var url_set_exec = '{% url 'sheets:set_exec' sheet.id %}';
+var url_add_column = "{% url 'sheets:add_column' sheet.id %}";
+var url_add_row = "{% url 'sheets:add_row' sheet.id %}";
+var url_set_cell = "{% url 'sheets:set_cell' sheet.id %}";
+var url_set_exec = "{% url 'sheets:set_exec' sheet.id %}";
 
 $(document).ready(sheet_page_load);
 

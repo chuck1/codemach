@@ -13,5 +13,7 @@ urlpatterns = [
                 views.set_exec, name='set_exec'),
             url(r'^add_column/(?P<sheet_id>[^/]+)/$',
                 views.add_column, name='add_column'),
+            url(r'^add_row/(?P<sheet_id>[^/]+)/$',
+                views.add_row, name='add_row'),
             ]
 

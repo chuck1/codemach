@@ -147,6 +147,12 @@ class Sheet(object):
 
         self.cells = numpy.insert(self.cells, i, None, axis=1)
 
+    def add_row(self, i):
+        if i is None:
+            i = numpy.shape(self.cells)[0]
+
+        self.cells = numpy.insert(self.cells, i, None, axis=0)
+
     def get_globals(self):
         if not hasattr(self, 'glo'):
             self.script_exec()

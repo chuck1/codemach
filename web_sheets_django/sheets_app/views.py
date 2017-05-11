@@ -92,9 +92,9 @@ def sheet(request, sheet_id):
     return render(request, 'sheets_app/sheet.html', context)
 
 def set_cell(request, sheet_id):
-    r = int(request.GET['r'])
-    c = int(request.GET['c'])
-    s = request.GET['s']
+    r = int(request.POST['r'])
+    c = int(request.POST['c'])
+    s = request.POST['s']
 
     sheet = get_object_or_404(models.Sheet, pk=sheet_id)
  
@@ -129,16 +129,34 @@ def set_exec(request, sheet_id):
             'script_output':ret.script_output,})
 
 def add_column(request, sheet_id):
-    if not request.GET['i']:
+    if not request.POST['i']:
         i = None
     else:
-        i = int(request.GET['i'])
+        i = int(request.POST['i'])
 
     sheet = get_object_or_404(models.Sheet, pk=sheet_id)
  
     sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id, settings.WEB_SHEETS_PORT)
 
     ret = sp.add_column(i)
+
+    ret = sp.get_cell_data()
+    
+    cells = cells_array(ret)
+
+    return JsonResponse({'cells':cells})
+
+def add_row(request, sheet_id):
+    if not request.POST['i']:
+        i = None
+    else:
+        i = int(request.POST['i'])
+
+    sheet = get_object_or_404(models.Sheet, pk=sheet_id)
+ 
+    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id, settings.WEB_SHEETS_PORT)
+
+    ret = sp.add_row(i)
 
     ret = sp.get_cell_data()
     

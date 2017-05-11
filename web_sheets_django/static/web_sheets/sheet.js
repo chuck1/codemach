@@ -1,6 +1,5 @@
 
 var hot = null;
-//var data = null;
 var csrftoken = null;
 
 function replaceTag(tag) {
@@ -59,28 +58,26 @@ function apply_sheet_data(data_new) {
         $("#script_output").val(data_new.script_output);
 }
 
-
 function add_column() {
-	$.ajax({
-		url: url_add_column,
-		data: {'i':null},
-		dataType: 'json',
-		success: apply_data
-	});
+	var post_data = {
+		'i':null, 
+		'csrfmiddlewaretoken':csrftoken
+	};
+	$.post(url_add_column, post_data, apply_data);
+}
+function add_row() {
+	var post_data = {'i':null, 'csrfmiddlewaretoken':csrftoken};
+	$.post(url_add_row, post_data, apply_data);
 }
 function set_exec() {
 	var text = $("#script").val();
-	console.log("set exec");
-	console.log("csrf  = ",csrftoken);
         var post_data = {'text':text, 'csrfmiddlewaretoken':csrftoken};
-        //var post_data = {text:text, csrfmiddlewaretoken:csrftoken};
 	$.post(url_set_exec, post_data, apply_sheet_data);
 }
 
 function sheet_page_load() {
 
 	csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
-	
 
 	var container = document.getElementById('tablediv');
 
@@ -135,29 +132,15 @@ function sheet_page_load() {
 		arguments[0].forEach(function(args) {
 			console.log(args);
 
-			$.ajax({
-				url: url_set_cell,
-				data: {
-					'r': args[0],
-					'c': args[1],
-					's': args[3]
-				},
-				dataType: 'json',
-				success: function (data_new) {
-					console.log(data_new.cells);
+			var post_data = {
+				'csrfmiddlewaretoken':csrftoken,
+				'r': args[0],
+				'c': args[1],
+				's': args[3]
+			};
 
-					data.splice(0,data.length);
-
-					data_new.cells.forEach(function(c){
-						data.push(c);
-					});
-
-					hot.render();
-				}
-			});
-
+			$.post(url_set_cell, post_data, apply_data);
 		});
 	});
 }
-
 
