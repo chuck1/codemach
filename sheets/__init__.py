@@ -61,8 +61,6 @@ class Cell(object):
         return g
 
     def calc(self, sheet):
-        print("cell({},{}) calc".format(self.r, self.c))
-        # code has not yet been compiled
         if not hasattr(self, 'comp_exc'):
             self.comp()
         
@@ -152,7 +150,10 @@ class Sheet(object):
 
         approved_builtins.update(APPROVED_DEFAULT_BUILTINS)
 
-        self.glo = {'__builtins__': approved_builtins}
+        self.glo = {
+                "__builtins__": approved_builtins,
+                "cells": self.cells_strings(),
+                }
 
     def eval_all(self):
         def f(cell, r, c):
@@ -166,6 +167,12 @@ class Sheet(object):
             for j in range(numpy.shape(self.cells)[1]):
                 f(self.cells[i,j], r[i], c[j])
 
+    def cells_strings(self):
+        def f(c):
+            if c is None: return None
+            return c.string
+        return numpy.vectorize(f, otypes=[object])(self.cells).tolist()
+
     def set_exec(self,s):
         if s == self.script: return
         self.script = s
@@ -178,10 +185,8 @@ class Sheet(object):
         try:
             self.code_exec = compile(self.script, '<script>', 'exec')
         except Exception as e:
-            print(termcolor.colored("exception during script compile", "yellow"))
-            print(termcolor.colored(e, "yellow"))
-
             self.compile_exception_exec = e
+
             l = traceback.format_exc().split("\n")
             l.pop(1)
             l.pop(1)
@@ -199,27 +204,19 @@ class Sheet(object):
                 exec(self.code_exec, self.glo)
             except Exception as e:
                 sys.stdout = old
-                print(termcolor.colored("exception during script exec", "yellow"))
-                print(termcolor.colored(e, "yellow"))
 
                 self.exec_exception_exec = e
-                #tack = traceback.extract_stack()
+
                 exc_string = traceback.format_exc().split('\n')
-                #exc_string.pop(1)
-                #exc_string.pop(1)
+                exc_string.pop(1)
+                exc_string.pop(1)
                 exc_string = "\n".join(exc_string)
-                #xc_string = traceback.format_list(stack)
             else:
                 sys.stdout = old
                 self.exec_exception_exec = None
                 exc_string = ''
        
         self.script_output = out.getvalue() + "".join(exc_string)
-
-        print('out')
-        print()
-        print(out.getvalue())
-        print()
 
         self.eval_all()
 
