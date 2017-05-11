@@ -110,11 +110,8 @@ def set_cell(request, sheet_id):
 
 def set_exec(request, sheet_id):
     print('set script')
-    print('post')
-    for k, v in request.POST.items(): print('  ',k,v)
     s = request.POST['text']
-    print('set exec')
-    print(repr(s))
+    
     sheet = get_object_or_404(models.Sheet, pk=sheet_id)
  
     sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id, settings.WEB_SHEETS_PORT)

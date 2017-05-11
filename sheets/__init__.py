@@ -1,20 +1,8 @@
-
-
 import numpy
 import traceback
-
+import termcolor
 import sys
-from io import StringIO
-import contextlib
-
-@contextlib.contextmanager
-def stdoutIO(stdout = None):
-    old = sys.stdout
-    if stdout is None:
-        stdout = StringIO()
-    sys.stdout = stdout
-    yield stdout
-    sys.stdout = old
+import io
 
 APPROVED_MODULES = [
         'math']
@@ -22,6 +10,7 @@ APPROVED_MODULES = [
 APPROVED_DEFAULT_BUILTINS = {
         '__build_class__': __build_class__,
         '__name__': 'module',
+        "Exception": Exception,
         'globals': globals,
         'list': list,
         'object': object,
@@ -72,6 +61,7 @@ class Cell(object):
         return g
 
     def calc(self, sheet):
+        print("cell({},{}) calc".format(self.r, self.c))
         # code has not yet been compiled
         if not hasattr(self, 'comp_exc'):
             self.comp()
@@ -89,7 +79,10 @@ class Cell(object):
         try:
             self.value = eval(self.code, g)
         except Exception as e:
-            self.value = 'eval error: ' + str(e)
+            print(termcolor.colored("exception during cell({},{}) eval".format(self.r, self.c), "yellow"))
+            print(termcolor.colored(e, "yellow"))
+            
+            self.value = "eval error: " + str(e)
 
 class Sheet(object):
     def __init__(self):
@@ -105,14 +98,9 @@ class Sheet(object):
     
     def builtin___import__(self, name, globals=None, locals=None, 
             fromlist=(), level=0):
+        
         name_split = name.split('.')
-        """
-        print('name    ',name)
-        print('globals ',globals)
-        print('locals  ',locals)
-        print('fromlist',fromlist)
-        print('level   ',level)
-        """
+        
         if not name_split[0] in APPROVED_MODULES:
             raise ImportError("module '{}' is not allowed".format(name_split[0]))
 
@@ -167,10 +155,16 @@ class Sheet(object):
         self.glo = {'__builtins__': approved_builtins}
 
     def eval_all(self):
-        def f(cell):
+        def f(cell, r, c):
             if cell is None: return
             cell.calc(self)
-        numpy.vectorize(f)(self.cells)
+        
+        r = numpy.arange(numpy.shape(self.cells)[0])
+        c = numpy.arange(numpy.shape(self.cells)[1])
+        
+        for i in range(numpy.shape(self.cells)[0]):
+            for j in range(numpy.shape(self.cells)[1]):
+                f(self.cells[i,j], r[i], c[j])
 
     def set_exec(self,s):
         if s == self.script: return
@@ -184,6 +178,9 @@ class Sheet(object):
         try:
             self.code_exec = compile(self.script, '<script>', 'exec')
         except Exception as e:
+            print(termcolor.colored("exception during script compile", "yellow"))
+            print(termcolor.colored(e, "yellow"))
+
             self.compile_exception_exec = e
             l = traceback.format_exc().split("\n")
             l.pop(1)
@@ -193,33 +190,36 @@ class Sheet(object):
         else:
             self.compile_exception_exec = None
 
-        print('script', repr(self.script))
+        out = io.StringIO()
 
-        print('before script exec globals =', self.glo)
-        print()
-
-        with stdoutIO() as s:
+        if 1:
+            old = sys.stdout
+            sys.stdout = out
             try:
                 exec(self.code_exec, self.glo)
             except Exception as e:
+                sys.stdout = old
+                print(termcolor.colored("exception during script exec", "yellow"))
+                print(termcolor.colored(e, "yellow"))
+
                 self.exec_exception_exec = e
                 #tack = traceback.extract_stack()
                 exc_string = traceback.format_exc().split('\n')
-                exc_string.pop(1)
-                exc_string.pop(1)
+                #exc_string.pop(1)
+                #exc_string.pop(1)
                 exc_string = "\n".join(exc_string)
                 #xc_string = traceback.format_list(stack)
             else:
+                sys.stdout = old
                 self.exec_exception_exec = None
                 exc_string = ''
        
-        self.script_output = s.getvalue() + "".join(exc_string)
+        self.script_output = out.getvalue() + "".join(exc_string)
 
-        print('s',repr(s.getvalue()))
-            
-        self.eval_all()
-        
+        print('out')
         print()
-        print('after script exec globals =', self.glo)
+        print(out.getvalue())
+        print()
 
+        self.eval_all()
 
