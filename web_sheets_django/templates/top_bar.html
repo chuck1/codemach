@@ -4,12 +4,14 @@
 	<h1>Web Sheets</h1>
 </div>
 <div class="right">
-	{% if user.is_authenticated %}
-	
+
+{% if user.is_authenticated %}
 	<div class="dropdown">
-	<!--<button onclick="myFunction()" class="dropbtn">-->
+{% if user.is_superuser %}
+	<button onclick="myFunction()" class="dropbtn">superuser</button>
+{% else %}
 	<img onclick="myFunction()" src="{{ user.profile_image_url }}" class="dropbtn">
-	</button>
+{% endif %}
 	<div id="myDropdown" class="dropdown-content">
 		<a href="{% url "sheets:index" %}">My Sheets</a>
 		<a
@@ -22,14 +24,13 @@
 		</a>
 	</div>
 	</div>
-
-
-	{% else %}
+{% else %}
 	<a 
 	class="login" 
 	href="{% url "social:begin" "google-oauth2" %}?next={{ url_login_redirect }}">
 	</a>
-	{% endif %}
+{% endif %}
+
 </div>
 </div>
 

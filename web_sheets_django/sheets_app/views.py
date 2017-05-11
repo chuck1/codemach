@@ -150,7 +150,7 @@ def add_column(request, sheet_id):
 def sheet_new(request):
     sheet_name = request.POST['sheet_name']
 
-    c = sheets_backend.sockets.Client()
+    c = sheets_backend.sockets.Client(settings.WEB_SHEETS_PORT)
 
     ret = c.sheet_new()
 

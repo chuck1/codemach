@@ -136,11 +136,10 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, "production", "static")
 
-client_secrets = json.loads(open(os.path.join(BASE_DIR, 'client_secrets.json'), 'r').read())
 secrets = json.loads(open(os.path.join(BASE_DIR, 'secrets.json'), 'r').read())
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = client_secrets['client_id']
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = client_secrets['client_secret']
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = secrets['client_id']
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = secrets['client_secret']
 SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {'prompt':'select_account'}
 
 AUTH_USER_MODEL = 'core.User'
@@ -153,7 +152,7 @@ AUTH_USER_MODEL = 'core.User'
 import sys
 sys.path.append('/home/chuck/git/web_sheets')
 
-WEB_SHEETS_PORT = secrets['WEB_SHEETS_PORT']
+WEB_SHEETS_PORT = secrets['port']
 
 
 
