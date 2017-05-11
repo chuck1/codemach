@@ -16,7 +16,9 @@ APPROVED_DEFAULT_BUILTINS = {
         'object': object,
         'print': print,
         'range': range,
+        "repr": repr,
         'sum': sum,
+        "type": type,
         }
 
 class CellHelper(object):
