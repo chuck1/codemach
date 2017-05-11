@@ -9,10 +9,10 @@
 </head>
 
 <body>
+	{% include "top_bar.html" %}
 
-{% include "top_bar.html" %}
-
-{% block body %}{% endblock %}
-
+	<div class="body">
+	{% block body %}{% endblock %}
+	</div>
 </body>
 

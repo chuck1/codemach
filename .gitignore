@@ -1,5 +1,5 @@
 *.pyc
 *.sqlite3
-client_secrets.json
+secrets.json
 log
 web_sheets_django/production/
