@@ -40,6 +40,11 @@ The steps to recalculate the entire book are as follows
 
 - reset globals
   - construct a new globals dict which contains
+    - __builtins__: a dict which contains approved python builtin functions
+      and custom implementations of certain other python builtin function
+    - sheets: a dict with pairs of sheet keys and numpy arrays. the arrays contain
+      the cell strings.
+      
 
 ## sheets\_backend
 
