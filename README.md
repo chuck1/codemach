@@ -39,7 +39,7 @@ The basic structure is shown in the following pseudocode.
 The steps to recalculate the entire book are as follows
 
 - reset globals
--- construct a new globals dict which contains
+  - construct a new globals dict which contains
 
 ## sheets\_backend
 
