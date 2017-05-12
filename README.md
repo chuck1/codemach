@@ -36,6 +36,10 @@ The basic structure is shown in the following pseudocode.
     Script:
       string = string which gets passed to exec()
 
+The steps to recalculate the entire book are as follows
+
+- reset globals
+ - construct a new globals dict which contains
 
 ## sheets\_backend
 
