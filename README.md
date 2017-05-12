@@ -38,13 +38,28 @@ The basic structure is shown in the following pseudocode.
 
 The steps to recalculate the entire book are as follows
 
-- reset globals
-  - construct a new globals dict which contains
+1. Reset globals
+  - Construct a new globals dict which contains
     - \_\_builtins\_\_: a dict which contains approved python builtin functions
       and custom implementations of certain other python builtin function
     - sheets: a dict with pairs of sheet keys and numpy arrays. the arrays contain
       the cell strings.
-      
+2. Execute script_pre
+  - script_pre is passed the globals object from above
+3. Evaluate cells
+  - For cell evaluation, a shallow copy is made of the globals object from above.
+    Therefore, the cell can alter non-trivial objects in the globals.
+
+### Cell class
+
+Cell data is stored in the _string_ member which can be None or a string representing a python expression.
+A Cell can return a value which can be one of the following:
+
+- None if _string_ is None
+- an __Exception__ raised by the __compile__ function
+- an __Exception__ raised by the __eval__ function
+- result of the __eval__ function
+
 
 ## sheets\_backend
 
