@@ -38,15 +38,15 @@ The basic structure is shown in the following pseudocode.
 
 The steps to recalculate the entire book are as follows
 
-1. Reset globals
+- Reset globals
   - Construct a new globals dict which contains
     - \_\_builtins\_\_: a dict which contains approved python builtin functions
       and custom implementations of certain other python builtin function
     - sheets: a dict with pairs of sheet keys and numpy arrays. the arrays contain
       the cell strings.
-2. Execute script_pre
+- Execute script_pre
   - script_pre is passed the globals object from above
-3. Evaluate cells
+- Evaluate cells
   - For cell evaluation, a shallow copy is made of the globals object from above.
     Therefore, the cell can alter non-trivial objects in the globals.
 
