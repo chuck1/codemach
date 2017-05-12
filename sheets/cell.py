@@ -9,11 +9,14 @@ import sheets.helper
 class RecursiveCellRef(Exception): pass
 
 class Cell(object):
-    def __init__(self,r,c):
-        self.string = None
+    def __init__(self, r, c, string=None):
         self.r = r
         self.c = c
+        self.string = string
         self.evaluated = False
+
+    def __repr__(self):
+        return "Cell({}, {}, {})".format(self.r, self.c, repr(self.string))
 
     def __getstate__(self):
         return dict((k, getattr(self, k)) for k in ['r', 'c', 'string'])
@@ -67,9 +70,9 @@ class Cell(object):
             raise
         except Exception as e:
             print(termcolor.colored(
-                "exception during cell({},{}) eval".format(self.r, self.c), "yellow"))
-            print(termcolor.colored(e, "yellow"))
-            traceback.print_exc()
+                "exception during cell({},{}) eval".format(self.r, self.c), "yellow", attrs=["bold"]))
+            print(termcolor.colored(repr(e), "yellow", attrs=["bold"]))
+            #traceback.print_exc()
             
             self.exception_eval = e
 
@@ -79,7 +82,7 @@ class Cell(object):
             self.exception_eval = None
 
     def get_value(self, sheet):
-        print(self, self.evaluated)
+        #print(self, self.evaluated)
 
         if self.evaluated: return self.value
 

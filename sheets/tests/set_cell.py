@@ -25,12 +25,16 @@ def test():
 
     s.set_cell(1, 0, "cellshelper[1, 1]")
 
-    print(repr(s.cells.cells[1, 0].value))
-    assert(s.cells.cells[1, 0].value == None)
+    #print(repr(s.cells.cells[1, 0].value))
+    assert(s.cells.cells[1, 0].value.item() is None)
 
     s.set_cell(1, 1, "2+2")
 
-    print(s.cells.cells[1, 0].value)
+    #print(s.cells.cells[1, 0].value)
+    assert(s.cells.cells[1, 0].value.item() == 4)
+
+    print(repr(s.cells.cells[1, 0]))
+    
 
 if __name__ == '__main__':
     test()

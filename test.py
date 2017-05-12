@@ -3,8 +3,8 @@
 import termcolor
 import traceback
 
-def print_yb(s):
-    print(termcolor.colored(s,'yellow',attrs=['bold']))
+def print_bb(s):
+    print(termcolor.colored(s,'blue',attrs=['bold']))
 
 def try_func(f):
     try:
@@ -16,7 +16,7 @@ def try_func(f):
 
 def test():
 
-    print_yb("sheets tests")
+    print_bb("sheets tests")
 
     for t in [
             "sheets.tests.set_cell",
@@ -24,7 +24,7 @@ def test():
             ]:
         m = __import__(t, fromlist=["test"])
         
-        print_yb(m)
+        print_bb(m)
         try_func(m.test)
 
 if __name__ == "__main__":

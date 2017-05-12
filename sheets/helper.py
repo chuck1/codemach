@@ -14,7 +14,8 @@ def cells_values(cells, sheet):
     def f(c):
         if c is None: return None
         return c.get_value(sheet)
-    return numpy.vectorize(f)(cells)
+    a = numpy.vectorize(f)(cells)
+    return a
 
 class CellHelper(object):
     def __init__(self, r, c):
