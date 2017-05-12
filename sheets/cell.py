@@ -72,7 +72,7 @@ class Cell(object):
             print(termcolor.colored(
                 "exception during cell({},{}) eval".format(self.r, self.c), "yellow", attrs=["bold"]))
             print(termcolor.colored(repr(e), "yellow", attrs=["bold"]))
-            #traceback.print_exc()
+            traceback.print_exc()
             
             self.exception_eval = e
 
@@ -83,6 +83,8 @@ class Cell(object):
 
     def get_value(self, sheet):
         #print(self, self.evaluated)
+
+        #print("Cell.get_value ({},{}) s = {} v = {} evaluated = {}".format(self.r, self.c, repr(self.string), repr(self.value) if hasattr(self, 'value') else 'no value', self.evaluated))
 
         if self.evaluated: return self.value
 
@@ -97,5 +99,5 @@ class Cell(object):
 
         sheet.cell_stack.pop()
 
-    
+        return self.value
 
