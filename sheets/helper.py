@@ -13,8 +13,10 @@ def cells_strings(cells):
 def cells_values(cells, sheet):
     def f(c):
         if c is None: return None
-        return c.get_value(sheet)
-    a = numpy.vectorize(f)(cells)
+        v = c.get_value(sheet)
+        #print("cells_values cell ({},{}) s = {} v = {}".format(c.r, c.c, repr(c.string), repr(v)))
+        return v
+    a = numpy.vectorize(f, otypes=[object])(cells)
     return a
 
 class CellHelper(object):

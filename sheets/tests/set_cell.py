@@ -30,10 +30,19 @@ def test():
 
     s.set_cell(1, 1, "2+2")
 
-    #print(s.cells.cells[1, 0].value)
+    print(repr(s.cells.cells[1, 1].value))
+    print(repr(s.cells.cells[1, 0].value))
     assert(s.cells.cells[1, 0].value.item() == 4)
 
-    print(repr(s.cells.cells[1, 0]))
+    s.set_cell(0, 0, "[0, 1]")
+    print(s.cells.cells[0, 0].value)
+    s.set_cell(0, 0, "(0, 1)")
+    print(s.cells.cells[0, 0].value)
+    s.set_cell(0, 0, "{'a':0, 'b':1}")
+    print(s.cells.cells[0, 0].value)
+    s.set_cell(0, 0, "{0, 1}")
+    print(s.cells.cells[0, 0].value)
+  
     
 
 if __name__ == '__main__':
