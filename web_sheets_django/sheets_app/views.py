@@ -39,7 +39,9 @@ def cells_values(ret):
 def cells_array(ret):
     cells = ret.cells
     def f(c):
-        return json.dumps([c.string, c.value])
+        v = c.value
+        #if isinstance(v, str): v = "\"" + v + "\""
+        return json.dumps([c.string, v])
     return numpy.vectorize(f, otypes=[str])(cells).tolist()
 
 def index(request):

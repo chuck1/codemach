@@ -28,6 +28,32 @@ class CellHelper(object):
         self.r = r
         self.c = c
 
+def cells_values(cells):
+    print("cells_values",cells)
+    def f(c): return c.value
+    return numpy.vectorize(f)(cells)
+
+class CellsHelper(object):
+    """
+    we must be careful not to expose too much to the user
+    such that he or she may break the program or cause security issues
+
+    WARNING
+    passing the sheet to this object is not OK for final implementation
+    """
+    def __init__(self, sheet):
+        self.sheet = sheet
+
+    def __getitem__(self, args):
+        if not isinstance(args, tuple): args = (args,)
+        r, c = CellsHelper.expand_args(*args)
+        
+        return cells_values(self.sheet.cells[r,c])
+
+    @classmethod
+    def expand_args(cls, r, c=None):
+        return r, c
+
 class Cell(object):
     def __init__(self,r,c):
         self.string = None
@@ -60,6 +86,7 @@ class Cell(object):
     def get_globals(self, sheet):
         g = {
                 'cell': CellHelper(self.r, self.c),
+                "cellshelper": CellsHelper(sheet),
                 }
         g.update(sheet.get_globals())
         return g

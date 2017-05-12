@@ -83,7 +83,12 @@ def convert_cells(sheet):
         def f(c):
             if c is None:
                 return sheets_backend.Cell('','')
-            return sheets_backend.Cell(c.string,str(c.value))
+            v = c.value
+            if isinstance(v, str):
+                v = "\"" + v + "\""
+            else:
+                v = str(v)
+            return sheets_backend.Cell(c.string, v)
 
         fv = numpy.vectorize(f, otypes=[sheets_backend.Cell])
 
