@@ -8,6 +8,7 @@ import io
 class Script(object):
     def __init__(self):
         self.string = ""
+        self.output = ""
     
     def __getstate__(self):
         return dict((k, getattr(self, k)) for k in ["string"])

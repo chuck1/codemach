@@ -3,15 +3,15 @@
 
 {% block body %}
 
-<form action="{% url "sheets:sheet_new" %}" method="post">
+<form action="{% url "sheets:book_new" %}" method="post">
 {% csrf_token %}
-<input type="textbox" name="sheet_name">
-<input type="submit" value="new sheet">
+<input type="textbox" name="book_name">
+<input type="submit" value="new book">
 </form>
 
 <table>
-{% for sheet in sheets %}
-<tr><td><a href="{% url "sheets:sheet" sheet.id %}">{{ sheet.sheet_name }}</a></td></tr>
+{% for book in books %}
+<tr><td><a href="{% url "sheets:book" book.id 0 %}">{{ book.book_name }}</a></td></tr>
 {% endfor %}
 </table>
 

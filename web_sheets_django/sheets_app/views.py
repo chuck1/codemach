@@ -61,11 +61,11 @@ def index(request):
     context = {'user': user, 'sheets': sheets}
     return render(request, 'sheets_app/index.html', context)
 
-def sheet(request, sheet_id):
+def book(request, book_id, sheet_key):
     if not request.user.is_authenticated():
         return HttpResponseRedirect(reverse('social:begin', args=['google-oauth2',])+'?next='+reverse('index'))
     
-    sheet = get_object_or_404(models.Sheet, pk=sheet_id)
+    book = get_object_or_404(models.Book, pk=book_id)
     
     u = django.contrib.auth.get_user(request)
     
@@ -73,111 +73,108 @@ def sheet(request, sheet_id):
     for k, v in u.__dict__.items():
         print('  ', k, v)
 
-    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id, settings.WEB_SHEETS_PORT)
+    bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
     
-    ret = sp.get_sheet_data()
-
+    ret = bp.get_sheet_data(sheet_key)
+    
     print(ret)
     print(repr(ret.cells))
-
+    
     cells = cells_array(ret)
     
     print('cells',repr(cells))
     
     context = {
         'cells': json.dumps(cells),
-        'script': ret.script,
-        'script_output': ret.script_output,
+        'script_pre': ret.script_pre,
+        'script_pre_output': ret.script_pre_output,
         'user': u,
-        'sheet': sheet
+        'book': book,
+        'sheet_key': sheet_key,
         }
     return render(request, 'sheets_app/sheet.html', context)
 
-def set_cell(request, sheet_id):
+def set_cell(request, book_id):
+    sheet_key = request.POST["sheet_key"]
     r = int(request.POST['r'])
     c = int(request.POST['c'])
     s = request.POST['s']
 
-    sheet = get_object_or_404(models.Sheet, pk=sheet_id)
- 
-    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id, settings.WEB_SHEETS_PORT)
+    book = get_object_or_404(models.Book, pk=book_id)
 
-    ret = sp.set_cell(r, c, s)
+    bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
 
-    ret = sp.get_cell_data()
+    ret = bp.set_cell(sheet_key, r, c, s)
+
+    ret = bp.get_cell_data(sheet_key)
     
     cells = cells_array(ret)
 
     return JsonResponse({'cells':cells})
 
-def set_exec(request, sheet_id):
-    print('set script')
+def set_script_pre(request, sheet_id):
+    sheet_key = request.POST["sheet_key"]
     s = request.POST['text']
     
-    sheet = get_object_or_404(models.Sheet, pk=sheet_id)
+    book = get_object_or_404(models.Book, pk=book_id)
+    
+    bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
  
-    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id, settings.WEB_SHEETS_PORT)
+    ret = bp.set_script_pre(s)
 
-    ret = sp.set_exec(s)
-
-    ret = sp.get_sheet_data()
+    ret = bp.get_sheet_data(sheet_key)
     
     cells = cells_array(ret)
 
-    return JsonResponse({'cells':cells, 'script':ret.script, 
-            'script_output':ret.script_output,})
+    return JsonResponse({
+        'cells': cells,
+        'script_pre': ret.script_pre,
+        'script_pre_output': ret.script_pre_output,
+        'script_post': ret.script_post,
+        'script_post_output': ret.script_post_output,
+        })
 
-def add_column(request, sheet_id):
+def alter_sheet(request, book_id, func):
     if not request.POST['i']:
         i = None
     else:
         i = int(request.POST['i'])
-
-    sheet = get_object_or_404(models.Sheet, pk=sheet_id)
+    
+    sheet_key = request.POST["sheet_key"]
+    
+    book = get_object_or_404(models.Book, pk=book_id)
  
-    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id, settings.WEB_SHEETS_PORT)
+    bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
 
-    ret = sp.add_column(i)
+    ret = func(bp, sheet_key, i)
 
-    ret = sp.get_cell_data()
+    ret = bp.get_cell_data(sheet_key)
     
     cells = cells_array(ret)
 
     return JsonResponse({'cells':cells})
 
-def add_row(request, sheet_id):
-    if not request.POST['i']:
-        i = None
-    else:
-        i = int(request.POST['i'])
+def add_column(request, book_id):
+    return alter_sheet(request, book_id, sheets_backend.sockets.BookProxy.add_column)
 
-    sheet = get_object_or_404(models.Sheet, pk=sheet_id)
- 
-    sp = sheets_backend.sockets.SheetProxy(sheet.sheet_id, settings.WEB_SHEETS_PORT)
-
-    ret = sp.add_row(i)
-
-    ret = sp.get_cell_data()
-    
-    cells = cells_array(ret)
-
-    return JsonResponse({'cells':cells})
+def add_row(request, book_id):
+    return alter_sheet(request, book_id, sheets_backend.sockets.BookProxy.add_row)
 
 @login_required
-def sheet_new(request):
-    sheet_name = request.POST['sheet_name']
+def book_new(request):
+    book_name = request.POST['book_name']
 
     c = sheets_backend.sockets.Client(settings.WEB_SHEETS_PORT)
+    
+    ret = c.book_new()
+    
+    b = models.Book()
+    b.user_creator = request.user
+    b.book_id = ret.book_id
+    b.book_name = book_name
+    b.save()
 
-    ret = c.sheet_new()
-
-    s = models.Sheet()
-    s.user_creator = request.user
-    s.sheet_id = ret.i
-    s.sheet_name = sheet_name
-    s.save()
-
-    return redirect('sheets:sheet', s.id)
+    return redirect('sheets:book', b.id, 0)
 
 
 

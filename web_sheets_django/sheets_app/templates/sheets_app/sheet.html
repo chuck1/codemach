@@ -34,12 +34,13 @@
 
 var data = {% autoescape off %}{{ cells }}{% endautoescape %};
 
-var sheet_id = '{{ sheet.sheet_id }}';
+var book_key = '{{ book.book_key }}';
+var sheet_key = '{{ sheet_key }}';
 
-var url_add_column = "{% url 'sheets:add_column' sheet.id %}";
-var url_add_row = "{% url 'sheets:add_row' sheet.id %}";
-var url_set_cell = "{% url 'sheets:set_cell' sheet.id %}";
-var url_set_exec = "{% url 'sheets:set_exec' sheet.id %}";
+var url_add_column = "{% url 'sheets:add_column' book.id %}";
+var url_add_row = "{% url 'sheets:add_row' book.id %}";
+var url_set_cell = "{% url 'sheets:set_cell' book.id %}";
+var url_set_script_pre = "{% url 'sheets:set_script_pre' book.id %}";
 
 $(document).ready(sheet_page_load);
 

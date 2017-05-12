@@ -9,17 +9,7 @@ class Storage(object):
     An abstaction for reading and writing sheets to
     and from long term storage
     """
-    def read(self, sheet_id):
-        """
-        :param sheet_id: sheet id
-        """
-        raise NotImplementedError()
-    def write(self, sheet_id, b):
-        """
-        :param sheet_id: sheet id
-        :param b: bytes
-        """
-        raise NotImplementedError()
+    pass
 
 class Server(object):
     """
@@ -34,26 +24,19 @@ class Server(object):
         """
         self.storage = storage
 
-    def get_sheet(self, sheet_id):
-        return self.storage.get_sheet(sheet_id)
+    def get_book(self, book_id):
+        return self.storage.get_book(book_id)
 
-    def save_sheet(self, sheet_id):
-        return self.storage.save_sheet(sheet_id)
+    def save_book(self, book_id):
+        return self.storage.save_book(book_id)
 
-class SheetProxy(object):
+class BookProxy(object):
     """
     This class is an abstraction for access to a
-    Sheet object through communication with a Server
+    Book object through communication with a Server
     object.
     """
-    def set_cell(self, r, c, s):
-        """
-        proxy of sheets.Sheet.set_cell
-        """
-        raise NotImplementedError()
-
-
-
+    pass
 
 
 

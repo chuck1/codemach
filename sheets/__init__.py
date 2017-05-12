@@ -31,7 +31,10 @@ class Book(object):
         self.script_pre = sheets.script.Script()
         self.script_post = sheets.script.Script()
 
-        self.sheets = dict()
+        self.sheets = {"0": Sheet()}
+
+    def __getstate__(self):
+        return dict((k, getattr(self, k)) for k in ['sheets', 'script_pre', 'script_post'])
 
     def builtin___import__(self, name, globals=None, locals=None, 
             fromlist=(), level=0):
@@ -88,7 +91,7 @@ class Sheet(object):
         self.cells = sheets.cells.Cells()
         
     def __getstate__(self):
-        return dict((k, getattr(self, k)) for k in ['cells', 'script_pre', 'script_post'])
+        return dict((k, getattr(self, k)) for k in ['cells'])
     
     def set_cell(self, r, c, s):
         self.cells.set_cell(r, c, s)

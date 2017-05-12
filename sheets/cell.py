@@ -54,6 +54,8 @@ class Cell(object):
 
     def evaluate(self, book, sheet):
         
+        if not hasattr(self, "comp_exc"): self.comp()
+
         if self.comp_exc is not None:
             self.value = 'compile error: '+str(self.comp_exc)
             return

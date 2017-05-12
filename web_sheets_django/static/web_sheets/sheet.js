@@ -60,21 +60,25 @@ function apply_sheet_data(data_new) {
 
 function add_column() {
 	var post_data = {
-		'i':null, 
-		'csrfmiddlewaretoken':csrftoken
+		"sheet_key": sheet_key,
+		'i': null, 
+		'csrfmiddlewaretoken': csrftoken
 	};
 	$.post(url_add_column, post_data, apply_data);
 }
 function add_row() {
-	var post_data = {'i':null, 'csrfmiddlewaretoken':csrftoken};
+	var post_data = {
+		"sheet_key": sheet_key,
+		'i': null, 
+		'csrfmiddlewaretoken': csrftoken
+	};
 	$.post(url_add_row, post_data, apply_data);
 }
-function set_exec() {
+function set_script_pre() {
 	var text = $("#script").val();
         var post_data = {'text':text, 'csrfmiddlewaretoken':csrftoken};
 	$.post(url_set_exec, post_data, apply_sheet_data);
 }
-
 function sheet_page_load() {
 
 	csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
@@ -133,7 +137,8 @@ function sheet_page_load() {
 			console.log(args);
 
 			var post_data = {
-				'csrfmiddlewaretoken':csrftoken,
+				"sheet_key": sheet_key,
+				'csrfmiddlewaretoken': csrftoken,
 				'r': args[0],
 				'c': args[1],
 				's': args[3]
