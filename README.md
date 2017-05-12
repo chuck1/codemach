@@ -16,7 +16,26 @@ I will, however, provide as many examples of ideas for user-implemented features
 
 ## sheets
 
-The data and methods for the spreads themselves.
+Contains the data and methods for spreadsheets.
+The basic structure is shown in the following pseudocode.
+
+    Book:
+      sheets = dict of Sheet objects
+      script_pre = Script object
+      script_post = Script object
+
+    Sheet:
+      cells = Cells object
+      
+    Cells:
+      cells = numpy.array of Cell objects
+
+    Cell:
+      string = string which gets passed to eval()
+
+    Script:
+      string = string which gets passed to exec()
+
 
 ## sheets\_backend
 
