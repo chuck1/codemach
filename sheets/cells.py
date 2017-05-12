@@ -50,14 +50,14 @@ class Cells(object):
 
         self.cells = numpy.insert(self.cells, i, None, axis=0)
 
-    def evaluate(self, sheet):
+    def evaluate(self, book, sheet):
         
         self.set_evaluated(False)
 
         def f(cell, r, c):
             if cell is None: return
             #cell.evaluate(sheet)
-            cell.get_value(sheet)
+            cell.get_value(book, sheet)
         
         r = numpy.arange(numpy.shape(self.cells)[0])
         c = numpy.arange(numpy.shape(self.cells)[1])

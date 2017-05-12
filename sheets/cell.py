@@ -43,16 +43,16 @@ class Cell(object):
             self.code = None
             self.comp_exc = e
 
-    def get_globals(self, sheet):
-        g = dict(sheet.glo)
-
+    def get_globals(self, book, sheet):
+        g = dict(book.glo)
+        
         g.update({
                 'cell': sheets.helper.CellHelper(self.r, self.c),
-                "cellshelper": sheets.helper.CellsHelper(sheet),
+                "cellshelper": sheets.helper.CellsHelper(book, sheet),
                 })
         return g
 
-    def evaluate(self, sheet):
+    def evaluate(self, book, sheet):
         
         if self.comp_exc is not None:
             self.value = 'compile error: '+str(self.comp_exc)
@@ -62,7 +62,7 @@ class Cell(object):
             self.value = ""
             return
 
-        g = self.get_globals(sheet)
+        g = self.get_globals(book, sheet)
 
         try:
             self.value = eval(self.code, g)
@@ -72,7 +72,7 @@ class Cell(object):
             print(termcolor.colored(
                 "exception during cell({},{}) eval".format(self.r, self.c), "yellow", attrs=["bold"]))
             print(termcolor.colored(repr(e), "yellow", attrs=["bold"]))
-            traceback.print_exc()
+            #traceback.print_exc()
             
             self.exception_eval = e
 
@@ -81,23 +81,23 @@ class Cell(object):
         else:
             self.exception_eval = None
 
-    def get_value(self, sheet):
+    def get_value(self, book, sheet):
         #print(self, self.evaluated)
 
         #print("Cell.get_value ({},{}) s = {} v = {} evaluated = {}".format(self.r, self.c, repr(self.string), repr(self.value) if hasattr(self, 'value') else 'no value', self.evaluated))
 
         if self.evaluated: return self.value
 
-        if self in sheet.cell_stack:
+        if self in book.cell_stack:
             #raise RecursiveCellRef()
             raise RuntimeError("recursion")
 
-        sheet.cell_stack.append(self)
+        book.cell_stack.append(self)
 
-        self.evaluate(sheet)
+        self.evaluate(book, sheet)
         self.evaluated = True
 
-        sheet.cell_stack.pop()
+        book.cell_stack.pop()
 
         return self.value
 

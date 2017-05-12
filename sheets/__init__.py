@@ -26,16 +26,13 @@ APPROVED_DEFAULT_BUILTINS = {
         "type": type,
         }
 
-class Sheet(object):
+class Book(object):
     def __init__(self):
-        self.cells = sheets.cells.Cells()
-        
         self.script_pre = sheets.script.Script()
         self.script_post = sheets.script.Script()
-    
-    def __getstate__(self):
-        return dict((k, getattr(self, k)) for k in ['cells', 'script_pre', 'script_post'])
-    
+
+        self.sheets = dict()
+
     def builtin___import__(self, name, globals=None, locals=None, 
             fromlist=(), level=0):
         
@@ -46,26 +43,6 @@ class Sheet(object):
 
         return __import__(name, globals, locals, fromlist, level)
 
-    def set_cell(self, r, c, s):
-
-        self.cells.set_cell(r, c, s)
-
-        self.do_all()
-
-    def add_column(self, i):
-        self.cells.add_column(i)
-
-    def add_row(self, i):
-        self.cells.add_row(i)
-
-    """
-    def get_globals(self):
-        if not hasattr(self, 'glo'):
-            self.reset_globals()
-            self.script_exec()
-        return self.glo
-    """
-
     def reset_globals(self):
         approved_builtins = {
                 '__import__': self.builtin___import__,
@@ -75,17 +52,8 @@ class Sheet(object):
 
         self.glo = {
                 "__builtins__": approved_builtins,
-                "cells": self.cells_strings(),
+                "sheets": dict((k, s.cells_strings()) for k, s in self.sheets.items())
                 }
-
-    def cells_evaluated_set(self, b):
-        def f(c):
-            if c is not None:
-                c.evaluated = b
-        numpy.vectorize(f)(self.cells)
-
-    def cells_strings(self):
-        return self.cells.cells_strings()
 
     def set_script_pre(self, s):
         if self.script_pre.set_string(s):
@@ -99,11 +67,47 @@ class Sheet(object):
         self.reset_globals()
 
         self.script_pre.execute(self.glo)
-
+        
         self.cell_stack = list()
-        self.cells.evaluate(self)
+        for s in self.sheets.values():
+            s.cells.evaluate(self, s)
 
         self.script_post.execute(self.glo)
+
+    def set_cell(self, k, r, c, s):
+        if not k in self.sheets:
+            self.sheets[k] = Sheet()
+        sheet = self.sheets[k]
+        
+        sheet.cells.set_cell(r, c, s)
+        
+        self.do_all()
+
+class Sheet(object):
+    def __init__(self):
+        self.cells = sheets.cells.Cells()
+        
+    def __getstate__(self):
+        return dict((k, getattr(self, k)) for k in ['cells', 'script_pre', 'script_post'])
+    
+    def set_cell(self, r, c, s):
+        self.cells.set_cell(r, c, s)
+
+    def add_column(self, i):
+        self.cells.add_column(i)
+
+    def add_row(self, i):
+        self.cells.add_row(i)
+
+    def cells_evaluated_set(self, b):
+        def f(c):
+            if c is not None:
+                c.evaluated = b
+        numpy.vectorize(f)(self.cells)
+
+    def cells_strings(self):
+        return self.cells.cells_strings()
+
         
 
 
