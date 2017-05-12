@@ -12,19 +12,19 @@ def try_func(f):
     except Exception as e:
         print(termcolor.colored('failed','red',attrs=['bold']))
         print(e)
-        traceback.print_exc()
-        return
+        raise
 
-def tests():
+def test():
 
-    import sheets.test.set_cell
-    import sheets.test.set_exec
+    import sheets.tests.set_cell
+    import sheets.tests.set_exec
 
     print_yb('sheets tests')
     print_yb('  set_cell')
-    try_func(sheets.test.set_cell.test)
+    try_func(sheets.tests.set_cell.test)
     print_yb('  set_exec')
-    try_func(sheets.test.set_exec.test)
+    try_func(sheets.tests.set_exec.test)
 
-tests()
+if __name__ == "__main__":
+    test()
 
