@@ -44,8 +44,8 @@ The steps to recalculate the entire book are as follows
       and custom implementations of certain other python builtin function
     - sheets: a dict with pairs of sheet keys and numpy arrays. the arrays contain
       the cell strings.
-- Execute script_pre
-  - script_pre is passed the globals object from above
+- Execute script\_pre
+  - script\_pre is passed the globals object from above
 - Evaluate cells
   - For cell evaluation, a shallow copy is made of the globals object from above.
     Therefore, the cell can alter non-trivial objects in the globals.
@@ -85,4 +85,6 @@ The sheet app handles the viewing and modification of spreadsheets.
     sheet.set_cell(0, 0, 'hello')
     ret = sheet.get_sheet_data()
 
-This code will only work if there is a sockets server running at the port specified and a sheet with id sheet_id exists.
+This code will only work if there is a sockets server running at the port specified and a sheet with id sheet\_id exists.
+
+
