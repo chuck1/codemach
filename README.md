@@ -12,22 +12,23 @@ For now, the goal is to keep the sheets module as small as possible.
 So features that would require additional code but could be implemented by the user will not be added.
 I will, however, provide as many examples of ideas for user-implemented features as possible.
 
-# Components
-## Website
+# Modules
 
-The website itself is powered by Django.
-The sheet app handles the viewing and modification of spreadsheets.
-
-## sheets Module
+## sheets
 
 The data and methods for the spreads themselves.
 
-## sheets\_backend Module
+## sheets\_backend
 
 This module defines an abstract class SheetProxy that
 defines all the methods of Sheet that a client needs.
 Derived versions of this class can use different backends for
 storage and access of actual Sheet objects.
+
+## web\_sheets\_django
+
+The website itself is powered by Django.
+The sheet app handles the viewing and modification of spreadsheets.
 
 # Production Server
 
