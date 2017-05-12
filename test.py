@@ -16,14 +16,16 @@ def try_func(f):
 
 def test():
 
-    import sheets.tests.set_cell
-    import sheets.tests.set_exec
+    print_yb("sheets tests")
 
-    print_yb('sheets tests')
-    print_yb('  set_cell')
-    try_func(sheets.tests.set_cell.test)
-    print_yb('  set_exec')
-    try_func(sheets.tests.set_exec.test)
+    for t in [
+            "sheets.tests.set_cell",
+            "sheets.tests.set_script_pre",
+            ]:
+        m = __import__(t, fromlist=["test"])
+        
+        print_yb(m)
+        try_func(m.test)
 
 if __name__ == "__main__":
     test()

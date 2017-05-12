@@ -4,7 +4,8 @@ import termcolor
 import sys
 import io
 
-import sheets.cells
+import sheets.cell
+import sheets.helper
 
 class Cells(object):
     def __init__(self):
@@ -33,7 +34,7 @@ class Cells(object):
         self.ensure_size(r, c)
 
         if self.cells[r,c] is None:
-            self.cells[r,c] = Cell(r,c)
+            self.cells[r,c] = sheets.cell.Cell(r,c)
 
         self.cells[r,c].set_string(self, s)
 
@@ -49,13 +50,14 @@ class Cells(object):
 
         self.cells = numpy.insert(self.cells, i, None, axis=0)
 
-    def evaluate(self):
+    def evaluate(self, sheet):
         
         self.set_evaluated(False)
 
         def f(cell, r, c):
             if cell is None: return
-            cell.calc(self)
+            #cell.evaluate(sheet)
+            cell.get_value(sheet)
         
         r = numpy.arange(numpy.shape(self.cells)[0])
         c = numpy.arange(numpy.shape(self.cells)[1])
@@ -71,10 +73,7 @@ class Cells(object):
         numpy.vectorize(f)(self.cells)
 
     def cells_strings(self):
-        def f(c):
-            if c is None: return ""
-            return c.string
-        return numpy.array(numpy.vectorize(f, otypes=[str])(self.cells).tolist())
+        return sheets.helper.cells_strings(self.cells)
 
 
 

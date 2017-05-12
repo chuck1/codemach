@@ -4,16 +4,22 @@ import termcolor
 import sys
 import io
 
+def cells_strings(cells):
+    def f(c):
+        if c is None: return ""
+        return c.string
+    return numpy.array(numpy.vectorize(f, otypes=[str])(cells).tolist())
+
+def cells_values(cells, sheet):
+    def f(c):
+        if c is None: return None
+        return c.get_value(sheet)
+    return numpy.vectorize(f)(cells)
+
 class CellHelper(object):
     def __init__(self, r, c):
         self.r = r
         self.c = c
-
-def cells_values(cells):
-    def f(c):
-        if c is None: return None
-        return c.value
-    return numpy.vectorize(f)(cells)
 
 class CellsHelper(object):
     """
@@ -23,8 +29,8 @@ class CellsHelper(object):
     WARNING
     passing the sheet to this object is not OK for final implementation
     """
-    def __init__(self, cells):
-        self.cells = cells
+    def __init__(self, sheet):
+        self.sheet = sheet
 
     def __getitem__(self, args):
         #if not isinstance(args, tuple): args = (args,)
@@ -32,7 +38,7 @@ class CellsHelper(object):
         #r, c = CellsHelper.expand_args(*args)
         
         #return cells_values(self.cells.cells[r,c])
-        return cells_values(self.cells.cells[args]) 
+        return cells_values(self.sheet.cells.cells[args], self.sheet) 
 
     @classmethod
     def expand_args(cls, r, c=None):

@@ -4,6 +4,10 @@ import termcolor
 import sys
 import io
 
+import sheets.helper
+
+class RecursiveCellRef(Exception): pass
+
 class Cell(object):
     def __init__(self,r,c):
         self.string = None
@@ -37,11 +41,11 @@ class Cell(object):
             self.comp_exc = e
 
     def get_globals(self, sheet):
-        g = dict(sheet.get_globals())
+        g = dict(sheet.glo)
 
         g.update({
-                'cell': CellHelper(self.r, self.c),
-                "cellshelper": CellsHelper(sheet),
+                'cell': sheets.helper.CellHelper(self.r, self.c),
+                "cellshelper": sheets.helper.CellsHelper(sheet),
                 })
         return g
 
@@ -59,26 +63,36 @@ class Cell(object):
 
         try:
             self.value = eval(self.code, g)
+        except RecursiveCellRef as e:
+            raise
         except Exception as e:
             print(termcolor.colored(
                 "exception during cell({},{}) eval".format(self.r, self.c), "yellow"))
             print(termcolor.colored(e, "yellow"))
+            traceback.print_exc()
             
-            self.value = "eval error: " + str(e)
+            self.exception_eval = e
+
+            #self.value = "eval error: " + str(e)
+            self.value = e
+        else:
+            self.exception_eval = None
 
     def get_value(self, sheet):
+        print(self, self.evaluated)
 
         if self.evaluated: return self.value
 
-        self.evaluated = True
-        
         if self in sheet.cell_stack:
+            #raise RecursiveCellRef()
             raise RuntimeError("recursion")
 
         sheet.cell_stack.append(self)
 
         self.evaluate(sheet)
+        self.evaluated = True
 
         sheet.cell_stack.pop()
 
+    
 

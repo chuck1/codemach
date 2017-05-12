@@ -13,13 +13,14 @@ class Script(object):
         return dict((k, getattr(self, k)) for k in ["string"])
     
     def set_string(self,s):
-        if s == self.string: return
+        if s == self.string: return False
         self.string = s
         self.comp()
+        return True
 
     def comp(self):
         try:
-            self.code = compile(self.script, '<script>', 'exec')
+            self.code = compile(self.string, '<script>', 'exec')
         except Exception as e:
             self.code = None
             self.comp_exc = e
@@ -42,11 +43,11 @@ class Script(object):
         old = sys.stdout
         sys.stdout = out
         try:
-            exec(self.code_exec, g)
+            exec(self.code, g)
         except Exception as e:
             sys.stdout = old
 
-            self.exec_exception_exec = e
+            self.exec_exc = e
 
             exc_string = traceback.format_exc().split('\n')
             #exc_string.pop(1)
@@ -54,11 +55,12 @@ class Script(object):
             exc_string = "\n".join(exc_string)
         else:
             sys.stdout = old
-            self.exec_exception_exec = None
+            self.exec_exc = None
             exc_string = ''
        
         self.output = out.getvalue() + "".join(exc_string)
-
+    
+    def jkhkjfskaf():
         # inspect the cells global
         try:
             cells = self.glo["cells"]

@@ -4,6 +4,7 @@ import termcolor
 import sys
 import io
 
+import sheets.cells
 import sheets.script
 
 APPROVED_MODULES = [
@@ -45,47 +46,25 @@ class Sheet(object):
 
         return __import__(name, globals, locals, fromlist, level)
 
-    def ensure_size(self, r, c):
-        if r > (numpy.shape(self.cells)[0]-1):
-            shape = (r-numpy.shape(self.cells)[0]+1,numpy.shape(self.cells)[1])
-            self.cells = numpy.append(
-                    self.cells,
-                    numpy.empty(shape,dtype=object),
-                    axis=0)
-
-        if c > (numpy.shape(self.cells)[1]-1):
-            shape = (numpy.shape(self.cells)[0],c-numpy.shape(self.cells)[1]+1)
-            self.cells = numpy.append(
-                    self.cells,
-                    numpy.empty(shape,dtype=object),
-                    axis=1)
-
     def set_cell(self, r, c, s):
-        self.ensure_size(r, c)
 
-        if self.cells[r,c] is None:
-            self.cells[r,c] = Cell(r,c)
-
-        self.cells[r,c].set_string(self, s)
+        self.cells.set_cell(r, c, s)
 
         self.do_all()
 
     def add_column(self, i):
-        if i is None:
-            i = numpy.shape(self.cells)[1]
-
-        self.cells = numpy.insert(self.cells, i, None, axis=1)
+        self.cells.add_column(i)
 
     def add_row(self, i):
-        if i is None:
-            i = numpy.shape(self.cells)[0]
+        self.cells.add_row(i)
 
-        self.cells = numpy.insert(self.cells, i, None, axis=0)
-
+    """
     def get_globals(self):
         if not hasattr(self, 'glo'):
+            self.reset_globals()
             self.script_exec()
         return self.glo
+    """
 
     def reset_globals(self):
         approved_builtins = {
@@ -99,21 +78,6 @@ class Sheet(object):
                 "cells": self.cells_strings(),
                 }
 
-    def eval_all(self):
-        
-        self.cells_evaluated_set(False)
-
-        def f(cell, r, c):
-            if cell is None: return
-            cell.calc(self)
-        
-        r = numpy.arange(numpy.shape(self.cells)[0])
-        c = numpy.arange(numpy.shape(self.cells)[1])
-        
-        for i in range(numpy.shape(self.cells)[0]):
-            for j in range(numpy.shape(self.cells)[1]):
-                f(self.cells[i,j], r[i], c[j])
-
     def cells_evaluated_set(self, b):
         def f(c):
             if c is not None:
@@ -121,24 +85,23 @@ class Sheet(object):
         numpy.vectorize(f)(self.cells)
 
     def cells_strings(self):
-        def f(c):
-            if c is None: return ""
-            return c.string
-        return numpy.array(numpy.vectorize(f, otypes=[str])(self.cells).tolist())
+        return self.cells.cells_strings()
 
-    def set_exec(self,s):
-        if s == self.script: return
-        self.script = s
-        self.script_exec()
+    def set_script_pre(self, s):
+        if self.script_pre.set_string(s):
+            self.do_all()
 
+    def set_script_post(self, s):
+        if self.script_post.set_string(s):
+            self.do_all()
 
     def do_all(self):
-
         self.reset_globals()
 
         self.script_pre.execute(self.glo)
 
-        self.cells_eval_all()
+        self.cell_stack = list()
+        self.cells.evaluate(self)
 
         self.script_post.execute(self.glo)
         
