@@ -46,6 +46,7 @@ def cells_array(ret):
 
 def index(request):
     if not request.user.is_authenticated():
+        print('user not auth. redirect to login', repr(request.user))
         return HttpResponseRedirect(reverse('social:begin', args=['google-oauth2',])+'?next='+reverse('index'))
 
     user = django.contrib.auth.get_user(request)
@@ -167,7 +168,9 @@ def book_new(request):
     c = sheets_backend.sockets.Client(settings.WEB_SHEETS_PORT)
     
     ret = c.book_new()
-    
+
+    print('new book id', repr(ret.book_id), type(ret.book_id))
+
     b = models.Book()
     b.user_creator = request.user
     b.book_id = ret.book_id

@@ -3,3 +3,4 @@
 secrets.json
 log
 web_sheets_django/production/
+geckodriver.log

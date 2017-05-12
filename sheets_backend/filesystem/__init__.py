@@ -22,7 +22,7 @@ class Storage(sheets_backend.Storage):
         with open(os.path.join(self.folder, 'book_id.txt'), 'w') as f:
             f.write(str(i))
 
-        return i
+        return str(i)
 
     def book_new(self):
         b = sheets.Book()
