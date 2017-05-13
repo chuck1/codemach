@@ -73,12 +73,6 @@ storage and access of actual Sheet objects.
 The website itself is powered by Django.
 The sheet app handles the viewing and modification of spreadsheets.
 
-# Production Server
-
- * change folder and file permission to allow database write
- * set WSGI python path for my custom modules
- * remove references to my environment variables
-
 # Accessing Sheet Data
 
     sheet = sheets_backend.sockets.SheetProxy(sheet_id, port)
@@ -86,5 +80,11 @@ The sheet app handles the viewing and modification of spreadsheets.
     ret = sheet.get_sheet_data()
 
 This code will only work if there is a sockets server running at the port specified and a sheet with id sheet\_id exists.
+
+# Production Server
+
+ * change folder and file permission to allow database write
+ * set WSGI python path for my custom modules
+ * remove references to my environment variables
 
 
