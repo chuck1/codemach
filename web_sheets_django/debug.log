@@ -1,0 +1,34 @@
+Internal Server Error: /sheets/sheets/book_new
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.4/dist-packages/django/core/handlers/exception.py", line 41, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.4/dist-packages/django/core/handlers/base.py", line 187, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "/usr/local/lib/python3.4/dist-packages/django/core/handlers/base.py", line 185, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.4/dist-packages/django/contrib/auth/decorators.py", line 23, in _wrapped_view
+    return view_func(request, *args, **kwargs)
+  File "/home/chuck/git/web_sheets/web_sheets_django/sheets_app/views.py", line 170, in book_new
+    ret = c.book_new()
+  File "/home/chuck/git/web_sheets/sheets_backend/sockets/__init__.py", line 199, in book_new
+    return self.recv_packet()
+  File "/home/chuck/git/web_sheets/sheets_backend/sockets/__init__.py", line 193, in recv_packet
+    o = pickle.loads(self.recv())
+EOFError: Ran out of input
+Internal Server Error: /sheets/sheets/book_new
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.4/dist-packages/django/core/handlers/exception.py", line 41, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.4/dist-packages/django/core/handlers/base.py", line 187, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "/usr/local/lib/python3.4/dist-packages/django/core/handlers/base.py", line 185, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.4/dist-packages/django/contrib/auth/decorators.py", line 23, in _wrapped_view
+    return view_func(request, *args, **kwargs)
+  File "/home/chuck/git/web_sheets/web_sheets_django/sheets_app/views.py", line 170, in book_new
+    ret = c.book_new()
+  File "/home/chuck/git/web_sheets/sheets_backend/sockets/__init__.py", line 199, in book_new
+    return self.recv_packet()
+  File "/home/chuck/git/web_sheets/sheets_backend/sockets/__init__.py", line 193, in recv_packet
+    o = pickle.loads(self.recv())
+EOFError: Ran out of input
