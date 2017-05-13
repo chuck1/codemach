@@ -107,5 +107,10 @@ div.toolbar div h2 {
 	margin: 0;
 	margin-right: 50px;
 }
+div.warning {
+	height: 60px;
+	background-color: #ffff00;
+}
+
 
 

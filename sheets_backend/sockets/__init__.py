@@ -2,11 +2,14 @@ import os
 import pickle
 import numpy
 import traceback
+import logging
 
 import mysocket
 import sheets_backend
 
-class Packet(object):pass
+logger = logging.getLogger(__name__)
+
+class Packet(object): pass
 
 class SetCell(Packet):
     def __init__(self, book_id, sheet_id, r, c, s):
@@ -184,6 +187,10 @@ class Server(sheets_backend.Server, mysocket.Server):
     def __init__(self, storage, port):
         sheets_backend.Server.__init__(self, storage)
         mysocket.Server.__init__(self, '', port, ClientSocket)
+    
+    def run(self):
+        logger.info('starting books server socket')
+        mysocket.Server.run(self)
 
 class Client(mysocket.Client):
     def __init__(self, port):

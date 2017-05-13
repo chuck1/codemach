@@ -1,6 +1,10 @@
 #!/bin/bash
 
-./socket_server.py > log/server.log 2>&1 &
+p=`cat server_pid`
+
+kill $p
+
+./socket_server.py &
 
 p=$!
 
