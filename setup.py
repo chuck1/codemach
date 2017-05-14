@@ -12,7 +12,7 @@ setup(name='storage',
         zip_safe=False,
         entry_points={
             'console_scripts':[
-                'web_sheets_storage = storage.daemon'
+                'web_sheets_storage = storage:daemon'
                 ]
             })
 
