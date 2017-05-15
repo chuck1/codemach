@@ -101,6 +101,15 @@ function add_row() {
 	};
 	$.post(url_add_row, post_data, apply_data);
 }
+function get_sheet_data() {
+        var post_data = {
+		'csrfmiddlewaretoken':csrftoken,
+		'sheet_key': sheet_key,
+	};
+	var jqxhr = $.post(url_get_sheet_data, post_data, apply_sheet_data).fail(function() {
+		alert("get sheet data ajax post fail");
+	});
+}
 function set_script_pre() {
 	//console.log('set script pre ' + url_set_script_pre);
 	var text = $("#script").val();
@@ -210,5 +219,7 @@ function sheet_page_load() {
 			$.post(url_set_cell, post_data, apply_data);
 		});
 	});
+
+	get_sheet_data();
 }
 

@@ -124,6 +124,29 @@ def set_cell(request, book_id):
 
     return JsonResponse({'cells':cells})
 
+def get_sheet_data(request, book_id):
+    sheet_key = request.POST["sheet_key"]
+    
+    book = get_object_or_404(models.Book, pk=book_id)
+    
+    bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
+ 
+    ret = bp.get_sheet_data(sheet_key)
+    
+    cells = cells_array(ret)
+
+    logger.debug('sheet_data')
+    logger.debug('script_pre_output')
+    logger.debug(ret.script_pre_output)
+
+    return JsonResponse({
+        'cells': cells,
+        'script_pre': ret.script_pre,
+        'script_pre_output': ret.script_pre_output,
+        'script_post': ret.script_post,
+        'script_post_output': ret.script_post_output,
+        })
+
 def set_script_pre(request, book_id):
     sheet_key = request.POST["sheet_key"]
     s = request.POST['text']

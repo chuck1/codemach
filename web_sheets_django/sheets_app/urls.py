@@ -23,5 +23,9 @@ urlpatterns = [
                 r'^add_row/(?P<book_id>[^/]+)/$',
                 views.add_row,
                 name='add_row'),
+            url(
+                r'^get_sheet_data/(?P<book_id>[^/]+)/$',
+                views.get_sheet_data,
+                name='get_sheet_data'),
             ]
 
