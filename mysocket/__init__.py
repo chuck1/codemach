@@ -7,11 +7,14 @@ import socket
 import select
 import time
 import sys
+import logging
 
 # Changing the buffer_size and delay, you can improve the speed and bandwidth.
 # But when buffer get to high or delay go too down, you can broke things
 BUFFER_SIZE = 4096
 delay = 0.0001
+
+logger = logging.getLogger(__name__)
 
 class Common(object):
     def send(self, b):
@@ -46,7 +49,7 @@ class Server(object):
     def run(self):
         self.input_list.append(self.server)
         while 1:
-            print('main loop')
+            logger.debug('main loop')
             time.sleep(delay)
             ss = select.select
             inputready, outputready, exceptready = ss(self.input_list, [], [])
@@ -66,12 +69,12 @@ class Server(object):
     def on_accept(self):
         clientsock, clientaddr = self.server.accept()
         
-        print(clientaddr, "has connected")
+        logger.info(clientaddr, "has connected")
         c = self.class_client(self, clientsock)
         self.input_list.append(c)
 
     def on_close(self, s):
-        print(s.sock.getpeername(), "has disconnected")
+        logger.info(s.sock.getpeername(), "has disconnected")
         #remove objects from input_list
         self.input_list.remove(s)
 
