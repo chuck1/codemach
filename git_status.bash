@@ -1,4 +1,9 @@
 
+cd
+cd git
+
+cd handsontable
+git status
 cd ..
 
 cd mysocket

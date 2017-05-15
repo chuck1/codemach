@@ -4,15 +4,17 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.conf import settings
-
 import django.contrib.auth
 
 import json
 import numpy
+import logging
 
 import sheets_backend.sockets
 
 import sheets_app.models as models
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -53,13 +55,19 @@ def index(request):
     print('index')
     print('GET',list(request.GET.items()))
 
-
     if user.is_authenticated():
-        sheets = list(user.sheet_user_creator.all())
+        books = list(user.book_user_creator.all())
     else:
-        sheets = []
+        books = []
     
-    context = {'user': user, 'sheets': sheets}
+    context = {
+            'user': user, 
+            'books': books,
+            'url_login_redirect': django.urls.reverse('index'),
+            'url_logout_redirect': django.urls.reverse('index'),
+            'url_select_account_redirect': django.urls.reverse('index'),
+            }
+
     return render(request, 'sheets_app/index.html', context)
 
 def book(request, book_id, sheet_key):
@@ -92,6 +100,9 @@ def book(request, book_id, sheet_key):
         'user': u,
         'book': book,
         'sheet_key': sheet_key,
+        'url_login_redirect': django.urls.reverse('index'),
+        'url_logout_redirect': django.urls.reverse('index'),
+        'url_select_account_redirect': django.urls.reverse('index'),
         }
     return render(request, 'sheets_app/sheet.html', context)
 
@@ -113,7 +124,7 @@ def set_cell(request, book_id):
 
     return JsonResponse({'cells':cells})
 
-def set_script_pre(request, sheet_id):
+def set_script_pre(request, book_id):
     sheet_key = request.POST["sheet_key"]
     s = request.POST['text']
     
@@ -121,11 +132,17 @@ def set_script_pre(request, sheet_id):
     
     bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
  
-    ret = bp.set_script_pre(s)
+    ret = bp.set_script_pre(sheet_key, s)
 
     ret = bp.get_sheet_data(sheet_key)
     
     cells = cells_array(ret)
+
+    print('set script pre')
+
+    logger.debug('sheet_data')
+    logger.debug('script_pre_output')
+    logger.debug(ret.script_pre_output)
 
     return JsonResponse({
         'cells': cells,
