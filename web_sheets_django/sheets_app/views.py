@@ -13,6 +13,7 @@ import logging
 import sheets_backend.sockets
 
 import sheets_app.models as models
+import sheets_app.book_demos
 
 logger = logging.getLogger(__name__)
 
@@ -70,18 +71,30 @@ def index(request):
 
     return render(request, 'sheets_app/index.html', context)
 
-def book(request, book_id, sheet_key):
-    if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse('social:begin', args=['google-oauth2',])+'?next='+reverse('index'))
+def book_demo(request, book_demo_name):
     
+    func = sheets_app.book_demos.get_func(book_demo_name)
+
+    book = book_new_func(book_demo_name)
+    book.is_demo = True
+    book.save()
+
+    bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
+
+    func(bp)
+
+    return redirect('sheets:book', book.id, 0)
+
+def book(request, book_id, sheet_key):
+   
     book = get_object_or_404(models.Book, pk=book_id)
     
-    u = django.contrib.auth.get_user(request)
+    if not book.is_demo:
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect(reverse('social:begin', args=['google-oauth2',])+'?next='+reverse('index'))
     
-    print('user',repr(u))
-    for k, v in u.__dict__.items():
-        print('  ', k, v)
-
+    user = django.contrib.auth.get_user(request)
+    
     bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
     
     ret = bp.get_sheet_data(sheet_key)
@@ -97,7 +110,7 @@ def book(request, book_id, sheet_key):
         'cells': json.dumps(cells),
         'script_pre': ret.script_pre,
         'script_pre_output': ret.script_pre_output,
-        'user': u,
+        'user': user,
         'book': book,
         'sheet_key': sheet_key,
         'url_login_redirect': django.urls.reverse('index'),
@@ -201,6 +214,23 @@ def add_column(request, book_id):
 def add_row(request, book_id):
     return alter_sheet(request, book_id, sheets_backend.sockets.BookProxy.add_row)
 
+def book_new_func(book_name, user=None):
+    
+    c = sheets_backend.sockets.Client(settings.WEB_SHEETS_PORT)
+    
+    ret = c.book_new()
+
+    print('new book id', repr(ret.book_id), type(ret.book_id))
+
+    b = models.Book()
+    b.user_creator = user
+    b.book_id = ret.book_id
+    b.book_name = book_name
+    b.is_demo = False
+    b.save()
+
+    return b
+
 @login_required
 def book_new(request):
     book_name = request.POST['book_name']
@@ -215,6 +245,7 @@ def book_new(request):
     b.user_creator = request.user
     b.book_id = ret.book_id
     b.book_name = book_name
+    b.is_demo = False
     b.save()
 
     return redirect('sheets:book', b.id, 0)

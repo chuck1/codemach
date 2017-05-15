@@ -27,5 +27,9 @@ urlpatterns = [
                 r'^get_sheet_data/(?P<book_id>[^/]+)/$',
                 views.get_sheet_data,
                 name='get_sheet_data'),
+            url(
+                r'^book_demo/(?P<book_demo_name>[^/]+)/$',
+                views.book_demo,
+                name='book_demo'),
             ]
 
