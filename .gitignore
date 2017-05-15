@@ -6,3 +6,4 @@ web_sheets_django/production/
 geckodriver.log
 *.egg-info
 *.log
+build/
