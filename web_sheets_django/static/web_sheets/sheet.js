@@ -30,19 +30,21 @@ function customRenderer (instance, td, row, col, prop, value, cellProperties) {
 	if(typeof value == 'string') {
 		console.log('renderer got string value');
 		console.log(value);
+		v = value;
+
 		//console.log('error!');
 		//alert('error!');
 		
-		var j = JSON.parse(value);
+		//var j = JSON.parse(value);
 		//var j = value;
 
 		//console.log('  object     ',j);
 		//var escaped = Handsontable.helper.stringify(j[1]);
 		//var escaped = escape(j[1]);
 		//var escaped = j[1];
-		var escaped = safe_tags_replace(j[1]);
+		//var escaped = safe_tags_replace(j[1]);
 		//console.log('  escaped    ',escaped);
-		v = escaped;
+		//v = escaped;
      	} else if(value == null) {
 		//console.log('renderer: value is null');
 		// encountered when dragging to create new rows
@@ -163,20 +165,52 @@ function sheet_page_load() {
 			"beforeKeyDown",
 		];
 
-		if(ignore.indexOf(h) > -1) return;
-		return;
+		//if(ignore.indexOf(h) > -1) return;
+		return
+		
 		hot.addHook(h, function() {
 			console.log(h);
-			console.log(arguments);
 		});
+	});
+
+	hot.addHook('beforeCopy', function(data, coords) {
+		console.log('beforeCopy');
+		console.log(data);
+		console.log(coords);
+		/*
+		var d = arguments[0].map(function(r){
+			return r.map(function(c){
+				return c[0];
+			});
+		});*/
+		var data_new = data.map(function(c){
+			return c.map(function(v){
+				console.log(v);
+				return v[0];
+			})
+		});
+
+		console.log(data_new);
+
+		data.splice(0,data.length);
+	
+		data_new.forEach(function(c) {
+			data.push(c);
+		});
+
+	});
+
+	hot.addHook('afterCopy', function(data, coords) {
+		console.log('afterCopy');
+		console.log(data);
 	});
 
 	hot.addHook('modifyData', function() {
 		if(arguments[3] == 'set') {
 			console.log('modifyData -----------------------');
 			console.log(arguments);
-			var o = arguments[2];
-			o.value = JSON.stringify([o.value,'']);
+			//var o = arguments[2];
+			//o.value = JSON.stringify([o.value,'']);
 		}
 	});
 
