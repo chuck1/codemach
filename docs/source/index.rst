@@ -9,6 +9,9 @@ Welcome to WebSheets's documentation!
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
+   :glob:
+
+   modules/sheets/*
 
 
 
