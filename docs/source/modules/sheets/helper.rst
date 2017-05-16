@@ -21,7 +21,7 @@ column index
 CellsHelper
 -----------
 
-.. py:method:: __getitem__(r, c=None, sheet_id=None)
+.. py:classmethod:: __getitem__(r, c=None, sheet_id=None)
 
 Returns a numpy array of cell values.
 *r* and *c* are integers or slices (any valid argument to a numpy.array __getitem__ method).
