@@ -20,6 +20,10 @@ def cells_values(cells, book, sheet):
     return a
 
 class CellHelper(object):
+    """
+    An instance of this class is added to the globals of the ``eval`` call for each cell.
+    This class provides access to information about a cell.
+    """
     def __init__(self, r, c):
         self.r = r
         self.c = c
