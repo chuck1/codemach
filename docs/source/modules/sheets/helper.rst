@@ -4,8 +4,11 @@ helper
 
 An instance of ``CellHelper`` and ``CellsHelper`` are available as globals in the evaluation of each cell.
 
-CellHelper
+Classes
 --
+
+CellHelper
+~~
 
 **r**
 
@@ -16,7 +19,7 @@ row index
 column index
 
 CellsHelper
---
+~~
 
 **__getitem__**(r, c=None, sheet_id=None)
 
