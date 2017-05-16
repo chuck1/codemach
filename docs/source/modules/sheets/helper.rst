@@ -7,25 +7,27 @@ An instance of ``CellHelper`` and ``CellsHelper`` are available as globals in th
 Classes
 =======
 
-CellHelper
-----------
+.. py:class:: CellHelper
 
 .. py:attribute:: r
 
-row index
+   row index
 
 .. py:attribute:: c
 
-column index
+   column index
 
-CellsHelper
------------
+.. py:class:: CellsHelper
 
 .. py:classmethod:: __getitem__(r, c=None, sheet_id=None)
 
-Returns a numpy array of cell values.
-*r* and *c* are integers or slices (any valid argument to a numpy.array __getitem__ method).
-If *sheet_id* is None, the current sheet is referenced.
+   :param r: row index
+   :type r: integer or slice
+   :param c: column index
+   :type c: integer or slice or None
+   :param sheet_id: index of sheet to be referenced or None to reference current sheet
+   :return: array of cell values
+   :rtype: numpy array
 
 
 
