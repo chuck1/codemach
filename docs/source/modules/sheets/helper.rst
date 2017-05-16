@@ -27,7 +27,7 @@ Classes
    :type c: integer or slice or None
    :param sheet_id: index of sheet to be referenced or None to reference current sheet
    :return: array of cell values
-   :rtype: numpy array
+   :rtype: `numpy array`_
 
-
+.. _numpy array: https://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html
 
