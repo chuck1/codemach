@@ -37,6 +37,17 @@ class CellsHelper(object):
         self.sheet = sheet
 
     def __getitem__(self, args):
+        """
+        :param r: row index
+        :type r: integer or slice
+        :param c: column index
+        :type c: integer or slice or None
+        :param sheet_id: index of sheet to be referenced or None to reference current sheet
+        :return: array of cell values
+        :rtype: `numpy array`_
+
+        .. _numpy array: https://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html
+        """
         #if not isinstance(args, tuple): args = (args,)
 
         r, c, k = CellsHelper.expand_args(*args)
