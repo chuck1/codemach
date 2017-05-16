@@ -10,7 +10,7 @@ Classes
 CellHelper
 ----------
 
-**r**
+:py:attr: r
 
 row index
 
