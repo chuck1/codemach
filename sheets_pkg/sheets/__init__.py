@@ -11,9 +11,6 @@ Consider the following::
 
     getattr(cellshelper, '__globals__')
 
-Classes
-=======
-
 """
 
 import numpy
