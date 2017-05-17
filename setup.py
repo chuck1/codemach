@@ -8,10 +8,15 @@ setup(name='web_sheets',
         author='Charles Rymal',
         author_email='charlesrymal@gmail.com',
         license='MIT',
-        packages=['storage','sheets'],
+        packages=[
+            'storage',
+            'sheets',
+            'sheets_backend'],
         package_dir={
+            'storage':'storage_pkg/storage',
             'sheets':'sheets_pkg/sheets',
-            'storage':'storage_pkg/storage'},
+            'sheets_backend':'sheets_backend_pkg/sheets_backend',
+            },
         install_requires=[
             'fs',
             'numpy',
