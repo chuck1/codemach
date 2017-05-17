@@ -51,6 +51,16 @@ def login_redirect(url_next):
     return HttpResponseRedirect(
             reverse('social:begin', args=['google-oauth2',])+'?next='+url_next)
 
+def check_permission(request, book):
+
+    if not book.is_demo:
+        if not request.user.is_authenticated():
+            return login_redirect(reverse('index'))
+        
+        if not (request.user == book.user_creator):
+            return HttpResponseForbidden("You shall not pass.")
+    
+
 def index(request, messages=[]):
     if not request.user.is_authenticated():
         return login_redirect(reverse('index'))
@@ -98,13 +108,10 @@ class SimpleMessage(object):
 def book(request, book_id, sheet_key):
    
     book = get_object_or_404(models.Book, pk=book_id)
-    
-    if not book.is_demo:
-        if not request.user.is_authenticated():
-            return login_redirect(reverse('index'))
-        
-        if not (request.user == book.user_creator):
-            return HttpResponseForbidden()
+
+    res = check_permission(request, book)
+    if res is not None:
+        return res
 
     user = django.contrib.auth.get_user(request)
     
@@ -133,12 +140,17 @@ def book(request, book_id, sheet_key):
     return render(request, 'sheets_app/sheet.html', context)
 
 def set_cell(request, book_id):
+    book = get_object_or_404(models.Book, pk=book_id)
+
+    res = check_permission(request, book)
+    if res is not None:
+        return res
+
     sheet_key = request.POST["sheet_key"]
     r = int(request.POST['r'])
     c = int(request.POST['c'])
     s = request.POST['s']
 
-    book = get_object_or_404(models.Book, pk=book_id)
 
     bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
 
@@ -152,10 +164,15 @@ def set_cell(request, book_id):
 
 def get_sheet_data(request, book_id):
     logger.info('get_sheet_data')
+    
+    book = get_object_or_404(models.Book, pk=book_id)
+
+    res = check_permission(request, book)
+    if res is not None:
+        return res
 
     sheet_key = request.POST["sheet_key"]
     
-    book = get_object_or_404(models.Book, pk=book_id)
     
     bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
  
@@ -180,6 +197,10 @@ def set_script_pre(request, book_id):
     s = request.POST['text']
     
     book = get_object_or_404(models.Book, pk=book_id)
+
+    res = check_permission(request, book)
+    if res is not None:
+        return res
     
     bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
  
