@@ -151,6 +151,8 @@ def set_cell(request, book_id):
     return JsonResponse({'cells':cells})
 
 def get_sheet_data(request, book_id):
+    logger.info('get_sheet_data')
+
     sheet_key = request.POST["sheet_key"]
     
     book = get_object_or_404(models.Book, pk=book_id)

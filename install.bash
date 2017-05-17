@@ -19,6 +19,8 @@ for f in daemon/*.service; do
 done
 
 chown web_sheets:web_sheets /var/log/web_sheets_sheets_backend
+mkdir /etc/web_sheets_sheets_backend/storage
+chown web_sheets:web_sheets /etc/web_sheets_sheets_backend/storage
 
 for f in daemon/*.service; do
 	name=$(basename "$f" .service)

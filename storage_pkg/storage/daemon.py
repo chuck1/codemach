@@ -20,8 +20,8 @@ def daemon():
     logger = logging.getLogger(__name__)
     try:
         test()
-    except:
-        logger.exception('exception occured')
+    except Exception as e:
+        logger.exception(str(e))
 
 
 

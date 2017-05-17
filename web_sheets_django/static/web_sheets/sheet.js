@@ -82,7 +82,7 @@ function apply_data(data_new) {
 	hot.render();
 }
 function apply_sheet_data(data_new) {
-	//console.log(data_new);
+	console.log('apply_sheet_data', data_new);
         apply_data(data_new);
         $("#script").val(data_new.script_pre);
         $("#script_output").val(data_new.script_pre_output);

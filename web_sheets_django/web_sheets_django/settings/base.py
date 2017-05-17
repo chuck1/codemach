@@ -119,8 +119,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -131,7 +129,10 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATICFILES_DIRS = []
+STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, "static"),
+        os.path.join(BASE_DIR, '../handsontable/dist'),
+        os.path.join(os.environ['HOME'], 'static'),]
 
 STATIC_URL = '/static/'
 
