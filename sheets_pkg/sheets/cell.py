@@ -39,7 +39,7 @@ class Cell(object):
     def check_code(self):
         """
         If any of the values in co_names contains ``__``, a
-        :py:class:`sheets.exception.NotAllowedError` is raised.
+        :py:exc:`sheets.exception.NotAllowedError` is raised.
         """
 
         if self.code is None: return
@@ -62,7 +62,7 @@ class Cell(object):
         Compile the string.
    
         The code object is inspected for possible security issues by the
-        :py:func:``sheets.cell.Cell.check_code`` function.
+        :py:func:`sheets.cell.Cell.check_code` function.
         """
         self.comp_exc = None
 

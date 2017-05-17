@@ -8,6 +8,7 @@ Sheets
 
    cell.rst
    helper.rst
+   exception.rst
 
 .. automodule:: sheets
    :members:
