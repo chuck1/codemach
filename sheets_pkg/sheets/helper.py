@@ -24,6 +24,10 @@ class CellHelper(object):
     This class provides access to information about a cell.
     """
     def __init__(self, r, c):
+        """
+        :param int r: row index
+        :param int c: column index
+        """
         self.r = r
         self.c = c
 
@@ -32,7 +36,7 @@ class CellsHelper(object):
     we must be careful not to expose too much to the user
     such that he or she may break the program or cause security issues
 
-    WARNING
+    WARNING::
     passing the sheet to this object is not OK for final implementation
     """
     def __init__(self, book, sheet):
@@ -65,5 +69,9 @@ class CellsHelper(object):
     @classmethod
     def expand_args(cls, r, c=None, k=None):
         return r, c, k
+
+
+
+
 
 

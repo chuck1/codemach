@@ -7,41 +7,7 @@ An instance of ``CellHelper`` and ``CellsHelper`` are available as globals in th
 Classes
 =======
 
-.. py:class:: CellHelper
-
-.. py:attribute:: r
-
-   row index
-
-.. py:attribute:: c
-
-   column index
-
-.. py:class:: CellsHelper
-
-.. py:classmethod:: __getitem__(r, c=None, sheet_id=None)
-
-   :param r: row index
-   :type r: integer or slice
-   :param c: column index
-   :type c: integer or slice or None
-   :param sheet_id: index of sheet to be referenced or None to reference current sheet
-   :return: array of cell values
-   :rtype: `numpy array`_
-
-.. _numpy array: https://docs.scipy.org/doc/numpy/reference/generated/numpy.array.html
-
-=======
-
-Testing Autodoc
-===============
-
 .. automodule:: sheets.helper
    :members:
 
-.. autoclass:: sheets.helper.CellHelper
-   :members:
-
-.. autoclass:: sheets.helper.CellsHelper
-   :members:
 

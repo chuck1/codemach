@@ -55,7 +55,12 @@ class Cell(object):
         self.comp()
         
     def comp(self):
-
+        """
+        Compile the string.
+   
+        The code object is inspected for possible security issues.
+        If any of the values in co_names starts with ``__``, a error is raised.
+        """
         self.comp_exc = None
 
         if not self.string:
