@@ -139,34 +139,6 @@ def book(request, book_id, sheet_key):
         }
     return render(request, 'sheets_app/sheet.html', context)
 
-def set_cell(request, book_id):
-    book = get_object_or_404(models.Book, pk=book_id)
-
-    res = check_permission(request, book)
-    if res is not None:
-        return res
-
-    sheet_key = request.POST["sheet_key"]
-    r = int(request.POST['r'])
-    c = int(request.POST['c'])
-    s = request.POST['s']
-
-
-    bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
-
-    ret = bp.set_cell(sheet_key, r, c, s)
-
-    ret = bp.get_cell_data(sheet_key)
-    
-    cells = cells_array(ret)
-
-    return JsonResponse({'cells':cells})
-
-class ExceptionWithResponse(Exception):
-    def __init__(self, response):
-        super(ExceptionWithResponse, self).__init__(str(self))
-        self.response = response
-
 class BookView(django.views.View):
 
     def post(self, request, book_id):
@@ -184,19 +156,28 @@ class BookView(django.views.View):
             
         return self.post_sub(request, book, bp)
 
-def get_sheet_data(request, book_id):
-    logger.info('get_sheet_data')
+class SetCellView(BookView):
+    def post_sub(self, request, book, bp):
     
-    book = get_object_or_404(models.Book, pk=book_id)
-
-    res = check_permission(request, book)
-    if res is not None:
-        return res
-
-    sheet_key = request.POST["sheet_key"]
+        sheet_key = request.POST["sheet_key"]
+        r = int(request.POST['r'])
+        c = int(request.POST['c'])
+        s = request.POST['s']
     
-    bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
- 
+        ret = bp.set_cell(sheet_key, r, c, s)
+    
+        ret = bp.get_cell_data(sheet_key)
+        
+        cells = cells_array(ret)
+    
+        return JsonResponse({'cells':cells})
+
+class ExceptionWithResponse(Exception):
+    def __init__(self, response):
+        super(ExceptionWithResponse, self).__init__(str(self))
+        self.response = response
+
+def sheet_data_response(bp, sheet_key):
     ret = bp.get_sheet_data(sheet_key)
     
     cells = cells_array(ret)
@@ -213,6 +194,13 @@ def get_sheet_data(request, book_id):
         'script_post_output': ret.script_post_output,
         })
 
+class GetSheetDataView(BookView):
+    def post_sub(self, request, book, bp):
+        
+        sheet_key = request.POST["sheet_key"]
+        
+        return sheet_data_response(bp, sheet_key)
+
 class SetScriptPreView(BookView):
     def post_sub(self, request, book, bp):
         sheet_key = request.POST["sheet_key"]
@@ -220,49 +208,30 @@ class SetScriptPreView(BookView):
         
         ret = bp.set_script_pre(sheet_key, s)
     
-        ret = bp.get_sheet_data(sheet_key)
+        return sheet_data_response(bp, sheet_key)
+
+class AlterSheetView(BookView):
+    def post_sub(self, request, book, bp):
+        if not request.POST['i']:
+            i = None
+        else:
+            i = int(request.POST['i'])
+        
+        sheet_key = request.POST["sheet_key"]
+        
+        ret = self.func(bp, sheet_key, i)
+    
+        ret = bp.get_cell_data(sheet_key)
         
         cells = cells_array(ret)
     
-        print('set script pre')
-    
-        logger.debug('sheet_data')
-        logger.debug('script_pre_output')
-        logger.debug(ret.script_pre_output)
-    
-        return JsonResponse({
-            'cells': cells,
-            'script_pre': ret.script_pre,
-            'script_pre_output': ret.script_pre_output,
-            'script_post': ret.script_post,
-            'script_post_output': ret.script_post_output,
-            })
+        return JsonResponse({'cells':cells})
 
-def alter_sheet(request, book_id, func):
-    if not request.POST['i']:
-        i = None
-    else:
-        i = int(request.POST['i'])
-    
-    sheet_key = request.POST["sheet_key"]
-    
-    book = get_object_or_404(models.Book, pk=book_id)
- 
-    bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
+class AddColumnView(AlterSheetView):
+    func = staticmethod(sheets_backend.sockets.BookProxy.add_column)
 
-    ret = func(bp, sheet_key, i)
-
-    ret = bp.get_cell_data(sheet_key)
-    
-    cells = cells_array(ret)
-
-    return JsonResponse({'cells':cells})
-
-def add_column(request, book_id):
-    return alter_sheet(request, book_id, sheets_backend.sockets.BookProxy.add_column)
-
-def add_row(request, book_id):
-    return alter_sheet(request, book_id, sheets_backend.sockets.BookProxy.add_row)
+class AddRowView(AlterSheetView):
+    func = staticmethod(sheets_backend.sockets.BookProxy.add_row)
 
 def book_new_func(book_name, user=None):
     
@@ -285,18 +254,7 @@ def book_new_func(book_name, user=None):
 def book_new(request):
     book_name = request.POST['book_name']
 
-    c = sheets_backend.sockets.Client(settings.WEB_SHEETS_PORT)
-    
-    ret = c.book_new()
-
-    print('new book id', repr(ret.book_id), type(ret.book_id))
-
-    b = models.Book()
-    b.user_creator = request.user
-    b.book_id = ret.book_id
-    b.book_name = book_name
-    b.is_demo = False
-    b.save()
+    b = book_new_func(book_name, request.user)
 
     return redirect('sheets:book', b.id, 0)
 
