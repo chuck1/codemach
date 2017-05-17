@@ -37,10 +37,15 @@ class Cell(object):
         return dict((k, getattr(self, k)) for k in ['r', 'c', 'string'])
 
     def check_code(self):
+        """
+        If any of the values in co_names contains ``__``, a
+        :py:class:`sheets.exception.NotAllowedError` is raised.
+        """
+
         if self.code is None: return
 
         for name in self.code.co_names:
-            if name[:2] == '__':
+            if '__' in name:
                 raise sheets.exception.NotAllowedError(
                         "For security, use of {} is not allowed".format(name))
 
@@ -56,8 +61,8 @@ class Cell(object):
         """
         Compile the string.
    
-        The code object is inspected for possible security issues.
-        If any of the values in co_names starts with ``__``, a error is raised.
+        The code object is inspected for possible security issues by the
+        :py:func:``sheets.cell.Cell.check_code`` function.
         """
         self.comp_exc = None
 

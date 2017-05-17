@@ -15,7 +15,6 @@ def code_analysis(code):
         if name[:2] == '__':
             print('    not allowed')
 
-
 class SecurityTest(unittest.TestCase):
 
     def test_helper(self):
@@ -43,6 +42,34 @@ class SecurityTest(unittest.TestCase):
         print()
 
         b.set_cell('0', 0, 0, "getattr(getattr(cellshelper, '__getitem__'), '__globals__').keys()")
+
+        c = s.cells.cells[0, 0]
+
+        print('cell =', c)
+        
+        print(s.cells.cells[0, 0].value)
+
+        if c.code is not None:
+            code_analysis(c.code)
+
+        ########
+        print()
+
+        b.set_cell('0', 0, 0, "dir(cellshelper)")
+
+        c = s.cells.cells[0, 0]
+
+        print('cell =', c)
+        
+        print(s.cells.cells[0, 0].value)
+
+        if c.code is not None:
+            code_analysis(c.code)
+
+        ########
+        print()
+
+        b.set_cell('0', 0, 0, "cellshelper._CellsHelper__book")
 
         c = s.cells.cells[0, 0]
 
