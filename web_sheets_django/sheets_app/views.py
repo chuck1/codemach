@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.urls import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.conf import settings
 import django.contrib.auth
 
@@ -47,14 +47,18 @@ def cells_array(ret):
         return json.dumps([c.string, v])
     return numpy.vectorize(f, otypes=[str])(cells).tolist()
 
-def index(request):
+def login_redirect(url_next):
+    return HttpResponseRedirect(
+            reverse('social:begin', args=['google-oauth2',])+'?next='+url_next)
+
+def index(request, messages=[]):
     if not request.user.is_authenticated():
-        print('user not auth. redirect to login', repr(request.user))
-        return HttpResponseRedirect(reverse('social:begin', args=['google-oauth2',])+'?next='+reverse('index'))
+        return login_redirect(reverse('index'))
 
     user = django.contrib.auth.get_user(request)
-    print('index')
-    print('GET',list(request.GET.items()))
+    
+    logger.debug('index')
+    logger.debug('GET',list(request.GET.items()))
 
     if user.is_authenticated():
         books = list(user.book_user_creator.all())
@@ -67,6 +71,7 @@ def index(request):
             'url_login_redirect': django.urls.reverse('index'),
             'url_logout_redirect': django.urls.reverse('index'),
             'url_select_account_redirect': django.urls.reverse('index'),
+            'messages': messages
             }
 
     return render(request, 'sheets_app/index.html', context)
@@ -85,14 +90,23 @@ def book_demo(request, book_demo_name):
 
     return redirect('sheets:book', book.id, 0)
 
+class SimpleMessage(object):
+    def __init__(self, msgtype, msg):
+        self.msgtype = msgtype
+        self.msg = msg
+
 def book(request, book_id, sheet_key):
    
     book = get_object_or_404(models.Book, pk=book_id)
     
     if not book.is_demo:
         if not request.user.is_authenticated():
-            return HttpResponseRedirect(reverse('social:begin', args=['google-oauth2',])+'?next='+reverse('index'))
-    
+            return login_redirect(reverse('index'))
+        
+        if not (user == book.user_creator):
+            #return redirect('index', messages=[SimpleMessage('error','you do not have permission to view ')])
+            return HttpResponseForbidden()
+
     user = django.contrib.auth.get_user(request)
     
     bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
