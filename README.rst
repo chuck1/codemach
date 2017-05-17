@@ -14,7 +14,7 @@ cell values.
 
 Documentation_
 
-.. _Documentation: http://web-sheets.readthedocs.io
+.. _Documentation: http://web-sheets.readthedocs.io/en/dev
 
 Philosophy
 ----------
