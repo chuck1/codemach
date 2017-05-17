@@ -3,22 +3,35 @@ Web Sheets
 
 A web-based python spreadsheet app.
 
-Each sheet has an array of cells and a script.
-Each cell contains a string of python code which is evaluated and the result is displayed.
-The script runs before cells are evaluated and the globals dictionary from the script is used in evaluating the cells.
+Each book has multiple sheets a pre and post script.
+Each sheet has a 2D array of cells.
+Each cell contains a string of python code which is evaluated
+and the result is displayed.
+The pre script runs before cells are evaluated and the globals
+dictionary from the script is used in evaluating the cells.
+The post-script runs after cell evaluation and has access to
+cell values.
 
-## Philosophy
+Documentation_
+
+.. _Documentation: http://web-sheets.readthedocs.io
+
+Philosophy
+----------
 
 For now, the goal is to keep the sheets module as small as possible.
-So features that would require additional code but could be implemented by the user will not be added.
+So features that would require additional code but could be implemented
+by the user will not be added.
 I will, however, provide as many examples of ideas for user-implemented features as possible.
 
-# Modules
+Modules
+=======
 
-## sheets
+sheets
+------
 
 Contains the data and methods for spreadsheets.
-The basic structure is shown in the following pseudocode.
+The basic structure is shown in the following pseudocode.::
 
     Book:
       sheets = dict of Sheet objects
@@ -51,7 +64,8 @@ The steps to recalculate the entire book are as follows
   - For cell evaluation, a shallow copy is made of the globals object from above.
     Therefore, the cell can alter non-trivial objects in the globals.
 
-### Cell class
+Cell class
+----------
 
 Cell data is stored in the _string_ member which can be None or a string representing a python expression.
 A Cell can return a value which can be one of the following:
