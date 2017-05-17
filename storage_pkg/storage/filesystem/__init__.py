@@ -21,6 +21,10 @@ class Storage(storage.Storage):
             i = 0
         
         i += 1
+        
+        try:
+            os.makedirs(self.folder)
+        except: pass
 
         with open(os.path.join(self.folder, 'object_id.txt'), 'w') as f:
             f.write(str(i))
