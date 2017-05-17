@@ -36,8 +36,8 @@ class CellsHelper(object):
     we must be careful not to expose too much to the user
     such that he or she may break the program or cause security issues
 
-    WARNING::
-    passing the sheet to this object is not OK for final implementation
+    .. WARNING::
+       passing the sheet to this object is not OK for final implementation
     """
     def __init__(self, book, sheet):
         self.book = book
