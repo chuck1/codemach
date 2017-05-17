@@ -2,24 +2,27 @@
 
 root=`pwd`
 
+pip3 install .
 
-cd $root/mysocket
-pip3 install -e .
+systemctl daemon-reload
 
-cd $root/storage
-pip3 install -e .
+for f in daemon/*.service; do
+	src=$root/$f
+	name=$(basename "$f" .service)
+	dst=/lib/systemd/system/$(basename "$f" .service).service
+	echo $src
+	echo $dst
+	echo $name
 
-cd $root/sheets
-pip3 install -e .
+	mkdir -p /var/log/$name
 
-cd $root/sheets_backend
-pip3 install -e .
-
-cd $root
-
-for f in daemon/*.conf; do
-	ln -sf `pwd`/$f /etc/init/$(basename "$f" .conf).conf
 done
 
+chown web_sheets:web_sheets /var/log/web_sheets_sheets_backend
 
+for f in daemon/*.service; do
+	name=$(basename "$f" .service)
+	systemctl restart $name
+	systemctl status $name
+done
 

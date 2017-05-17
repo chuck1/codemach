@@ -103,8 +103,7 @@ def book(request, book_id, sheet_key):
         if not request.user.is_authenticated():
             return login_redirect(reverse('index'))
         
-        if not (user == book.user_creator):
-            #return redirect('index', messages=[SimpleMessage('error','you do not have permission to view ')])
+        if not (request.user == book.user_creator):
             return HttpResponseForbidden()
 
     user = django.contrib.auth.get_user(request)

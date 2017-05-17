@@ -1,0 +1,7 @@
+[Unit]
+Description=web_sheets storage server
+
+[Service]
+ExecStart=/usr/local/bin/web_sheets_storage
+
+
