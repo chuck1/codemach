@@ -45,8 +45,24 @@ class WrapperFile(object):
 
 class Book(object):
     def __init__(self):
+        """
+        Book class
+        """
+        
         self.script_pre = sheets.script.Script()
+        """
+        ``Script`` object that runs before cell evalutation.
+        It has access to cell strings.
+        The globals dict passed to this script is then used in cell evaluation.
+        So cells have access to globals created or modified
+        by this script.
+        """
+
         self.script_post = sheets.script.Script()
+        """
+        ``Script`` object that runs after cell evaluation.
+        It has access to cell strings and values.
+        """
 
         self.sheets = {"0": Sheet()}
 

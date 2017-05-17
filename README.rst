@@ -67,13 +67,6 @@ The steps to recalculate the entire book are as follows
 Cell class
 ----------
 
-Cell data is stored in the _string_ member which can be None or a string representing a python expression.
-A Cell can return a value which can be one of the following:
-
-- None if _string_ is None
-- an __Exception__ raised by the __compile__ function
-- an __Exception__ raised by the __eval__ function
-- result of the __eval__ function
 
 
 ## sheets\_backend

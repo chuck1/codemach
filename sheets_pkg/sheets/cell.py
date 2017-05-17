@@ -12,7 +12,22 @@ class NotAllowedError(Exception):
 class RecursiveCellRef(Exception): pass
 
 class Cell(object):
+    """
+    Cell data is stored in the ``string`` member which can be None 
+    or a string representing a python expression.
+    A Cell can return a value which can be one of the following:
+    
+    - None if _string_ is None
+    - an ``Exception`` raised by the ``compile`` function
+    - an ``Exception`` raised by the ``eval`` function
+    - result of the ``eval`` function
+    """
+    
     def __init__(self, r, c, string=None):
+        """
+        :param int r: row index
+        :param int c: column index
+        """
         self.r = r
         self.c = c
         self.string = string
@@ -102,7 +117,9 @@ class Cell(object):
     def get_value(self, book, sheet):
         #print(self, self.evaluated)
 
-        #print("Cell.get_value ({},{}) s = {} v = {} evaluated = {}".format(self.r, self.c, repr(self.string), repr(self.value) if hasattr(self, 'value') else 'no value', self.evaluated))
+        #print("Cell.get_value ({},{}) s = {} v = {} evaluated = {}".format(
+        #    self.r, self.c, repr(self.string), 
+        #    repr(self.value) if hasattr(self, 'value') else 'no value', self.evaluated))
 
         if self.evaluated: return self.value
 
