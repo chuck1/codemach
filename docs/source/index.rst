@@ -11,7 +11,9 @@ Welcome to WebSheets's documentation!
    :caption: Contents:
    :glob:
 
+   modules/storage/*
    modules/sheets/*
+   modules/sheets_backend/*
 
 
 
