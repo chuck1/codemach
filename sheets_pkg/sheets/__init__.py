@@ -1,6 +1,5 @@
 import numpy
 import traceback
-import termcolor
 import os
 import sys
 import io

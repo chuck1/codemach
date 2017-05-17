@@ -1,6 +1,5 @@
 import numpy
 import traceback
-import termcolor
 import sys
 import io
 
@@ -89,9 +88,8 @@ class Cell(object):
         except RecursiveCellRef as e:
             raise
         except Exception as e:
-            print(termcolor.colored(
-                "exception during cell({},{}) eval".format(self.r, self.c), "yellow", attrs=["bold"]))
-            print(termcolor.colored(repr(e), "yellow", attrs=["bold"]))
+            print("exception during cell({},{}) eval".format(self.r, self.c))
+            print(repr(e))
             #traceback.print_exc()
             
             self.exception_eval = e
