@@ -11,10 +11,9 @@ Welcome to WebSheets's documentation!
    :caption: Contents:
    :glob:
 
-   modules/storage/*
-   modules/sheets/*
-   modules/sheets_backend/*
-
+   modules/storage/index.rst
+   modules/sheets/index.rst
+   modules/sheets_backend/index.rst
 
 
 Indices and tables
