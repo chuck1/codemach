@@ -38,6 +38,7 @@ APPROVED_DEFAULT_BUILTINS = {
         '__build_class__': __build_class__,
         '__name__': 'module',
         "Exception": Exception,
+        'getattr': getattr,
         'globals': globals,
         'list': list,
         'object': object,
