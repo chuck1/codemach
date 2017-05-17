@@ -1,3 +1,21 @@
+"""
+Security
+========
+
+We must prevent script and cell code from accessing objects other
+than those in :py:mod:`sheet.helper`.
+This task is made difficult by the fact that Python has mechanism for
+true provate variables.
+
+Consider the following::
+
+    getattr(cellshelper, '__globals__')
+
+Classes
+=======
+
+"""
+
 import numpy
 import traceback
 import os
@@ -44,10 +62,10 @@ class WrapperFile(object):
         return self.file.read()
 
 class Book(object):
+    """
+    Book class
+    """
     def __init__(self):
-        """
-        Book class
-        """
         
         self.script_pre = sheets.script.Script()
         """
