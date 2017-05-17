@@ -16,6 +16,23 @@ Documentation_
 
 .. _Documentation: http://web-sheets.readthedocs.io/en/dev
 
+Installation
+------------
+
+To install from source::
+
+    sudo -H ./install.bash
+
+This will install the python modules from source, copy files into /lib/systemd/system, and
+create folders in /etc/ and /var/log/.
+
+Also need to build handsontable::
+
+    cd handsontable
+    npm install
+    grunt --force
+    
+
 Philosophy
 ----------
 
