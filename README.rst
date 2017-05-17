@@ -64,17 +64,8 @@ The steps to recalculate the entire book are as follows
   - For cell evaluation, a shallow copy is made of the globals object from above.
     Therefore, the cell can alter non-trivial objects in the globals.
 
-Cell class
-----------
-
-
-
 ## sheets\_backend
 
-This module defines an abstract class SheetProxy that
-defines all the methods of Sheet that a client needs.
-Derived versions of this class can use different backends for
-storage and access of actual Sheet objects.
 
 ## web\_sheets\_django
 

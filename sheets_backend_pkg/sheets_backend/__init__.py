@@ -8,19 +8,12 @@ class Cell(object):
         self.string = string
         self.value = value
 
-class Storage(object):
-    """
-    An abstaction for reading and writing sheets to
-    and from long term storage
-    """
-    pass
-
 class Server(object):
     """
     This class is an abstaction for sending and
-    receiving sheet data to and from a ServerProxy object.
+    receiving book data to and from a BookProxy object.
     The purpose of the Server is to keep
-    Sheet objects loaded in memory.
+    Book objects loaded in memory.
     """
     def __init__(self, storage):
         """
@@ -36,9 +29,8 @@ class Server(object):
 
 class BookProxy(object):
     """
-    This class is an abstraction for access to a
-    Book object through communication with a Server
-    object.
+    This class is an abstraction for indirect access to a Book object.
+    Implementations shall define all the methods of Book that a client needs.
     """
     pass
 

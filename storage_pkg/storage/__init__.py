@@ -2,8 +2,8 @@
 
 class Storage(object):
     """
-    An abstaction for reading and writing sheets to
-    and from long term storage
+    An abstaction for reading and writing sheets from
+    and to long term storage.
     """
     def get_object(self, object_id):
         pass
@@ -13,9 +13,7 @@ class Storage(object):
 
 class StorageProxy(object):
     """
-    This class is an abstraction for access to a
-    Book object through communication with a Server
-    object.
+    This class is an abstraction for indirect access to a Storage object.
     """
     pass
 
