@@ -2,7 +2,7 @@
 from setuptools import setup
 
 setup(name='web_sheets',
-        version='0.1a0',
+        version='0.1a1',
         description='python spreadsheets',
         url='http://github.com/chuck1/sheets',
         author='Charles Rymal',
