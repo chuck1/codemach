@@ -13,7 +13,7 @@ urlpatterns = [
                 name='set_cell'),
             url(
                 r'^set_script_pre/(?P<book_id>[^/]+)/$',
-                views.set_script_pre,
+                views.SetScriptPreView.as_view(),
                 name='set_script_pre'),
             url(
                 r'^add_column/(?P<book_id>[^/]+)/$',

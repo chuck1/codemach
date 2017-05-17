@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.conf import settings
 import django.contrib.auth
+import django.views
 
 import json
 import numpy
@@ -52,13 +53,12 @@ def login_redirect(url_next):
             reverse('social:begin', args=['google-oauth2',])+'?next='+url_next)
 
 def check_permission(request, book):
-
-    if not book.is_demo:
-        if not request.user.is_authenticated():
-            return login_redirect(reverse('index'))
+        if not book.is_demo:
+            if not request.user.is_authenticated():
+                return login_redirect(reverse('index'))
         
-        if not (request.user == book.user_creator):
-            return HttpResponseForbidden("You shall not pass.")
+            if not (request.user == book.user_creator):
+                return HttpResponseForbidden("You shall not pass.")
     
 
 def index(request, messages=[]):
@@ -162,6 +162,28 @@ def set_cell(request, book_id):
 
     return JsonResponse({'cells':cells})
 
+class ExceptionWithResponse(Exception):
+    def __init__(self, response):
+        super(ExceptionWithResponse, self).__init__(str(self))
+        self.response = response
+
+class BookView(django.views.View):
+
+    def post(self, request, book_id):
+
+        book = get_object_or_404(models.Book, pk=book_id)
+
+        if not book.is_demo:
+            if not request.user.is_authenticated():
+                return login_redirect(reverse('index'))
+        
+            if not (request.user == book.user_creator):
+                return HttpResponseForbidden("You shall not pass.")
+
+        bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
+            
+        return self.post_sub(request, book, bp)
+
 def get_sheet_data(request, book_id):
     logger.info('get_sheet_data')
     
@@ -173,7 +195,6 @@ def get_sheet_data(request, book_id):
 
     sheet_key = request.POST["sheet_key"]
     
-    
     bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
  
     ret = bp.get_sheet_data(sheet_key)
@@ -192,37 +213,30 @@ def get_sheet_data(request, book_id):
         'script_post_output': ret.script_post_output,
         })
 
-def set_script_pre(request, book_id):
-    sheet_key = request.POST["sheet_key"]
-    s = request.POST['text']
+class SetScriptPreView(BookView):
+    def post_sub(self, request, book, bp):
+        sheet_key = request.POST["sheet_key"]
+        s = request.POST['text']
+        
+        ret = bp.set_script_pre(sheet_key, s)
     
-    book = get_object_or_404(models.Book, pk=book_id)
-
-    res = check_permission(request, book)
-    if res is not None:
-        return res
+        ret = bp.get_sheet_data(sheet_key)
+        
+        cells = cells_array(ret)
     
-    bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
- 
-    ret = bp.set_script_pre(sheet_key, s)
-
-    ret = bp.get_sheet_data(sheet_key)
+        print('set script pre')
     
-    cells = cells_array(ret)
-
-    print('set script pre')
-
-    logger.debug('sheet_data')
-    logger.debug('script_pre_output')
-    logger.debug(ret.script_pre_output)
-
-    return JsonResponse({
-        'cells': cells,
-        'script_pre': ret.script_pre,
-        'script_pre_output': ret.script_pre_output,
-        'script_post': ret.script_post,
-        'script_post_output': ret.script_post_output,
-        })
+        logger.debug('sheet_data')
+        logger.debug('script_pre_output')
+        logger.debug(ret.script_pre_output)
+    
+        return JsonResponse({
+            'cells': cells,
+            'script_pre': ret.script_pre,
+            'script_pre_output': ret.script_pre_output,
+            'script_post': ret.script_post,
+            'script_post_output': ret.script_post_output,
+            })
 
 def alter_sheet(request, book_id, func):
     if not request.POST['i']:
