@@ -40,8 +40,8 @@ class CellsHelper(object):
        passing the sheet to this object is not OK for final implementation
     """
     def __init__(self, book, sheet):
-        self.book = book
-        self.sheet = sheet
+        self.__book = book
+        self.__sheet = sheet
 
     def __getitem__(self, args):
         """
@@ -60,11 +60,11 @@ class CellsHelper(object):
         r, c, k = CellsHelper.expand_args(*args)
         
         if k is None:
-            s = self.sheet
+            s = self.__sheet
         else:
-            s = self.book.sheets[k]
+            s = self.__book.sheets[k]
         
-        return cells_values(s.cells.cells[r, c], self.book, s) 
+        return cells_values(s.cells.cells[r, c], self.__book, s) 
 
     @classmethod
     def expand_args(cls, r, c=None, k=None):

@@ -5,6 +5,11 @@ import unittest
 
 def code_analysis(code):
     print(code)
+    #print(dir(code))
+    print('co_consts')
+    for name in code.co_consts:
+        print('  '+name)
+    print('co_names')
     for name in code.co_names:
         print('  '+name)
         if name[:2] == '__':
@@ -21,6 +26,7 @@ class SecurityTest(unittest.TestCase):
         b.set_cell('0', 0, 1, "1")
         
         ########
+        print()
 
         b.set_cell('0', 0, 0, "cellshelper.__getitem__.__globals__['__builtins__']['open']")
 
@@ -34,8 +40,9 @@ class SecurityTest(unittest.TestCase):
             code_analysis(c.code)
 
         ########
+        print()
 
-        b.set_cell('0', 0, 0, "getattr(cellshelper, '__getitem__')")
+        b.set_cell('0', 0, 0, "getattr(getattr(cellshelper, '__getitem__'), '__globals__').keys()")
 
         c = s.cells.cells[0, 0]
 
@@ -47,6 +54,7 @@ class SecurityTest(unittest.TestCase):
             code_analysis(c.code)
 
         ########
+        print()
 
         b.set_cell('0', 0, 0, "cellshelper[0,1]")
 

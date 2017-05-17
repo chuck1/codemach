@@ -4,10 +4,7 @@ import sys
 import io
 
 import sheets.helper
-
-class NotAllowedError(Exception):
-    def __init__(self, message):
-        super(NotAllowedError, self).__init__(message)
+import sheets.exception
 
 class RecursiveCellRef(Exception): pass
 
@@ -44,7 +41,8 @@ class Cell(object):
 
         for name in self.code.co_names:
             if name[:2] == '__':
-                raise NotAllowedError("For security, use of {} is not allowed".format(name))
+                raise sheets.exception.NotAllowedError(
+                        "For security, use of {} is not allowed".format(name))
 
     def set_string(self, sheet, s):
         """
@@ -75,7 +73,7 @@ class Cell(object):
 
         try:
             self.check_code()
-        except NotAllowedError as e:
+        except sheets.exception.NotAllowedError as e:
             self.code = None
             self.comp_exc = e
     

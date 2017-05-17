@@ -26,6 +26,8 @@ import fs.osfs
 
 import sheets.cells
 import sheets.script
+import sheets.helper
+import sheets.exception
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +40,6 @@ APPROVED_DEFAULT_BUILTINS = {
         '__build_class__': __build_class__,
         '__name__': 'module',
         "Exception": Exception,
-        'getattr': getattr,
         'globals': globals,
         'list': list,
         'object': object,
@@ -108,9 +109,21 @@ class Book(object):
 
         return WrapperFile(file)
 
+    def builtin_getattr(self, *args):
+        logger.warning("invoking Book.builtin_getattr({})".format(args))
+        obj = args[0]
+        logger.warning("obj={}".format(obj))
+
+        if isinstance(obj, sheets.helper.CellsHelper):
+            raise sheets.exception.NotAllowedError(
+                    "For security, getattr not allowed for CellsHelper objects")
+
+        return getattr(*args)
+
     def reset_globals(self):
         approved_builtins = {
                 '__import__': self.builtin___import__,
+                'getattr': self.builtin_getattr,
                 'open': self.builtin_open,
                 }
 
