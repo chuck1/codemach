@@ -1,4 +1,5 @@
-# Web Sheets
+Web Sheets
+==========
 
 A web-based python spreadsheet app.
 
@@ -86,5 +87,18 @@ This code will only work if there is a sockets server running at the port specif
  * change folder and file permission to allow database write
  * set WSGI python path for my custom modules
  * remove references to my environment variables
+
+Development
+===========
+
+Install all module from source with::
+
+  pip3 install .
+
+Using the ``-e`` option does not work because it does bot properly handle subdirectory modules.
+
+
+
+
 
 
