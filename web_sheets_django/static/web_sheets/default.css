@@ -37,6 +37,10 @@ div.top h1 {
 	margin-left: 10px;
 	color: #0061ff;
 }
+div.top h1 a {
+	color: #0061ff;
+	text-decoration: none;
+}
 div.left {
 	float: left;
 	height: 70px;
