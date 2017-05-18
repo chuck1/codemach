@@ -20,17 +20,12 @@
 <div id="tablediv"></div>
 
 <div>
-<textarea id="script" rows="10" cols="50">
-	{% autoescape off %}{{ script_pre }}{% endautoescape %}
-</textarea>
 </div>
 
 <button onclick="set_script_pre()">execute</button>
 
 <div>
-<textarea id="script_output" rows="10" cols="50">
-	{% autoescape off %}{{ script_pre_output }}{% endautoescape %}
-</textarea>
+	<textarea id="script_output" rows="10" cols="50">{{ script_pre_output }}</textarea>
 </div>
 
 <div>
