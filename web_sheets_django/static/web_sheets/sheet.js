@@ -82,6 +82,9 @@ function apply_sheet_data(data_new) {
         $("#script").val(data_new.script_pre);
         $("#script_output").val(data_new.script_pre_output);
 }
+function apply_script_post_output(data_new) {
+        $("#script_post_output").val(data_new.script_post_output);
+}
 function add_column() {
 	var post_data = {
 		"sheet_key": sheet_key,
@@ -119,6 +122,18 @@ function set_script_pre() {
 	jqxhr.done(function() {
 		//alert("set script pre ajax post success");
 	});
+	jqxhr.fail(function() {
+		alert("set script pre ajax post fail");
+	});
+}
+function set_script_post() {
+	var text = $("#script_post").val();
+        var post_data = {
+		'csrfmiddlewaretoken':csrftoken,
+		"sheet_key": sheet_key,
+		'text': text 
+	};
+	var jqxhr = $.post(url_set_script_post, post_data, apply_script_post_output);
 	jqxhr.fail(function() {
 		alert("set script pre ajax post fail");
 	});

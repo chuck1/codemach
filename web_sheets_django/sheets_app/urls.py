@@ -25,6 +25,10 @@ urlpatterns = [
                 views.SetScriptPreView.as_view(),
                 name='set_script_pre'),
             url(
+                r'^set_script_post/(?P<book_id>[^/]+)/$',
+                views.SetScriptPostView.as_view(),
+                name='set_script_post'),
+            url(
                 r'^add_column/(?P<book_id>[^/]+)/$',
                 views.AddColumnView.as_view(),
                 name='add_column'),

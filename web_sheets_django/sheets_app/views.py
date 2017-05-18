@@ -213,6 +213,17 @@ class SetScriptPreView(BookView):
     
         return sheet_data_response(bp, sheet_key)
 
+class SetScriptPreView(BookView):
+    def post_sub(self, request, book, bp):
+        sheet_key = request.POST["sheet_key"]
+        s = request.POST['text']
+        
+        ret = bp.set_script_post(s)
+        
+        ret = bp.get_script_post_output()
+
+        return JsonResponse({'script_post_output': ret.script_post_output})
+
 class AlterSheetView(BookView):
     def post_sub(self, request, book, bp):
         if not request.POST['i']:

@@ -9,7 +9,9 @@ import sheets_backend
 
 logger = logging.getLogger(__name__)
 
-class Packet(object): pass
+class Packet(object):
+    def __call__(self, sock):
+        pass
 
 class SetCell(Packet):
     def __init__(self, book_id, sheet_id, r, c, s):
@@ -24,7 +26,7 @@ class SetCell(Packet):
         sheet = book.sheets[self.sheet_id]
         ret = sheet.set_cell(self.r, self.c, self.s)
 
-        sock.send(pickle.dumps(Echo()))
+        sock.send(pickle.dumps(Packet()))
 
         sock.server.save_book(self.book_id)
 
@@ -39,7 +41,23 @@ class SetScriptPre(Packet):
         sheet = book.sheets[self.sheet_id]
         ret = book.set_script_pre(self.s)
 
-        sock.send(pickle.dumps(Echo()))
+        sock.send(pickle.dumps(Packet()))
+
+        sock.server.save_book(self.book_id)
+
+class SetScriptPost(Packet):
+    def __init__(self, book_id, sheet_id, s):
+        self.book_id = book_id
+        self.sheet_id = sheet_id
+        self.s = s
+    
+    def __call__(self, sock):
+        book = sock.server.get_book(self.book_id)
+        sheet = book.sheets[self.sheet_id]
+
+        ret = book.set_script_post(self.s)
+
+        sock.send(pickle.dumps(Packet()))
 
         sock.server.save_book(self.book_id)
 
@@ -53,7 +71,7 @@ class AddColumn(Packet):
         book = sock.server.get_book(self.book_id)
         sheet = book.sheets[self.sheet_id]
         ret = sheet.add_column(self.i)
-        sock.send(pickle.dumps(Echo()))
+        sock.send(pickle.dumps(Packet()))
 
 class AddRow(Packet):
     def __init__(self, book_id, sheet_id, i):
@@ -65,7 +83,7 @@ class AddRow(Packet):
         book = sock.server.get_book(self.book_id)
         sheet = book.sheets[self.sheet_id]
         ret = sheet.add_row(self.i)
-        sock.send(pickle.dumps(Echo()))
+        sock.send(pickle.dumps(Packet()))
 
 class GetCellData(Packet):
     def __init__(self, book_id, sheet_id):
@@ -116,6 +134,15 @@ class GetSheetData(Packet):
 
         sock.send(pickle.dumps(ReturnSheetData(self.book_id, book, sheet)))
 
+class GetScriptPostOutput(Packet):
+    def __init__(self, book_id):
+        self.book_id = book_id
+    
+    def __call__(self, sock):
+        book = sock.server.get_book(self.book_id)
+        
+        sock.send(pickle.dumps(ReturnScriptPostOutput(self.book_id, book)))
+
 class RequestBookNew(Packet):
     def __init__(self): pass
     
@@ -144,18 +171,16 @@ class ReturnSheetData(Packet):
         self.script_post = book.script_post.string
         self.script_post_output = book.script_post.output
 
-    def __call__(self, sock):
-        pass
+class ReturnScriptPostOutput(Packet):
+    def __init__(self, book_id, book, sheet):
+
+        book.do_all()
+        
+        self.script_post_output = book.script_post.output
 
 class ReturnCells(Packet):
     def __init__(self, cells):
         self.cells = cells
-    def __call__(self, sock):
-        pass
-
-class Echo(Packet):
-    def __init__(self):
-        pass
     def __call__(self, sock):
         pass
 
@@ -204,16 +229,27 @@ class BookProxy(sheets_backend.BookProxy, mysocket.Client):
         if not isinstance(o, Packet): raise TypeError()
         return o
 
-    def set_cell(self, k, r, c, s):
-        self.send(pickle.dumps(SetCell(self.book_id, k, r, c, s)))
+    def send_recv_packet(self, packet):
+        self.send(pickle.dumps(packet))
         return self.recv_packet()
+
+    def set_cell(self, k, r, c, s):
+        return self.send_recv_packet(SetCell(self.book_id, k, r, c, s))
     
-    def set_script_pre(self, sheet_key, s):
-        self.send(pickle.dumps(SetScriptPre(self.book_id, sheet_key, s)))
+    def set_script_pre(self, s):
+        self.send(pickle.dumps(SetScriptPre(self.book_id, s)))
+        return self.recv_packet()
+
+    def set_script_post(self, s):
+        self.send(pickle.dumps(SetScriptPre(self.book_id, s)))
         return self.recv_packet()
 
     def get_sheet_data(self, sheet_key):
         self.send(pickle.dumps(GetSheetData(self.book_id, sheet_key)))
+        return self.recv_packet()
+
+    def get_script_post_output(self):
+        self.send(pickle.dumps(GetScriptPostOutput(self.book_id)))
         return self.recv_packet()
     
     def get_cell_data(self, sheet_key):
