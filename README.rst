@@ -110,7 +110,64 @@ Install all module from source with::
 
   pip3 install .
 
-Using the ``-e`` option does not work because it does bot properly handle subdirectory modules.
+Using the ``-e`` option does not work because it 
+does not properly handle subdirectory modules.
+
+Process Layout
+==============
+
+We will think about layout in terms of processes.
+Processes can be on the same machine or on opposite sides
+of the Earth, it makes no difference here.
+A plus sign will indicate one or more processes.
+
+Simplest
+--------
+
+The simplest setup has a single server 
+with storage included.::
+
+    django+
+     |
+     V
+    Server(Storage)
+
+Router
+------
+
+A server router can route connections from django
+processes to one of multiple server processes.::
+
+    django+
+     |
+     V
+    ServerRouter(Storage) --> Server+
+
+Storage Server
+--------------
+
+We can take multiple instances of the simplest
+setup and move storage to a single storage server.::
+
+    ___________
+    (         )
+    ( django+ )
+    (  |      )
+    (  V      )
+    ( Server  )
+    (_________)+
+       |
+       V
+    StorageServer
+
+
+
+
+
+
+
+
+
 
 
 
