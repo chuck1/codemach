@@ -13,8 +13,8 @@ urlpatterns = [
                 views.book_new, 
                 name='book_new'),
             url(
-                r'^book/(?P<book_id>[^/]+)/(?P<sheet_key>[^/]+)/$', 
-                views.book, 
+                r'^book/(?P<book_id>[^/]+)/$', 
+                views.BookViewView.as_view(), 
                 name='book'),
             url(
                 r'^set_cell/(?P<book_id>[^/]+)/$',

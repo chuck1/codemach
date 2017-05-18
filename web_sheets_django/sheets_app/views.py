@@ -105,40 +105,6 @@ class SimpleMessage(object):
         self.msgtype = msgtype
         self.msg = msg
 
-def book(request, book_id, sheet_key):
-   
-    book = get_object_or_404(models.Book, pk=book_id)
-
-    res = check_permission(request, book)
-    if res is not None:
-        return res
-
-    user = django.contrib.auth.get_user(request)
-    
-    bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
-    
-    ret = bp.get_sheet_data(sheet_key)
-    
-    print(ret)
-    print(repr(ret.cells))
-    
-    cells = cells_array(ret)
-    
-    print('cells',repr(cells))
-    
-    context = {
-        'cells': json.dumps(cells),
-        'script_pre': ret.script_pre,
-        'script_pre_output': ret.script_pre_output,
-        'user': user,
-        'book': book,
-        'sheet_key': sheet_key,
-        'url_login_redirect': django.urls.reverse('index'),
-        'url_logout_redirect': django.urls.reverse('index'),
-        'url_select_account_redirect': django.urls.reverse('index'),
-        }
-    return render(request, 'sheets_app/sheet.html', context)
-
 class BookView(django.views.View):
 
     def post(self, request, book_id):
@@ -155,6 +121,34 @@ class BookView(django.views.View):
         bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
             
         return self.post_sub(request, book, bp)
+
+class BookViewView(BookView):
+    def post_sub(self, request, book, bp):
+       
+        user = django.contrib.auth.get_user(request)
+        
+        ret = bp.get_sheet_data('0')
+        
+        print(ret)
+        print(repr(ret.cells))
+        
+        cells = cells_array(ret)
+        
+        print('cells',repr(cells))
+        
+        context = {
+            'cells': json.dumps(cells),
+            'script_pre': ret.script_pre,
+            'script_pre_output': ret.script_pre_output,
+            'user': user,
+            'book': book,
+            'sheet_key': sheet_key,
+            'url_login_redirect': django.urls.reverse('index'),
+            'url_logout_redirect': django.urls.reverse('index'),
+            'url_select_account_redirect': django.urls.reverse('index'),
+            }
+
+        return render(request, 'sheets_app/sheet.html', context)
 
 class SetCellView(BookView):
     def post_sub(self, request, book, bp):
