@@ -108,6 +108,12 @@ class SimpleMessage(object):
 class BookView(django.views.View):
 
     def post(self, request, book_id):
+        return self.do_view(request, book_id, self.post_sub)
+
+    def get(self, request, book_id):
+        return self.do_view(request, book_id, self.get_sub)
+
+    def do_view(self, request, book_id, sub_function):
 
         book = get_object_or_404(models.Book, pk=book_id)
 
@@ -120,14 +126,17 @@ class BookView(django.views.View):
 
         bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
             
-        return self.post_sub(request, book, bp)
+        return sub_function(request, book, bp)
+
 
 class BookViewView(BookView):
-    def post_sub(self, request, book, bp):
+    def get_sub(self, request, book, bp):
        
         user = django.contrib.auth.get_user(request)
         
-        ret = bp.get_sheet_data('0')
+        sheet_key = '0'
+
+        ret = bp.get_sheet_data(sheet_key)
         
         print(ret)
         print(repr(ret.cells))

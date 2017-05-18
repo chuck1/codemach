@@ -11,7 +11,11 @@
 
 <table>
 {% for book in books %}
-<tr><td><a href="{% url "sheets:book" book.id 0 %}">{{ book.book_name }}</a></td></tr>
+<tr>
+	<td>
+		<a href="{% url "sheets:book" book.pk %}">{{ book.book_name }}</a>
+	</td>
+</tr>
 {% endfor %}
 </table>
 
