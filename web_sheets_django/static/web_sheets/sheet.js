@@ -2,11 +2,6 @@
 var hot = null;
 var csrftoken = null;
 
-function mylog(message) {
-	var s = $('#console').val();
-	$('#console').val(s + '\n' + message);
-	console.log(message);
-}
 function replaceTag(tag) {
 	var tagsToReplace = {
 		'&': '&amp;',
@@ -228,8 +223,8 @@ function sheet_page_load() {
 	});
 
 	hot.addHook('afterBeginEditing', function() {
-		mylog('afterBeginEditing ------------------------');
-		mylog(arguments);
+		console.log('afterBeginEditing ------------------------');
+		console.log(arguments);
 		r = arguments[0];
 		c = arguments[1];
 		d = data[r][c];
