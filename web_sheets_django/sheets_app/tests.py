@@ -1,3 +1,5 @@
+import time
+
 from django.test import TestCase
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 import django.urls
@@ -11,7 +13,7 @@ class MySeleniumTests(StaticLiveServerTestCase):
     def setUpClass(cls):
         super(MySeleniumTests, cls).setUpClass()
         cls.selenium = WebDriver()
-        cls.selenium.implicitly_wait(10)
+        cls.selenium.implicitly_wait(5)
 
     @classmethod
     def tearDownClass(cls):
@@ -37,15 +39,34 @@ class MySeleniumTests(StaticLiveServerTestCase):
 
         from selenium.webdriver.support.ui import WebDriverWait
         from selenium.webdriver.support import expected_conditions as EC
-        
-        WebDriverWait(self.selenium, 10).until(EC.title_is("Site administration | Django site admin"))
-        
-        #
-        if 1:
-            self.selenium.get('%s%s' % (self.live_server_url, django.urls.reverse('sheets:index')))
-       
-            text_input = self.selenium.find_element_by_name("book_name")
-            text_input.send_keys("selenium test book")
+        from selenium.webdriver.common.by import By
 
-            self.selenium.find_element_by_xpath('//input[@value="new book"]').click()
+        WebDriverWait(self.selenium, 10).until(
+                EC.title_is("Site administration | Django site admin"))
+        
+        self.selenium.get('%s%s' % (self.live_server_url, django.urls.reverse('sheets:index')))
+       
+        text_input = self.selenium.find_element_by_name("book_name")
+        text_input.send_keys("selenium test book")
+
+        self.selenium.find_element_by_xpath('//input[@value="new book"]').click()
+
+        WebDriverWait(self.selenium, 5).until(
+                EC.presence_of_element_located((By.XPATH, 
+                    '//table[@class="htCore"]')))
+        
+        e = self.selenium.find_element_by_xpath(
+                '//table[@class="htCore"]/tbody/tr/td')
+        
+        print('hot table found')
+        print(repr(e))
+        print(dir(e))
+        print('text =',repr(e.text))
+
+        e.click()
+        e.send_keys('2+2\n')
+
+        time.sleep(5)
+
+        self.assertEqual(e.text, '4')
 
