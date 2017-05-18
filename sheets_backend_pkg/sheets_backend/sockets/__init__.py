@@ -31,14 +31,13 @@ class SetCell(Packet):
         sock.server.save_book(self.book_id)
 
 class SetScriptPre(Packet):
-    def __init__(self, book_id, sheet_id, s):
+    def __init__(self, book_id, s):
         self.book_id = book_id
-        self.sheet_id = sheet_id
         self.s = s
     
     def __call__(self, sock):
         book = sock.server.get_book(self.book_id)
-        sheet = book.sheets[self.sheet_id]
+        
         ret = book.set_script_pre(self.s)
 
         sock.send(pickle.dumps(Packet()))
@@ -46,14 +45,12 @@ class SetScriptPre(Packet):
         sock.server.save_book(self.book_id)
 
 class SetScriptPost(Packet):
-    def __init__(self, book_id, sheet_id, s):
+    def __init__(self, book_id, s):
         self.book_id = book_id
-        self.sheet_id = sheet_id
         self.s = s
     
     def __call__(self, sock):
         book = sock.server.get_book(self.book_id)
-        sheet = book.sheets[self.sheet_id]
 
         ret = book.set_script_post(self.s)
 
@@ -172,7 +169,7 @@ class ReturnSheetData(Packet):
         self.script_post_output = book.script_post.output
 
 class ReturnScriptPostOutput(Packet):
-    def __init__(self, book_id, book, sheet):
+    def __init__(self, book_id, book):
 
         book.do_all()
         
@@ -241,7 +238,7 @@ class BookProxy(sheets_backend.BookProxy, mysocket.Client):
         return self.recv_packet()
 
     def set_script_post(self, s):
-        self.send(pickle.dumps(SetScriptPre(self.book_id, s)))
+        self.send(pickle.dumps(SetScriptPost(self.book_id, s)))
         return self.recv_packet()
 
     def get_sheet_data(self, sheet_key):

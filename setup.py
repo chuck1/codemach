@@ -1,8 +1,10 @@
 
 from setuptools import setup
 
+version = open('VERSION.txt').read()
+
 setup(name='web_sheets',
-        version='0.1a12',
+        version=version,
         description='python spreadsheets',
         url='http://github.com/chuck1/sheets',
         author='Charles Rymal',
@@ -16,6 +18,7 @@ setup(name='web_sheets',
             'sheets.tests',
             'sheets_backend',
             'sheets_backend.sockets',
+            'sheets_backend.tests',
             ],
         package_dir={
             'mysocket':'mysocket_pkg/mysocket',

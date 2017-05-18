@@ -8,7 +8,11 @@ setup(name='sheets_backend',
         author='Charles Rymal',
         author_email='charlesrymal@gmail.com',
         license='MIT',
-        packages=['sheets_backend'],
+        packages=[
+            'sheets_backend',
+            'sheets_backend.sockets',
+            'sheets_backend.tests',
+            ],
         zip_safe=False,
         entry_points={
             'console_scripts':[

@@ -160,8 +160,14 @@ setup and move storage to a single storage server.::
        V
     StorageServer
 
+Migration
+=========
 
+We need to make sure that when new versions are released, existing
+books still load properly from storage.
 
+We will create a test case which will load all books from storage and
+possible test some of their functionality.
 
 
 

@@ -8,7 +8,10 @@ setup(name='storage',
         author='Charles Rymal',
         author_email='charlesrymal@gmail.com',
         license='MIT',
-        packages=['storage'],
+        packages=[
+            'storage',
+            'storage.filesystem'
+            ],
         zip_safe=False,
         entry_points={
             'console_scripts':[

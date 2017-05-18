@@ -17,10 +17,10 @@ class Storage(storage.Storage):
         if os.path.exists(os.path.join(self.folder, 'object_id.txt')):
             with open(os.path.join(self.folder, 'object_id.txt'), 'r') as f:
                 i = int(f.read())
+
+            i += 1
         else:
             i = 0
-        
-        i += 1
         
         try:
             os.makedirs(self.folder)
@@ -31,6 +31,7 @@ class Storage(storage.Storage):
             f.write(str(i))
 
         return str(i)
+    
 
     def object_new(self):
         b = self.cls()

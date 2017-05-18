@@ -23,6 +23,22 @@ def test():
     
     server.run()
 
+def shell():
+    sys.path.insert(0, '/etc/web_sheets_sheets_backend')
+    settings_module = __import__('web_sheets_sheets_backend.settings', fromlist=['*'])
+
+    #logging.config.dictConfig(settings_module.LOGGING)
+
+    #port = settings_module.PORT
+    
+    folder = settings_module.STORAGE_FOLDER
+    
+    stor = storage.filesystem.Storage(sheets.Book, folder)
+
+    #server = sheets_backend.sockets.Server(stor, port)
+
+    return stor
+
 def daemon():
     logger = logging.getLogger(__name__)
     try:
