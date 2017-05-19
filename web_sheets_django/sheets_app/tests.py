@@ -1,8 +1,9 @@
 import time
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 import django.urls
+import django.conf
 
 from selenium.webdriver.firefox.webdriver import WebDriver
 
@@ -20,6 +21,7 @@ class MySeleniumTests(StaticLiveServerTestCase):
         cls.selenium.quit()
         super(MySeleniumTests, cls).tearDownClass()
 
+    @override_settings(WEB_SHEETS_PORT=django.conf.settings.WEB_SHEETS_PORT_TESTING)
     def test_view_sheet(self):
         
         user = core.models.User.objects.create_user('test', 'test@test', 'password')
