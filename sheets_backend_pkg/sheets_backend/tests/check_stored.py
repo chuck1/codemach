@@ -10,16 +10,16 @@ import storage.filesystem
 import sheets
 import sheets_backend.sockets
 
-class Test(unittest.TestCase):
+class TestCheckStored(unittest.TestCase):
     def test(self):
-        sys.path.insert(0, '/etc/web_sheets_sheets_backend')
+        sys.path.insert(0, './testing')
         settings_module = __import__('web_sheets_sheets_backend.settings', fromlist=['*'])
     
         #logging.config.dictConfig(settings_module.LOGGING)
     
         #port = settings_module.PORT
         
-        folder = settings_module.STORAGE_FOLDER
+        folder = settings_module.STORAGE_FOLDER_PRODUCTION
         
         stor = storage.filesystem.Storage(sheets.Book, folder)
     

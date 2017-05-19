@@ -33,3 +33,5 @@ PORT = 10003
 
 STORAGE_FOLDER = 'venv/testing/web_sheets_sheets_backend/storage'
 
+STORAGE_FOLDER_PRODUCTION = '/etc/web_sheets_sheets_backend/storage'
+

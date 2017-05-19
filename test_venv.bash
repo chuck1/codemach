@@ -17,6 +17,8 @@ pip3 install . -vvv
 
 mkdir -p venv/testing/log/web_sheets_sheets_backend
 
+which web_sheets_sheets_backend
+
 web_sheets_sheets_backend --settings ./testing &
 pid=$!
 echo $pid > pid.txt

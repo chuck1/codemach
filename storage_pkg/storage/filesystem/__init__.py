@@ -24,8 +24,7 @@ class Storage(storage.Storage):
         
         try:
             os.makedirs(self.folder)
-        except Exception as e:
-            logger.exception(str(e))
+        except FileExistsError as e: pass
 
         with open(os.path.join(self.folder, 'object_id.txt'), 'w') as f:
             f.write(str(i))

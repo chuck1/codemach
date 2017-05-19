@@ -149,6 +149,8 @@ class BookViewView(BookView):
             'cells': json.dumps(cells),
             'script_pre': ret.script_pre,
             'script_pre_output': ret.script_pre_output,
+            'script_post': ret.script_pre,
+            'script_post_output': ret.script_pre_output,
             'user': user,
             'book': book,
             'sheet_key': sheet_key,

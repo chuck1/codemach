@@ -13,6 +13,12 @@ class Packet(object):
     def __call__(self, sock):
         pass
 
+class PacketException(object):
+    def __init__(self, message):
+        self.message = message
+    def __call__(self, sock):
+        pass
+
 class SetCell(Packet):
     def __init__(self, book_id, sheet_id, r, c, s):
         self.book_id = book_id
@@ -193,6 +199,7 @@ class ClientSocket(mysocket.ClientSocket):
             o(self)
         except Exception as e:
             logger.exception('error processing packet ' + repr(o))
+            sock.send(pickle.dumps(PacketException(str(e))))
 
 class Server(sheets_backend.Server, mysocket.Server):
     def __init__(self, storage, port):
