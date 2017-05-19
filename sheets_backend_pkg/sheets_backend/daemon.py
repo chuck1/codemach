@@ -2,15 +2,27 @@ import sys
 import json
 import logging
 import logging.config
+import argparse
 
 import storage.filesystem
 import sheets
 import sheets_backend.sockets
 
-def test():
-    sys.path.insert(0, '/etc/web_sheets_sheets_backend')
-    settings_module = __import__('web_sheets_sheets_backend.settings', fromlist=['*'])
+def test(argv):
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+            '--settings',
+            nargs=1,
+            default=['/etc/web_sheets_sheets_backend'],
+            help='settings module directory')
+    args = parser.parse_args(argv)
+    
+    settings_module_dir = args.settings[0]
 
+    sys.path.insert(0, settings_module_dir)
+
+    settings_module = __import__('web_sheets_sheets_backend.settings', fromlist=['*'])
+    
     logging.config.dictConfig(settings_module.LOGGING)
 
     port = settings_module.PORT
@@ -23,26 +35,14 @@ def test():
     
     server.run()
 
-def shell():
-    sys.path.insert(0, '/etc/web_sheets_sheets_backend')
-    settings_module = __import__('web_sheets_sheets_backend.settings', fromlist=['*'])
-
-    #logging.config.dictConfig(settings_module.LOGGING)
-
-    #port = settings_module.PORT
-    
-    folder = settings_module.STORAGE_FOLDER
-    
-    stor = storage.filesystem.Storage(sheets.Book, folder)
-
-    #server = sheets_backend.sockets.Server(stor, port)
-
-    return stor
-
-def daemon():
+def daemon(argv):
     logger = logging.getLogger(__name__)
     try:
-        test()
+        test(argv)
     except:
         logger.exception('exception occured')
+
+
+
+
 
