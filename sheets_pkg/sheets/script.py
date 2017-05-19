@@ -2,7 +2,9 @@ import numpy
 import traceback
 import sys
 import io
+import logging
 
+logger = logging.getLogger(__name__)
 
 class Script(object):
     def __init__(self):
@@ -13,7 +15,14 @@ class Script(object):
         return dict((k, getattr(self, k)) for k in ["string"])
     
     def set_string(self,s):
-        if s == self.string: return False
+        logger.debug('\n' + '-'*10 + '\n' + self.string + '\n' + '-'*10+ ' \n' + s)
+        
+        if s == self.string:
+            logger.debug('script string unchanged')
+            return False
+        
+        logger.debug('script string changed')
+        
         self.string = s
         self.comp()
         return True
@@ -34,6 +43,8 @@ class Script(object):
             self.comp_exc = None
 
     def execute(self, g):
+        logger.debug('script evaluate')
+
         if not hasattr(self, "code"): self.comp()
 
         if self.code is None: return

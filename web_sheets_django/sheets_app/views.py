@@ -183,6 +183,7 @@ class ExceptionWithResponse(Exception):
         self.response = response
 
 def sheet_data_response(bp, sheet_key):
+    
     ret = bp.get_sheet_data(sheet_key)
     
     cells = cells_array(ret)

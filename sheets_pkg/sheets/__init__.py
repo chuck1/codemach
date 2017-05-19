@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 APPROVED_MODULES = [
         "math",
         "numpy",
+        "time",
         ]
 
 APPROVED_DEFAULT_BUILTINS = {

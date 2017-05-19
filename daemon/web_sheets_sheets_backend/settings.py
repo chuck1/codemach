@@ -16,6 +16,11 @@ LOGGING = {
                 'level': 'DEBUG',
                 'propagate': True,
                 },
+            'sheets': {
+                'handlers': ['file'],
+                'level': 'DEBUG',
+                'propagate': True,
+                },
             'sheets_backend': {
                 'handlers': ['file'],
                 'level': 'DEBUG',
