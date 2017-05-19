@@ -172,8 +172,13 @@ possible test some of their functionality.
 Testing
 =======
 
+In the event that testing takes place on a machine that is also used for deployment,
+testing must utilize virtualenv and socket communication must take place on different ports.
+
 For tests requiring a running sheets_backend Server, a server will be started
 using a port that is designated for testing.
+
+
 
 
 
