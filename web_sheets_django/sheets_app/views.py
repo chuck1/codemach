@@ -211,7 +211,7 @@ class SetScriptPreView(BookView):
         sheet_key = request.POST["sheet_key"]
         s = request.POST['text']
         
-        ret = bp.set_script_pre(sheet_key, s)
+        ret = bp.set_script_pre(s)
     
         return sheet_data_response(bp, sheet_key)
 
