@@ -270,7 +270,7 @@ def book_new(request):
 
     b = book_new_func(book_name, request.user)
 
-    return redirect('sheets:book', b.id, 0)
+    return redirect('sheets:book', b.id)
 
 
 

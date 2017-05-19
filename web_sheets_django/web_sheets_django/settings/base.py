@@ -155,7 +155,39 @@ import sys
 sys.path.append('/home/chuck/git/web_sheets')
 
 WEB_SHEETS_PORT = secrets['port']
+WEB_SHEETS_PORT_TESTING = secrets['port_testing']
 
+LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'file': {
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'filename': os.path.join(BASE_DIR, 'debug.log'),
+                'formatter':'basic',
+                },
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'stream': sys.stdout,
+                'formatter':'basic',
+                }
+            },
+        'loggers': {
+            'django': {
+                'handlers': ['file', 'console'],
+                'level': 'DEBUG',
+                'propagate': True,
+
+                },
+            },
+        'formatters': {
+            'basic':{
+                'format': '%(asctime)s %(message)s'
+                }
+            }
+        }
 
 
 

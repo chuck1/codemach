@@ -7,3 +7,4 @@ geckodriver.log
 *.egg-info
 *.log
 build/
+venv/

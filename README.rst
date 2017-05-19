@@ -169,12 +169,11 @@ books still load properly from storage.
 We will create a test case which will load all books from storage and
 possible test some of their functionality.
 
+Testing
+=======
 
-
-
-
-
-
+For tests requiring a running sheets_backend Server, a server will be started
+using a port that is designated for testing.
 
 
 

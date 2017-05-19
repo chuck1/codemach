@@ -1,6 +1,4 @@
 
-rm -rf venv
-
 virtualenv venv
 
 source venv/bin/activate
@@ -10,12 +8,22 @@ then
 	exit 1
 fi
 
-pip3 install ./mysocket_pkg
-pip3 install ./storage_pkg
-pip3 install ./sheets_pkg
-pip3 install ./sheets_backend_pkg
+#pip3 install ./mysocket_pkg
+#pip3 install ./storage_pkg
+#pip3 install ./sheets_pkg
+#pip3 install ./sheets_backend_pkg
 
-python3 -m unittest sheets_backend.tests.check_stored
+pip3 install . -vvv
+
+mkdir -p venv/testing/log/web_sheets_sheets_backend
+
+web_sheets_sheets_backend --settings ./testing &
+pid=$!
+echo $pid > pid.txt
+
+bash test.bash
+
+kill `cat pid.txt`
 
 #deactivate
 

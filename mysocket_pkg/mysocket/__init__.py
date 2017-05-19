@@ -37,6 +37,7 @@ class ClientSocket(Common):
 
 class Server(object):
     def __init__(self, host, port, class_client):
+        logger.info("host {} listen on port {}".format(host, port))
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server.bind((host, port))
