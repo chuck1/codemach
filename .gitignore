@@ -1,10 +1,12 @@
 *.pyc
 *.sqlite3
 secrets.json
-log
-web_sheets_django/production/
+web_sheets_django/secrets.json
 geckodriver.log
+web_sheets_django/production/
 *.egg-info
 *.log
 build/
+docs/build/
 venv/
+
