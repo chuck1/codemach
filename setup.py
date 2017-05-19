@@ -5,8 +5,8 @@ version = open('VERSION.txt').read()
 
 setup(name='web_sheets',
         version=version,
-        description='python spreadsheets',
-        url='http://github.com/chuck1/sheets',
+        description='python web spreadsheets',
+        url='http://github.com/chuck1/web_sheets',
         author='Charles Rymal',
         author_email='charlesrymal@gmail.com',
         license='MIT',
@@ -29,27 +29,15 @@ setup(name='web_sheets',
         install_requires=[
             'fs',
             'numpy',
+            'django',
+            #'social_django',
+            'social-auth-app-django',
+            'selenium',
             ],
-        entry_points={
-            'console_scripts':[
-                'web_sheets_storage = storage.daemon:daemon',
-                'web_sheets_sheets_backend = sheets_backend.daemon:daemon',
-                ]
-            },
-        data_files=[
-            ('/lib/systemd/system', [
-                'daemon/web_sheets_storage.service',
-                'daemon/web_sheets_sheets_backend.service',
-                ]),
-            ('/etc/web_sheets_storage/web_sheets_storage', [
-                'daemon/web_sheets_storage/settings.py',
-                'daemon/web_sheets_storage/__init__.py',
-                ]),
-            ('/etc/web_sheets_sheets_backend/web_sheets_sheets_backend', [
-                'daemon/web_sheets_sheets_backend/__init__.py',
-                'daemon/web_sheets_sheets_backend/settings.py',
-                ]),
-            ],
+        scripts=[
+                'storage_pkg/bin/web_sheets_storage',
+                'sheets_backend_pkg/bin/web_sheets_sheets_backend',
+                ],
         zip_safe=False,
         )
 
