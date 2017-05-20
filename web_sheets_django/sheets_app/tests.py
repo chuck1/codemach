@@ -65,10 +65,39 @@ class MySeleniumTests(StaticLiveServerTestCase):
         print(dir(e))
         print('text =',repr(e.text))
 
+        # test script pre
+        e = self.selenium.find_element_by_xpath(
+                '//textarea[@id="script_pre"]')
+        e.click()
+        e.send_keys('import math\na=2+2\nprint(a)')
+
+        e = self.selenium.find_element_by_xpath(
+                '//button[@id="script_pre"]')
+        e.click()
+        time.sleep(3)
+    
+        e = self.selenium.find_element_by_xpath(
+                '//textarea[@id="script_pre_output"]')
+        print('script pre output')
+        print(e.text)
+
+        self assertEqual(e.text, '4\n')
+
+        # cell
         e.click()
         e.send_keys('2+2\n')
 
-        time.sleep(5)
+        time.sleep(3)
 
         self.assertEqual(e.text, '4')
+
+        # cell
+        e.click()
+        e.send_keys('a\n')
+
+        time.sleep(3)
+
+        self.assertEqual(e.text, '4')
+
+
 

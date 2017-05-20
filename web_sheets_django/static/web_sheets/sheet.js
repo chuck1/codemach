@@ -79,8 +79,8 @@ function apply_data(data_new) {
 function apply_sheet_data(data_new) {
 	console.log('apply_sheet_data', data_new);
         apply_data(data_new);
-        $("#script").val(data_new.script_pre);
-        $("#script_output").val(data_new.script_pre_output);
+        $("#script_pre").val(data_new.script_pre);
+        $("#script_pre_output").val(data_new.script_pre_output);
         $("#script_post").val(data_new.script_post);
         $("#script_post_output").val(data_new.script_post_output);
 }
@@ -114,7 +114,7 @@ function get_sheet_data() {
 }
 function set_script_pre() {
 	//console.log('set script pre ' + url_set_script_pre);
-	var text = $("#script").val();
+	var text = $("#script_pre").val();
         var post_data = {
 		'csrfmiddlewaretoken':csrftoken,
 		"sheet_key": sheet_key,
