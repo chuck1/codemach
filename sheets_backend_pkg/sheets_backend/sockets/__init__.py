@@ -199,7 +199,7 @@ class ClientSocket(mysocket.ClientSocket):
             o(self)
         except Exception as e:
             logger.exception('error processing packet ' + repr(o))
-            sock.send(pickle.dumps(PacketException(str(e))))
+            self.send(pickle.dumps(PacketException(str(e))))
 
 class Server(sheets_backend.Server, mysocket.Server):
     def __init__(self, storage, port):
