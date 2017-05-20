@@ -16,6 +16,10 @@ Documentation_
 
 .. _Documentation: http://web-sheets.readthedocs.io/en/dev
 
+GitHub_
+
+.. _Github: http://www.github.com/chuck1/web-sheets
+
 Installation
 ------------
 
@@ -178,8 +182,28 @@ testing must utilize virtualenv and socket communication must take place on diff
 For tests requiring a running sheets_backend Server, a server will be started
 using a port that is designated for testing.
 
+Processes
+=========
 
+Django
+------
 
+- source
+- settings
+  - wsgi.py and manage.py can load different settings files
+  - settings reads secrets.json
+
+Sheets Backend Server
+---------------------
+
+- sheets_backend python module
+- script file
+  - installed to /usr/local/bin
+- settings module
+  - script loads from default location and has command line
+    input for location
+- storage location
+  - if storage is included, setting should set storage location
 
 
 
