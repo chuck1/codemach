@@ -99,5 +99,22 @@ class MySeleniumTests(StaticLiveServerTestCase):
 
         self.assertEqual(e.text, '4')
 
+        # test script post
+        e = self.selenium.find_element_by_xpath(
+                '//textarea[@id="script_post"]')
+        e.click()
+        e.send_keys('print(a)')
+
+        e = self.selenium.find_element_by_xpath(
+                '//button[@id="script_post"]')
+        e.click()
+        time.sleep(3)
+    
+        e = self.selenium.find_element_by_xpath(
+                '//textarea[@id="script_post_output"]')
+        print('script post output')
+        print(e.text)
+
+        self assertEqual(e.text, '4\n')
 
 
