@@ -81,6 +81,8 @@ function apply_sheet_data(data_new) {
         apply_data(data_new);
         $("#script").val(data_new.script_pre);
         $("#script_output").val(data_new.script_pre_output);
+        $("#script_post").val(data_new.script_post);
+        $("#script_post_output").val(data_new.script_post_output);
 }
 function apply_script_post_output(data_new) {
         $("#script_post_output").val(data_new.script_post_output);
