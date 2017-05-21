@@ -200,8 +200,7 @@ Sheets Backend Server
 - script file
   - installed to /usr/local/bin
 - settings module
-  - script loads from default location and has command line
-    input for location
+  - script loads from default location and has command line input for location
 - storage location
   - if storage is included, setting should set storage location
 
