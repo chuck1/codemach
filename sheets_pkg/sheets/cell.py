@@ -3,7 +3,7 @@ import traceback
 import sys
 import io
 
-import sheets.helper
+#import sheets.helper
 import sheets.exception
 
 class RecursiveCellRef(Exception): pass
@@ -84,12 +84,9 @@ class Cell(object):
     
 
     def get_globals(self, book, sheet):
-        g = dict(book.glo)
         
-        g.update({
-                'cell': sheets.helper.CellHelper(self.r, self.c),
-                "cellshelper": sheets.helper.CellsHelper(book, sheet),
-                })
+        g = dict(sheet.glo)
+ 
         return g
 
     def evaluate(self, book, sheet):
@@ -113,7 +110,7 @@ class Cell(object):
         except Exception as e:
             print("exception during cell({},{}) eval".format(self.r, self.c))
             print(repr(e))
-            #traceback.print_exc()
+            traceback.print_exc()
             
             self.exception_eval = e
 
@@ -123,7 +120,7 @@ class Cell(object):
             self.exception_eval = None
 
     def get_value(self, book, sheet):
-        #print(self, self.evaluated)
+        print('pre', repr(self), self.evaluated)
 
         #print("Cell.get_value ({},{}) s = {} v = {} evaluated = {}".format(
         #    self.r, self.c, repr(self.string), 
@@ -132,6 +129,13 @@ class Cell(object):
         if self.evaluated: return self.value
 
         if self in book.cell_stack:
+            
+            print()
+            print('book stack')
+            for c in book.cell_stack:
+                print('  ',repr(c))
+            print()
+
             #raise RecursiveCellRef()
             raise RuntimeError("recursion")
 
@@ -139,6 +143,8 @@ class Cell(object):
 
         self.evaluate(book, sheet)
         self.evaluated = True
+
+        print('post', repr(self), self.evaluated)
 
         book.cell_stack.pop()
 

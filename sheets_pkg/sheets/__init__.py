@@ -23,7 +23,7 @@ import fs.osfs
 
 import sheets.cells
 import sheets.script
-import sheets.helper
+#import sheets.helper
 import sheets.exception
 
 logger = logging.getLogger(__name__)
@@ -83,7 +83,7 @@ class Book(object):
         It has access to cell strings and values.
         """
 
-        self.sheets = {"0": Sheet()}
+        self.sheets = {"0": Sheet(self)}
 
     def __getstate__(self):
         return dict((k, getattr(self, k)) for k in ['sheets', 'script_pre', 'script_post'])
@@ -112,10 +112,14 @@ class Book(object):
         logger.warning("invoking Book.builtin_getattr({})".format(args))
         obj = args[0]
         logger.warning("obj={}".format(obj))
-
+        
+        # temporarily removed for teting of special helper module importing
+        """
+        import sheets.helper
         if isinstance(obj, sheets.helper.CellsHelper):
             raise sheets.exception.NotAllowedError(
                     "For security, getattr not allowed for CellsHelper objects")
+        """
 
         return getattr(*args)
 
@@ -130,8 +134,18 @@ class Book(object):
 
         self.glo = {
                 "__builtins__": approved_builtins,
-                "sheets": dict((k, s.cells_strings()) for k, s in self.sheets.items())
+                "sheets": dict((k, s.cells_strings()) for k, s in self.sheets.items()),
+                '_global__book': self,
                 }
+
+        #module = __import__('sheets.helper', globals=g, fromlist=['*'])
+        
+        #print()
+        #print(module)
+        #print(module.__file__)
+        #print(dir(module))
+        #print()
+        
 
     def set_script_pre(self, s):
         if self.script_pre.set_string(s):
@@ -148,13 +162,14 @@ class Book(object):
         
         self.cell_stack = list()
         for s in self.sheets.values():
+            s.reset_globals()
             s.cells.evaluate(self, s)
 
         self.script_post.execute(self.glo)
 
     def set_cell(self, k, r, c, s):
         if not k in self.sheets:
-            self.sheets[k] = Sheet()
+            self.sheets[k] = Sheet(self)
         sheet = self.sheets[k]
         
         sheet.cells.set_cell(r, c, s)
@@ -162,7 +177,8 @@ class Book(object):
         self.do_all()
 
 class Sheet(object):
-    def __init__(self):
+    def __init__(self, book):
+        self.__book = book
         self.cells = sheets.cells.Cells()
         
     def __getstate__(self):
@@ -170,6 +186,8 @@ class Sheet(object):
     
     def set_cell(self, r, c, s):
         self.cells.set_cell(r, c, s)
+
+        self.__book.do_all()
 
     def add_column(self, i):
         self.cells.add_column(i)
@@ -186,6 +204,46 @@ class Sheet(object):
     def cells_strings(self):
         return self.cells.cells_strings()
 
+    def reset_globals(self):
         
+        self.glo = dict(self.__book.glo)
+
+        self.glo.update({
+            '_global__sheet': self,
+            })
+
+        filename = os.path.join(os.path.dirname(sheets.__file__), 'helper.py')
+        
+        with open(filename) as f:
+            exec(f.read(), self.glo)
+        
+        """
+        self.glo.update({
+            "CellHelper": self.glo['CellHelper'],
+            "SheetHelper": self.glo['SheetHelper'],
+            "BookHelper": self.glo['BookHelper'],
+            })
+        """
+
+
+    def array_values(self, *args):
+        print('sheet array values', *args)
+        print('sheet array values', args)
+        r, c = args
+
+        #def cells_values(cells, book, sheet):
+        def f(c):
+            if c is None: return None
+            v = c.get_value(self.__book, self)
+            #print("cells_values cell ({},{}) s = {} v = {}".format(c.r, c.c, repr(c.string), repr(v)))
+            return v
+    
+        #a = numpy.vectorize(f, otypes=[object])(self.cells.cells.__getitem__(*args))
+        a = numpy.vectorize(f, otypes=[object])(self.cells.cells.__getitem__(args))
+        #a = numpy.vectorize(f, otypes=[object])(self.cells.cells[*args])
+        #a = numpy.vectorize(f, otypes=[object])(self.cells.cells[args])
+        #a = numpy.vectorize(f, otypes=[object])(self.cells.cells[r, c])
+        return a
+
 
 

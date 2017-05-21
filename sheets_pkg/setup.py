@@ -1,14 +1,19 @@
-
+import os
 from setuptools import setup
 
+version = open('VERSION.txt').read()
+
 setup(name='sheets',
-        version='0.1',
+        version=version,
         description='python spreadsheets',
         url='http://github.com/chuck1/sheets',
         author='Charles Rymal',
         author_email='charlesrymal@gmail.com',
         license='MIT',
-        packages=['sheets'],
+        packages=[
+            'sheets',
+            'sheets.tests',
+            ],
         install_requires=[
             'fs',
             'numpy',

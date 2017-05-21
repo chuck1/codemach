@@ -4,7 +4,22 @@ import sys
 import io
 
 import sheets.cell
-import sheets.helper
+#import sheets.helper
+
+def cells_strings(cells):
+    def f(c):
+        if c is None: return ""
+        return c.string
+    return numpy.array(numpy.vectorize(f, otypes=[str])(cells).tolist())
+
+def cells_values(cells, book, sheet):
+    def f(c):
+        if c is None: return None
+        v = c.get_value(book, sheet)
+        #print("cells_values cell ({},{}) s = {} v = {}".format(c.r, c.c, repr(c.string), repr(v)))
+        return v
+    a = numpy.vectorize(f, otypes=[object])(cells)
+    return a
 
 class Cells(object):
     def __init__(self):
@@ -72,7 +87,7 @@ class Cells(object):
         numpy.vectorize(f)(self.cells)
 
     def cells_strings(self):
-        return sheets.helper.cells_strings(self.cells)
+        return cells_strings(self.cells)
 
 
 
