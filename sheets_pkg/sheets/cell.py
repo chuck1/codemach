@@ -49,7 +49,7 @@ class Cell(object):
                 raise sheets.exception.NotAllowedError(
                         "For security, use of {} is not allowed".format(name))
 
-    def set_string(self, sheet, s):
+    def set_string(self, s):
         """
         this shall be the only method for changing the string member
         """
@@ -85,7 +85,7 @@ class Cell(object):
 
     def get_globals(self, book, sheet):
         
-        g = dict(sheet.glo)
+        g = dict(sheet.get_globals())
  
         return g
 
@@ -98,7 +98,7 @@ class Cell(object):
             return
 
         if self.code is None:
-            self.value = ""
+            self.value = None
             return
 
         g = self.get_globals(book, sheet)

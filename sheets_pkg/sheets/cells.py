@@ -23,19 +23,24 @@ def cells_values(cells, book, sheet):
 
 class Cells(object):
     def __init__(self):
-        self.cells = numpy.empty((0,0),dtype=object)
-        self.ensure_size(0,0)
+        self.cells = numpy.array([[sheets.cell.Cell(0, 0)]], dtype=object)
     
     def __getstate__(self):
         return dict((k, getattr(self, k)) for k in ['cells'])
     
     def ensure_size(self, r, c):
-        if r > (numpy.shape(self.cells)[0]-1):
-            shape = (r-numpy.shape(self.cells)[0]+1,numpy.shape(self.cells)[1])
+        R = numpy.shape(self.cells)[0]
+        C = numpy.shape(self.cells)[1]
+        if r > (-1):
+            shape = (r - R + 1, C)
             self.cells = numpy.append(
                     self.cells,
                     numpy.empty(shape,dtype=object),
                     axis=0)
+
+            for i in range(R, r + 1):
+                for j in range(C):
+                    self.cells[i, j] = sheets.cell.Cell(i, j)
 
         if c > (numpy.shape(self.cells)[1]-1):
             shape = (numpy.shape(self.cells)[0],c-numpy.shape(self.cells)[1]+1)
@@ -44,13 +49,17 @@ class Cells(object):
                     numpy.empty(shape,dtype=object),
                     axis=1)
 
+            for i in range(R):
+                for j in range(C, c + 1):
+                    self.cells[i, j] = sheets.cell.Cell(i, j)
+
     def set_cell(self, r, c, s):
         self.ensure_size(r, c)
 
         if self.cells[r,c] is None:
             self.cells[r,c] = sheets.cell.Cell(r,c)
 
-        self.cells[r,c].set_string(self, s)
+        self.cells[r,c].set_string(s)
 
     def add_column(self, i):
         if i is None:
@@ -78,7 +87,7 @@ class Cells(object):
         
         for i in range(numpy.shape(self.cells)[0]):
             for j in range(numpy.shape(self.cells)[1]):
-                f(self.cells[i,j], r[i], c[j])
+                f(self.cells[i,j], i, j)
 
     def set_evaluated(self, b):
         def f(c):

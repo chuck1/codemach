@@ -108,6 +108,9 @@ class Book(object):
 
         self.sheets = {"0": Sheet(self)}
 
+        self.cell_stack = list()
+        self.glo = None
+
     def __getstate__(self):
         return dict((k, getattr(self, k)) for k in ['sheets', 'script_pre', 'script_post'])
 
@@ -163,17 +166,13 @@ class Book(object):
                 "__builtins__": approved_builtins,
                 "sheets": dict((k, s.cells_strings()) for k, s in self.sheets.items()),
                 'book': self,
-                '_global__book': self,
                 }
 
-        #module = __import__('sheets.helper', globals=g, fromlist=['*'])
         
-        #print()
-        #print(module)
-        #print(module.__file__)
-        #print(dir(module))
-        #print()
-        
+    def get_globals(self):
+        if self.glo is None:
+            self.reset_globals()
+        return self.glo
 
     def set_script_pre(self, s):
         if self.script_pre.set_string(s):
@@ -204,18 +203,24 @@ class Book(object):
         
         self.do_all()
 
+    def __getitem__(self, key):
+        if not key in self.sheets:
+            self.sheets[key] = Sheet(self)
+        return self.sheets[key]
+
 class Sheet(object):
     def __init__(self, book):
-        self.__book = book
+        self.book = book
         self.cells = sheets.cells.Cells()
-        
+        self.glo = None
+
     def __getstate__(self):
         return dict((k, getattr(self, k)) for k in ['cells'])
     
     def set_cell(self, r, c, s):
         self.cells.set_cell(r, c, s)
 
-        self.__book.do_all()
+        self.book.do_all()
 
     def add_column(self, i):
         self.cells.add_column(i)
@@ -234,11 +239,10 @@ class Sheet(object):
 
     def reset_globals(self):
         
-        self.glo = dict(self.__book.glo)
+        self.glo = dict(self.book.get_globals())
 
         self.glo.update({
             'sheet': self,
-            '_global__sheet': self,
             })
 
         filename = os.path.join(os.path.dirname(sheets.__file__), 'helper.py')
@@ -246,37 +250,35 @@ class Sheet(object):
         with open(filename) as f:
             exec(f.read(), self.glo)
         
-        """
-        self.glo.update({
-            "CellHelper": self.glo['CellHelper'],
-            "SheetHelper": self.glo['SheetHelper'],
-            "BookHelper": self.glo['BookHelper'],
-            })
-        """
+    def get_globals(self):
+        if self.glo is None:
+            self.reset_globals()
+        return self.glo
 
     def array_values(self, *args):
-        print('Sheet array_values', args)
-        print('Sheet array_values', *args)
-
-        #def cells_values(cells, book, sheet):
         def f(c):
             if c is None: return None
-            v = c.get_value(self.__book, self)
-            #print("cells_values cell ({},{}) s = {} v = {}".format(
-            #    c.r, c.c, repr(c.string), repr(v)))
+            v = c.get_value(self.book, self)
             return v
     
-        #a = numpy.vectorize(f, otypes=[object])(self.cells.cells.__getitem__(*args))
         a = numpy.vectorize(f, otypes=[object])(self.cells.cells.__getitem__(args))
-        #a = numpy.vectorize(f, otypes=[object])(self.cells.cells[*args])
-        #a = numpy.vectorize(f, otypes=[object])(self.cells.cells[args])
-        #a = numpy.vectorize(f, otypes=[object])(self.cells.cells[r, c])
         return a
 
     def __getitem__(self, args):
-        print('Sheet __getitem__', args)
-        print('Sheet __getitem__', *args)
         return self.array_values(*args)
+
+    def __setitem__(self, args, string):
+        def f(c, s):
+            c.set_string(s)
+        
+        self.cells.ensure_size(*args)
+
+        numpy.vectorize(f, otypes=[object])(self.cells.cells.__getitem__(args), string)
+       
+        # lazy
+        self.book.do_all()
+
+
 
 
 
