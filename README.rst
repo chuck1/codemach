@@ -1,6 +1,8 @@
 Web Sheets
 ==========
 
+Current version: 0.1
+
 A web-based python spreadsheet app.
 
 Each book has multiple sheets a pre and post script.
