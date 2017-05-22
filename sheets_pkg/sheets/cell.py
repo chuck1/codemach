@@ -120,7 +120,6 @@ class Cell(object):
             self.exception_eval = None
 
     def get_value(self, book, sheet):
-        print('pre', repr(self), self.evaluated)
 
         #print("Cell.get_value ({},{}) s = {} v = {} evaluated = {}".format(
         #    self.r, self.c, repr(self.string), 
@@ -129,13 +128,6 @@ class Cell(object):
         if self.evaluated: return self.value
 
         if self in book.cell_stack:
-            
-            print()
-            print('book stack')
-            for c in book.cell_stack:
-                print('  ',repr(c))
-            print()
-
             #raise RecursiveCellRef()
             raise RuntimeError("recursion")
 
@@ -144,7 +136,6 @@ class Cell(object):
         self.evaluate(book, sheet)
         self.evaluated = True
 
-        print('post', repr(self), self.evaluated)
 
         book.cell_stack.pop()
 

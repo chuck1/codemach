@@ -20,6 +20,7 @@ import sys
 import io
 import logging
 import fs.osfs
+import inspect
 
 import sheets.cells
 import sheets.script
@@ -62,6 +63,28 @@ class WrapperFile(object):
         logger.warning("involving WrapperFile.read({})".format(self))
         return self.file.read()
 
+class Protector(object):
+    def __init__(self, f):
+        self.f = f
+    def __call__(self, *args):
+        print('inside Protector __call__')
+        print('stack:', inspect.stack)
+        print(args)
+        print(*args)
+        self.f(*args)
+
+def protector(f):
+    def wrapper(*args):
+        print('inside protector wrapper call')
+        stack = inspect.stack()
+        print('stack:')
+        for s in stack:
+            print('  ',s.filename)
+            if s.filename[:5] == "<cell":
+                raise sheets.exception.NotAllowedError('stopped by protector')
+        return f(*args)
+    return wrapper
+
 class Book(object):
     """
     Book class
@@ -87,6 +110,10 @@ class Book(object):
 
     def __getstate__(self):
         return dict((k, getattr(self, k)) for k in ['sheets', 'script_pre', 'script_post'])
+
+    @protector
+    def test_func(self):
+        print('this is a test function of Book')
 
     def builtin___import__(self, name, globals=None, locals=None, 
             fromlist=(), level=0):
@@ -135,6 +162,7 @@ class Book(object):
         self.glo = {
                 "__builtins__": approved_builtins,
                 "sheets": dict((k, s.cells_strings()) for k, s in self.sheets.items()),
+                'book': self,
                 '_global__book': self,
                 }
 
@@ -209,6 +237,7 @@ class Sheet(object):
         self.glo = dict(self.__book.glo)
 
         self.glo.update({
+            'sheet': self,
             '_global__sheet': self,
             })
 
@@ -225,17 +254,16 @@ class Sheet(object):
             })
         """
 
-
     def array_values(self, *args):
-        print('sheet array values', *args)
-        print('sheet array values', args)
-        r, c = args
+        print('Sheet array_values', args)
+        print('Sheet array_values', *args)
 
         #def cells_values(cells, book, sheet):
         def f(c):
             if c is None: return None
             v = c.get_value(self.__book, self)
-            #print("cells_values cell ({},{}) s = {} v = {}".format(c.r, c.c, repr(c.string), repr(v)))
+            #print("cells_values cell ({},{}) s = {} v = {}".format(
+            #    c.r, c.c, repr(c.string), repr(v)))
             return v
     
         #a = numpy.vectorize(f, otypes=[object])(self.cells.cells.__getitem__(*args))
@@ -244,6 +272,11 @@ class Sheet(object):
         #a = numpy.vectorize(f, otypes=[object])(self.cells.cells[args])
         #a = numpy.vectorize(f, otypes=[object])(self.cells.cells[r, c])
         return a
+
+    def __getitem__(self, args):
+        print('Sheet __getitem__', args)
+        print('Sheet __getitem__', *args)
+        return self.array_values(*args)
 
 
 
