@@ -44,10 +44,11 @@ class Cell(object):
 
         if self.code is None: return
 
-        for name in self.code.co_names:
-            if '__' in name:
-                raise sheets.exception.NotAllowedError(
-                        "For security, use of {} is not allowed".format(name))
+        if False: # turn off to test other security measures
+            for name in self.code.co_names:
+                if '__' in name:
+                    raise sheets.exception.NotAllowedError(
+                            "For security, use of {} is not allowed".format(name))
 
     def set_string(self, s):
         """
@@ -108,9 +109,9 @@ class Cell(object):
         except RecursiveCellRef as e:
             raise
         except Exception as e:
-            print("exception during cell({},{}) eval".format(self.r, self.c))
-            print(repr(e))
-            traceback.print_exc()
+            #print("exception during cell({},{}) eval".format(self.r, self.c))
+            #print(repr(e))
+            #traceback.print_exc()
             
             self.exception_eval = e
 

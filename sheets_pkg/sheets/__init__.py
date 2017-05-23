@@ -75,15 +75,22 @@ class Protector(object):
 
 def protector(f):
     def wrapper(*args):
-        print('inside protector wrapper call')
+        #print('inside protector wrapper call')
         stack = inspect.stack()
-        print('stack:')
+        #print('stack:')
         for s in stack:
-            print('  ',s.filename)
+            #print('  ',s.filename)
             if s.filename[:5] == "<cell":
                 raise sheets.exception.NotAllowedError('stopped by protector')
         return f(*args)
     return wrapper
+
+class Callable(object):
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args):
+        return self.func(*args)
 
 class Book(object):
     """
@@ -111,12 +118,36 @@ class Book(object):
         self.cell_stack = list()
         self.glo = None
 
+        # security testing
+        self.test_callable = Callable(self.test_func_2)
+
     def __getstate__(self):
         return dict((k, getattr(self, k)) for k in ['sheets', 'script_pre', 'script_post'])
+    
+    def __getattribute__(self, name):
+        
+        allowed_reserved = [
+                '__class__',
+                '__dict__',
+                ]
 
-    @protector
+        stack = inspect.stack()
+        for s in stack:
+            if s.filename.startswith("<cell"):
+                print('book getattribute', repr(name))
+                if name.startswith('__') and name.endswith('__'):
+                    if not name in allowed_reserved:
+                        raise sheets.exception.NotAllowedError(
+                                "cell not allowed to access {}".format(repr(name)))
+
+        return object.__getattribute__(self, name)
+
+    #@protector
     def test_func(self):
         print('this is a test function of Book')
+
+    def test_func_2(self, arg1, arg2):
+        return 'test_func_2 with args ' + str(arg1) +' '+ str(arg2)
 
     def builtin___import__(self, name, globals=None, locals=None, 
             fromlist=(), level=0):
