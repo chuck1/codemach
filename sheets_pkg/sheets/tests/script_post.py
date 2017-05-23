@@ -8,8 +8,10 @@ class ScriptPostTest(unittest.TestCase):
         b = sheets.Book()
     
         b.set_script_pre('import math\na=math.pi')
-    
-        b.set_script_post("print(a)")
+
+        b['0'][0, 0] = 'a'
+
+        b.set_script_post("print(book['0'][0, 0])")
 
         b.do_all()
    

@@ -10,15 +10,15 @@ class SetScriptPreTest(unittest.TestCase):
         b.set_script_pre('import os')
         b.do_all()
     
-        assert(repr(b.script_pre.exec_exc) == "ImportError(\"module 'os' is not allowed\",)")
+        self.assertEqual(
+                repr(b.script_pre.exec_exc),
+                "ImportError(\"module 'os' is not allowed\",)")
     
-        b.set_script_pre("import math\n")
+        b.set_script_pre("a = 1\n")
     
-        b.set_cell(0, 0, 0, "math.sin(math.pi)")
+        b.set_cell('0', 0, 0, "a")
         
-        s = b.sheets[0]
-    
-        if s.cells.cells[0,0].exception_eval is not None:
-            raise RuntimeError('cell exception')
-
+        self.assertEqual(
+                b['0'][0, 0],
+                1)
 
