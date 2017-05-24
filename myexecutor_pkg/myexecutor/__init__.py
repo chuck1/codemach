@@ -5,7 +5,7 @@ import dis
 import types
 
 class Executor(object):
-
+    verbose = 0
     def __init__(self):
         self.__stack = []
 
@@ -25,7 +25,11 @@ class Executor(object):
         if name in self.__globals:
             return self.__globals[name]
         
-        return getattr(self.__globals['__builtins__'], name)
+        b = self.__globals['__builtins__']
+        if isinstance(b, dict):
+            return b[name]
+        else:
+            return getattr(b, name)
 
     def pop(self, n):
         poped = self.__stack[len(self.__stack) - n:]
@@ -137,7 +141,8 @@ class Executor(object):
             else:
                 raise RuntimeError('unhandled opcode',i.opcode,i.opname,self.__stack)
     
-            print('%13s' % i.opname, self.__stack)
+            if self.verbose > 0:
+                print('%13s' % i.opname, self.__stack)
     
         return return_value
             
