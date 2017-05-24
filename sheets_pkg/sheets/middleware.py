@@ -48,5 +48,15 @@ class MiddlewareSecurityManager(object):
     def call_book_method_decorator(self, book, f, args):
         for o in self.objects:
             o.call_book_method_decorator(book, f, args)
+
+    def call_check_cell_code(self, cell):
+        for o in self.objects:
+            o.call_check_cell_code(cell)
+
+    def call_check_script_code(self, script):
+        for o in self.objects:
+            o.call_check_script_code(script)
    
+
+
 

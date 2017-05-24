@@ -65,6 +65,14 @@ def protector1(f):
 
     return wrapper
 
+def context_decorator(context):
+    def wrapper(f):
+        def wrapped(o, *args):
+            with sheets.context.context(book, context):
+                return f(o, *args)
+        return wrapped
+    return wrapper
+
 class Callable(object):
     def __init__(self, func):
         self.func = func
@@ -108,6 +116,7 @@ class Book(object):
         self.middleware_security = sheets.middleware.MiddlewareSecurityManager(
                 self.settings.MIDDLEWARE_SECURITY)
 
+    def get_book(self): return self
 
     def __getstate__(self):
         names = ['sheets', 'script_pre', 'script_post', 'settings', 'context']
@@ -158,7 +167,7 @@ class Book(object):
             self.sheets[k] = Sheet(self)
         sheet = self.sheets[k]
         
-        sheet.cells.set_cell(r, c, s)
+        sheet.set_cell(r, c, s)
         
         self.do_all()
 
@@ -176,9 +185,11 @@ class Sheet(object):
 
     def __getstate__(self):
         return dict((k, getattr(self, k)) for k in ['cells'])
+
+    def get_book(self): return self.book
     
     def set_cell(self, r, c, s):
-        self.cells.set_cell(r, c, s)
+        self.cells.set_cell(self, r, c, s)
 
         self.book.do_all()
 
@@ -198,17 +209,8 @@ class Sheet(object):
         return self.cells.cells_strings()
 
     def reset_globals(self):
-        
-        self.glo = dict(self.book.get_globals())
-
-        self.glo.update({
-            'sheet': self,
-            })
-
-        filename = os.path.join(os.path.dirname(sheets.__file__), 'helper.py')
-        
-        with open(filename) as f:
-            exec(f.read(), self.glo)
+        res = self.book.middleware_security.call_sheet_globals(self.book, self)
+        self.glo = res._globals
         
     def get_globals(self):
         if self.glo is None:
@@ -229,7 +231,7 @@ class Sheet(object):
 
     def __setitem__(self, args, string):
         def f(c, s):
-            c.set_string(s)
+            c.set_string(self, s)
         
         self.cells.ensure_size(*args)
 

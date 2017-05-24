@@ -65,11 +65,47 @@ class SecurityTest1(object):
         print(f)
         print(args)
         """
+        
+        context = object.__getattribute__(book, 'context')
 
         if f.__name__ == '__getattribute__':
+            print("{}({}) {}".format(f.__name__, args, context))
             if not args[0] in ['__getitem__', 'sheets']:
-                raise sheets.exception.NotAllowedError('stopped by protector')
+                raise sheets.exception.NotAllowedError(
+                        "stopped by protector in context {}. {}({})".format(
+                            context, f.__name__, args))
 
+
+    def call_sheet_globals(self, book, sheet, res):
+        res._globals = dict(book.get_globals())
+
+        res._globals.update({
+            'sheet': sheet,
+            })
+
+        """
+        filename = os.path.join(os.path.dirname(sheets.__file__), 'helper.py')
+        
+        with open(filename) as f:
+            exec(f.read(), self.glo)
+        """
+
+    def call_check_script_code(self, script):
+        pass
+
+    def call_check_cell_code(self, cell):
+        """
+        If any of the values in co_names contains ``__``, a
+        :py:exc:`sheets.exception.NotAllowedError` is raised.
+        """
+
+        if cell.code is None: return
+
+        if False: # turn off to test other security measures
+            for name in cell.code.co_names:
+                if '__' in name:
+                    raise sheets.exception.NotAllowedError(
+                            "For security, use of {} is not allowed".format(name))
 
 
 

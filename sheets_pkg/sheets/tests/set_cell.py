@@ -24,6 +24,8 @@ class SetCellTest(unittest.TestCase):
         print('cell 0,2 = ', b['0'][0, 2])
         self.assertEqual(numpy.all(b['0'][0, 2] == numpy.array([2, 3])), True)
 
+        self.assertEqual(b.context, 0)
+
         b['0'][0, 0] = 'sheet[0, 0]'
         self.assertEqual(repr(b['0'][0, 0].item()), "RuntimeError('recursion',)")
 

@@ -45,16 +45,22 @@ class Script(object):
             return
         else:
             self.comp_exc = None
+
+        try:
+            self.book.middleware_security.call_check_script_code(self)
+        except sheets.exception.NotAllowedError as e:
+            self.code = None
+            self.comp_exc = e
     
     def execute1(self, g):
         code = self.code
 
-        with sheets.context.script_exec(self.book, self):
-            try:
+        try:
+            with sheets.context.script_exec(self.book, self):
                 exec(code, g)
-            except Exception as e:
-                print(e)
-                return e
+        except Exception as e:
+            print(e)
+            return e
 
     def execute(self, g):
         logger.debug('script evaluate')

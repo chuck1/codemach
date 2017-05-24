@@ -36,29 +36,16 @@ class Cell(object):
     def __getstate__(self):
         return dict((k, getattr(self, k)) for k in ['r', 'c', 'string'])
 
-    def check_code(self):
-        """
-        If any of the values in co_names contains ``__``, a
-        :py:exc:`sheets.exception.NotAllowedError` is raised.
-        """
 
-        if self.code is None: return
-
-        if False: # turn off to test other security measures
-            for name in self.code.co_names:
-                if '__' in name:
-                    raise sheets.exception.NotAllowedError(
-                            "For security, use of {} is not allowed".format(name))
-
-    def set_string(self, s):
+    def set_string(self, sheet, s):
         """
         this shall be the only method for changing the string member
         """
         if s == self.string: return
         self.string = s
-        self.comp()
+        self.comp(sheet)
         
-    def comp(self):
+    def comp(self, sheet):
         """
         Compile the string.
    
@@ -78,7 +65,7 @@ class Cell(object):
             self.comp_exc = e
 
         try:
-            self.check_code()
+            sheet.book.middleware_security.call_check_cell_code(self)
         except sheets.exception.NotAllowedError as e:
             self.code = None
             self.comp_exc = e
@@ -92,7 +79,7 @@ class Cell(object):
 
     def evaluate(self, book, sheet):
         
-        if not hasattr(self, "comp_exc"): self.comp()
+        if not hasattr(self, "comp_exc"): self.comp(sheet)
 
         if self.comp_exc is not None:
             self.value = 'compile error: '+str(self.comp_exc)
@@ -105,7 +92,9 @@ class Cell(object):
         g = self.get_globals(book, sheet)
 
         try:
-            self.value = eval(self.code, g)
+            with sheets.context.cell_eval(book, sheet, self):
+                v = eval(self.code, g)
+            self.value = v
         except RecursiveCellRef as e:
             raise
         except Exception as e:
@@ -137,8 +126,9 @@ class Cell(object):
         self.evaluate(book, sheet)
         self.evaluated = True
 
-
         book.cell_stack.pop()
 
         return self.value
+
+
 

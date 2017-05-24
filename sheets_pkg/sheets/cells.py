@@ -53,13 +53,13 @@ class Cells(object):
                 for j in range(C, c + 1):
                     self.cells[i, j] = sheets.cell.Cell(i, j)
 
-    def set_cell(self, r, c, s):
+    def set_cell(self, sheet, r, c, s):
         self.ensure_size(r, c)
 
         if self.cells[r,c] is None:
             self.cells[r,c] = sheets.cell.Cell(r,c)
 
-        self.cells[r,c].set_string(s)
+        self.cells[r,c].set_string(sheet, s)
 
     def add_column(self, i):
         if i is None:
