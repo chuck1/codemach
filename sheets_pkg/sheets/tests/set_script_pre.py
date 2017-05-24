@@ -2,12 +2,11 @@ import numpy
 import unittest
 
 import sheets
-
-from sheets.tests import settings
+import sheets.tests.settings
 
 class SetScriptPreTest(unittest.TestCase):
     def test(self):
-        b = sheets.Book(settings)
+        b = sheets.Book(sheets.tests.settings.Settings)
     
         b.set_script_pre('import os')
         b.do_all()

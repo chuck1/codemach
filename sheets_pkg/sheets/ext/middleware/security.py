@@ -8,7 +8,8 @@ class SecurityTest1(object):
         self.MODULES_APPROVED = book.settings.MIDDLEWARE_SECURITY_MODULES_APPROVED
         self.BUILTINS_APPROVED = book.settings.MIDDLEWARE_SECURITY_BUILTINS_APPROVED
         
-        res._globals['__builtins__'].update(self.BUILTINS_APPROVED)
+        res._globals['__builtins__'].update(
+                dict((name, __builtins__[name]) for name in self.BUILTINS_APPROVED))
 
         res._globals['__builtins__']['__import__'] = self.builtin___import__
                  

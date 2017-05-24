@@ -81,7 +81,7 @@ class MySeleniumTests(StaticLiveServerTestCase):
         print('script pre output')
         print(e.text)
 
-        self assertEqual(e.text, '4\n')
+        self.assertEqual(e.text, '4\n')
 
         # cell
         e.click()
@@ -115,6 +115,6 @@ class MySeleniumTests(StaticLiveServerTestCase):
         print('script post output')
         print(e.text)
 
-        self assertEqual(e.text, '4\n')
+        self.assertEqual(e.text, '4\n')
 
 

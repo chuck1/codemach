@@ -7,7 +7,7 @@ from sheets.tests import settings
 
 class ScriptPostTest(unittest.TestCase):
     def test(self):
-        b = sheets.Book(settings)
+        b = sheets.Book(settings.Settings)
     
         b.set_script_pre('import math\na=math.pi')
 
