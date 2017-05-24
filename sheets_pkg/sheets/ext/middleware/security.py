@@ -1,4 +1,4 @@
-
+import sheets.exception
 import sheets.middleware
 
 class SecurityTest1(object):
@@ -60,7 +60,15 @@ class SecurityTest1(object):
     def call_book_method_decorator(self, book, f, args):
         pass
         
-        #raise sheets.exception.NotAllowedError('stopped by protector')
+        """
+        print('protector')
+        print(f)
+        print(args)
+        """
+
+        if f.__name__ == '__getattribute__':
+            if not args[0] in ['__getitem__', 'sheets']:
+                raise sheets.exception.NotAllowedError('stopped by protector')
 
 
 

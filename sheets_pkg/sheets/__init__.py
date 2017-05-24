@@ -58,9 +58,9 @@ class Protector(object):
 
 def protector1(f):
     def wrapper(book, *args):
-        if book.context != sheets.context.Context.NONE:
-            book.middleware_security.call_book_method_decorator(book, f, args)
-            
+        if object.__getattribute__(book, 'context') != sheets.context.Context.NONE:
+            object.__getattribute__(book, 'middleware_security').call_book_method_decorator(
+                    book, f, args)
         return f(book, *args)
 
     return wrapper
@@ -77,6 +77,7 @@ class Book(object):
     Book class
     """
     def __init__(self, settings=None):
+        self.context = sheets.context.Context.NONE
         
         self.script_pre = sheets.script.Script(self)
         """
@@ -107,27 +108,13 @@ class Book(object):
         self.middleware_security = sheets.middleware.MiddlewareSecurityManager(
                 self.settings.MIDDLEWARE_SECURITY)
 
-        self.context = sheets.context.Context.NONE
 
     def __getstate__(self):
-        return dict((k, getattr(self, k)) for k in ['sheets', 'script_pre', 'script_post', 'settings'])
-    
+        names = ['sheets', 'script_pre', 'script_post', 'settings', 'context']
+        return dict((k, getattr(self, k)) for k in names)
+
+    @protector1
     def __getattribute__(self, name):
-        
-        allowed_reserved = [
-                '__class__',
-                '__dict__',
-                ]
-
-        stack = inspect.stack()
-        for s in stack:
-            if s.filename.startswith("<cell"):
-                print('book getattribute', repr(name))
-                if name.startswith('__') and name.endswith('__'):
-                    if not name in allowed_reserved:
-                        raise sheets.exception.NotAllowedError(
-                                "cell not allowed to access {}".format(repr(name)))
-
         return object.__getattribute__(self, name)
 
     #@protector

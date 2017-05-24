@@ -39,13 +39,16 @@ class SecurityTest(unittest.TestCase):
         b['0'][0, 0] = "dir(book.__eq__)"
 
         c = s.cells.cells[0, 0]
+
+        #print(repr(b['0'][0, 0]))
+        print('cell =', c)
+        print(repr(c.value))
+        return
         
         self.assertEqual(
                 repr(b['0'][0, 0].item()),
                 'NotAllowedError("cell not allowed to access \'__eq__\'",)')
 
-        print('cell =', c)
-        print(repr(c.value))
 
         ########
         print()
