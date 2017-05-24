@@ -1,8 +1,10 @@
 
 from setuptools import setup
 
+version = open('VERSION.txt').read()
+
 setup(name='mysocket',
-        version='0.1',
+        version=version,
         description='convenient wrapper for python socket',
         url='http://github.com/chuck1/mysocket',
         author='Charles Rymal',

@@ -6,6 +6,7 @@ import argparse
 
 import storage.filesystem
 import sheets
+import sheets.tests
 import sheets_backend.sockets
 
 def test(argv):
