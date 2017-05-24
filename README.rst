@@ -204,6 +204,38 @@ Sheets Backend Server
 - storage location
   - if storage is included, setting should set storage location
 
+Security
+========
+
+Book access
+-----------
+
+Protect book while allowing access to __getitem__ method using the following pattern.::
+
+    class Foo(object): pass
+
+    def safe_func(*args):
+        pass
+
+    Foo.__getitem__ = safe_func
+
+We must guarantee that `safe_func` is indeed safe, meaning that it is save for the user
+to have unrestricted access to it.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

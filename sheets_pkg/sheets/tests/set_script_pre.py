@@ -3,9 +3,11 @@ import unittest
 
 import sheets
 
+from sheets.tests import settings
+
 class SetScriptPreTest(unittest.TestCase):
     def test(self):
-        b = sheets.Book()
+        b = sheets.Book(settings)
     
         b.set_script_pre('import os')
         b.do_all()

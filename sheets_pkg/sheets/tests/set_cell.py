@@ -3,9 +3,11 @@ import unittest
 
 import sheets
 
+from sheets.tests import settings
+
 class SetCellTest(unittest.TestCase):
     def test(self):
-        b = sheets.Book()
+        b = sheets.Book(settings)
     
         b['0'][0, 0] = '2+2'
         self.assertEqual(b['0'][0, 0], 4)

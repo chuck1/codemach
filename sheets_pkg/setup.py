@@ -13,6 +13,7 @@ setup(name='sheets',
         packages=[
             'sheets',
             'sheets.tests',
+            'sheets.ext.middleware',
             ],
         install_requires=[
             'fs',

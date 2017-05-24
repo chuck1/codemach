@@ -3,11 +3,15 @@ import traceback
 import sys
 import io
 import logging
+import contextlib
 
 logger = logging.getLogger(__name__)
 
+import sheets.context
+
 class Script(object):
-    def __init__(self):
+    def __init__(self, book):
+        self.book = book
         self.string = ""
         self.output = ""
     
@@ -41,6 +45,16 @@ class Script(object):
             return
         else:
             self.comp_exc = None
+    
+    def execute1(self, g):
+        code = self.code
+
+        with sheets.context.script_exec(self.book, self):
+            try:
+                exec(code, g)
+            except Exception as e:
+                print(e)
+                return e
 
     def execute(self, g):
         logger.debug('script evaluate')
@@ -50,7 +64,8 @@ class Script(object):
         if self.code is None: return
 
         out = io.StringIO()
-
+        
+        """
         old = sys.stdout
         sys.stdout = out
         try:
@@ -68,7 +83,21 @@ class Script(object):
             sys.stdout = old
             self.exec_exc = None
             exc_string = ''
-       
+
+        """
+
+        with contextlib.redirect_stdout(out):
+            self.exec_exc = self.execute1(g)
+
+        if self.exec_exc is None:
+            exc_string = ''
+        else:
+            exc_string = traceback.format_exc().split('\n')
+            #exc_string.pop(1)
+            #exc_string.pop(1)
+            exc_string = "\n".join(exc_string)
+        
+
         self.output = out.getvalue() + "".join(exc_string)
     
     def jkhkjfskaf():

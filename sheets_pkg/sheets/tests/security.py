@@ -3,6 +3,8 @@ import sheets
 
 import unittest
 
+from sheets.tests import settings
+
 def code_analysis(code):
     print(code)
     #print(dir(code))
@@ -18,7 +20,7 @@ def code_analysis(code):
 class SecurityTest(unittest.TestCase):
 
     def test(self):
-        b = sheets.Book()
+        b = sheets.Book(settings)
         s = b['0']
 
         ########

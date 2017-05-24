@@ -21,34 +21,16 @@ import io
 import logging
 import fs.osfs
 import inspect
+import contextlib
 
 import sheets.cells
 import sheets.script
 #import sheets.helper
 import sheets.exception
+import sheets.context
+import sheets.middleware
 
 logger = logging.getLogger(__name__)
-
-APPROVED_MODULES = [
-        "math",
-        "numpy",
-        "time",
-        ]
-
-APPROVED_DEFAULT_BUILTINS = {
-        '__build_class__': __build_class__,
-        '__name__': 'module',
-        "Exception": Exception,
-        'dir': dir,
-        'globals': globals,
-        'list': list,
-        'object': object,
-        'print': print,
-        'range': range,
-        "repr": repr,
-        'sum': sum,
-        "type": type,
-        }
 
 class WrapperFile(object):
     def __init__(self, file):
@@ -73,16 +55,14 @@ class Protector(object):
         print(*args)
         self.f(*args)
 
-def protector(f):
-    def wrapper(*args):
-        #print('inside protector wrapper call')
-        stack = inspect.stack()
-        #print('stack:')
-        for s in stack:
-            #print('  ',s.filename)
-            if s.filename[:5] == "<cell":
-                raise sheets.exception.NotAllowedError('stopped by protector')
-        return f(*args)
+
+def protector1(f):
+    def wrapper(book, *args):
+        if book.context != sheets.context.Context.NONE:
+            book.middleware_security.call_book_method_decorator(book, f, args)
+            
+        return f(book, *args)
+
     return wrapper
 
 class Callable(object):
@@ -96,9 +76,9 @@ class Book(object):
     """
     Book class
     """
-    def __init__(self):
+    def __init__(self, settings=None):
         
-        self.script_pre = sheets.script.Script()
+        self.script_pre = sheets.script.Script(self)
         """
         ``Script`` object that runs before cell evalutation.
         It has access to cell strings.
@@ -107,7 +87,7 @@ class Book(object):
         by this script.
         """
 
-        self.script_post = sheets.script.Script()
+        self.script_post = sheets.script.Script(self)
         """
         ``Script`` object that runs after cell evaluation.
         It has access to cell strings and values.
@@ -120,9 +100,17 @@ class Book(object):
 
         # security testing
         self.test_callable = Callable(self.test_func_2)
+    
+        self.settings = settings
+
+        # middleware
+        self.middleware_security = sheets.middleware.MiddlewareSecurityManager(
+                self.settings.MIDDLEWARE_SECURITY)
+
+        self.context = sheets.context.Context.NONE
 
     def __getstate__(self):
-        return dict((k, getattr(self, k)) for k in ['sheets', 'script_pre', 'script_post'])
+        return dict((k, getattr(self, k)) for k in ['sheets', 'script_pre', 'script_post', 'settings'])
     
     def __getattribute__(self, name):
         
@@ -149,56 +137,9 @@ class Book(object):
     def test_func_2(self, arg1, arg2):
         return 'test_func_2 with args ' + str(arg1) +' '+ str(arg2)
 
-    def builtin___import__(self, name, globals=None, locals=None, 
-            fromlist=(), level=0):
-        
-        name_split = name.split('.')
-        
-        if not name_split[0] in APPROVED_MODULES:
-            raise ImportError("module '{}' is not allowed".format(name_split[0]))
-
-        return __import__(name, globals, locals, fromlist, level)
-
-    def builtin_open(self, file, mode='r'):
-        logger.warning("invoking Book.builtin_open({}, {})".format(file, mode))
-
-        #file = open(file, mode)
-
-        test_fs = fs.osfs.OSFS(os.path.join(os.environ['HOME'], 'web_sheets','filesystems','test'))
-        file = test_fs.open(file, mode)
-
-        return WrapperFile(file)
-
-    def builtin_getattr(self, *args):
-        logger.warning("invoking Book.builtin_getattr({})".format(args))
-        obj = args[0]
-        logger.warning("obj={}".format(obj))
-        
-        # temporarily removed for teting of special helper module importing
-        """
-        import sheets.helper
-        if isinstance(obj, sheets.helper.CellsHelper):
-            raise sheets.exception.NotAllowedError(
-                    "For security, getattr not allowed for CellsHelper objects")
-        """
-
-        return getattr(*args)
-
     def reset_globals(self):
-        approved_builtins = {
-                '__import__': self.builtin___import__,
-                'getattr': self.builtin_getattr,
-                'open': self.builtin_open,
-                }
-
-        approved_builtins.update(APPROVED_DEFAULT_BUILTINS)
-
-        self.glo = {
-                "__builtins__": approved_builtins,
-                "sheets": dict((k, s.cells_strings()) for k, s in self.sheets.items()),
-                'book': self,
-                }
-
+        res = self.middleware_security.call_book_globals(self)
+        self.glo = res._globals
         
     def get_globals(self):
         if self.glo is None:
@@ -234,6 +175,7 @@ class Book(object):
         
         self.do_all()
 
+    @protector1
     def __getitem__(self, key):
         if not key in self.sheets:
             self.sheets[key] = Sheet(self)

@@ -3,9 +3,11 @@ import unittest
 
 import sheets
 
+from sheets.tests import settings
+
 class ScriptPostTest(unittest.TestCase):
     def test(self):
-        b = sheets.Book()
+        b = sheets.Book(settings)
     
         b.set_script_pre('import math\na=math.pi')
 
@@ -15,7 +17,7 @@ class ScriptPostTest(unittest.TestCase):
 
         b.do_all()
    
-        print(repr(b.script_post.output))
+        print('script post output', repr(b.script_post.output))
 
         self.assertEqual(b.script_post.output, '3.141592653589793\n')
 
