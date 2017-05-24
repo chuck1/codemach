@@ -49,7 +49,15 @@ class Executor(object):
 
             elif i.opcode == 23:
                 # BINARY_ADD
-                self.__stack.append(self.__stack.pop() + self.__stack.pop())
+                TOS = self.__stack.pop()
+                TOS1 = self.__stack.pop()
+                self.__stack.append(TOS + TOS1)
+
+            elif i.opcode == 25:
+                # BINARY_SUBSCR
+                TOS = self.__stack.pop()
+                TOS1 = self.__stack.pop()
+                self.__stack.append(TOS1[TOS])
 
             elif i.opcode == 83:
                 # RETURN_VALUE
@@ -68,6 +76,10 @@ class Executor(object):
                 name = c.co_names[i.arg]
                 self.__stack.append(self.load_name(name))
 
+            elif i.opcode == 102:
+                # BUILD_TUPLE
+                self.__stack.append(tuple(self.pop(i.arg)))
+
             elif i.opcode == 106:
                 # LOAD_ATTR
                 name = c.co_names[i.arg]
@@ -83,18 +95,6 @@ class Executor(object):
                 # LOAD_FAST:
                 self.__stack.append(self.__stack[fai + i.arg])
     
-            elif i.opcode == 132:
-                # MAKE_FUNCTION
-                if i.arg != 0:
-                    raise RuntimeError('not yet supported')
-                
-                #print(i.opname, i.opcode, i.arg, dis.stack_effect(i.opcode, i.arg))
-                n = dis.stack_effect(i.opcode, i.arg)
-                self.pop(-n)
-
-                code = self.__stack.pop()
-                self.__stack.append(code)
-
             elif i.opcode == 131:
                 # CALL_FUNCTION
                 code_or_callable = self.__stack[-1-i.arg]
@@ -111,9 +111,31 @@ class Executor(object):
                 
                 self.pop(1 + i.arg)
                 self.__stack.append(ret)
+
+            elif i.opcode == 132:
+                # MAKE_FUNCTION
+                if i.arg != 0:
+                    raise RuntimeError('not yet supported')
+                
+                #print(i.opname, i.opcode, i.arg, dis.stack_effect(i.opcode, i.arg))
+                n = dis.stack_effect(i.opcode, i.arg)
+                self.pop(-n)
+
+                code = self.__stack.pop()
+                self.__stack.append(code)
+
+            elif i.opcode == 133:
+                # BUILD_SLICE
+                TOS = self.__stack.pop()
+                TOS1 = self.__stack.pop()
+                if i.arg == 2:
+                    self.__stack.append(slice(TOS1, TOS))
+                else:
+                    TOS2 = self.__stack.pop()
+                    self.__stack.append(slice(TOS2, TOS1, TOS))
                 
             else:
-                raise RuntimeError('unhandled opcode',i.opcode,i.opname)
+                raise RuntimeError('unhandled opcode',i.opcode,i.opname,self.__stack)
     
             print('%13s' % i.opname, self.__stack)
     
