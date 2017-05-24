@@ -25,6 +25,7 @@ def inc_build(folder='.'):
 
 if __name__=='__main__':
     inc_build()
+    inc_build('myexecutor_pkg')
     inc_build('mysocket_pkg')
     inc_build('storage_pkg')
     inc_build('sheets_pkg')

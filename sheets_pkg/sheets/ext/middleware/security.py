@@ -1,3 +1,5 @@
+import myexecutor
+
 import sheets.exception
 import sheets.middleware
 
@@ -58,7 +60,7 @@ class SecurityTest1(object):
         return getattr(*args)
 
     def call_book_method_decorator(self, book, f, args):
-        pass
+        return
         
         """
         print('protector')
@@ -69,7 +71,7 @@ class SecurityTest1(object):
         context = object.__getattribute__(book, 'context')
 
         if f.__name__ == '__getattribute__':
-            print("{}({}) {}".format(f.__name__, args, context))
+            #print("{}({}) {}".format(f.__name__, args, context))
             if not args[0] in ['__getitem__', 'sheets']:
                 raise sheets.exception.NotAllowedError(
                         "stopped by protector in context {}. {}({})".format(
@@ -100,12 +102,21 @@ class SecurityTest1(object):
         """
 
         if cell.code is None: return
-
+        
         if False: # turn off to test other security measures
             for name in cell.code.co_names:
                 if '__' in name:
                     raise sheets.exception.NotAllowedError(
                             "For security, use of {} is not allowed".format(name))
+
+
+    def call_cell_eval(self, book, cell, code, _globals, res):
+
+        e = myexecutor.Executor()
+
+        with sheets.context.context(book, sheets.context.Context.CELL):
+            #res.return_value = eval(code, _globals)
+            res.return_value = e.exec(code, _globals)
 
 
 

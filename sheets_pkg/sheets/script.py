@@ -55,15 +55,27 @@ class Script(object):
     def execute1(self, g):
         code = self.code
 
+        """
         try:
             with sheets.context.script_exec(self.book, self):
                 exec(code, g)
         except Exception as e:
             print(e)
+            #traceback.print_exc()
             return e
+        """
+        with sheets.context.context(self.book, sheets.context.Context.SCRIPT):
+            try:
+                exec(code, g)
+            except Exception as e:
+                print(e)
+                #traceback.print_exc()
+                return e
 
     def execute(self, g):
         logger.debug('script evaluate')
+
+        assert(self.book.context == sheets.context.Context.NONE)
 
         if not hasattr(self, "code"): self.comp()
 

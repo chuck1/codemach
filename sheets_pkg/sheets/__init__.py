@@ -151,6 +151,7 @@ class Book(object):
             self.do_all()
 
     def do_all(self):
+        assert(self.context == sheets.context.Context.NONE)
         self.reset_globals()
 
         self.script_pre.execute(self.glo)
@@ -160,6 +161,7 @@ class Book(object):
             s.reset_globals()
             s.cells.evaluate(self, s)
 
+        assert(self.context == sheets.context.Context.NONE)
         self.script_post.execute(self.glo)
 
     def set_cell(self, k, r, c, s):

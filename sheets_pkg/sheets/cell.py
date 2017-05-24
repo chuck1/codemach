@@ -92,9 +92,8 @@ class Cell(object):
         g = self.get_globals(book, sheet)
 
         try:
-            with sheets.context.cell_eval(book, sheet, self):
-                v = eval(self.code, g)
-            self.value = v
+            res = book.middleware_security.call_cell_eval(book, self, self.code, g)
+            self.value = res.return_value
         except RecursiveCellRef as e:
             raise
         except Exception as e:

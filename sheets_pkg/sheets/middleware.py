@@ -22,9 +22,20 @@ class MiddleWareSecurity(object):
     def call_book_method_decorator(self, book, f, args):
         pass
 
-class MiddlewareSecurityResult(object):
+    def call_cell_eval(self, book, cell, code, _globals, res):
+        """
+        .. DANGER::
+           the middleware objects are responsible for setting the appropriate
+           context before evaluation of code
+        """
+        pass
+
+class SecurityGlobalsResult(object):
     def __init__(self):
         self._globals = {'__builtins__': {}}
+
+class SecurityEvalResult(object):
+    pass
 
 class MiddlewareSecurityManager(object):
     def __init__(self, classes):
@@ -34,13 +45,13 @@ class MiddlewareSecurityManager(object):
             self.objects.append(getattr(m,c)())
     
     def call_book_globals(self, book):
-        res = MiddlewareSecurityResult()
+        res = SecurityGlobalsResult()
         for o in self.objects:
             o.call_book_globals(book, res)
         return res
 
     def call_sheet_globals(self, book, sheet):
-        res = MiddlewareSecurityResult()
+        res = SecurityGlobalsResult()
         for o in self.objects:
             o.call_sheet_globals(book, sheet, res)
         return res
@@ -57,6 +68,10 @@ class MiddlewareSecurityManager(object):
         for o in self.objects:
             o.call_check_script_code(script)
    
-
+    def call_cell_eval(self, book, cell, code, _globals):
+        res = SecurityEvalResult()
+        for o in self.objects:
+            o.call_cell_eval(book, cell, code, _globals, res)
+        return res
 
 
