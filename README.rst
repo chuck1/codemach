@@ -207,23 +207,31 @@ Sheets Backend Server
 Security
 ========
 
-Book access
------------
+Core class access
+-----------------
 
-Protect book while allowing access to __getitem__ method using the following pattern.::
+We must protect the core objects while allowing the user to access
+certain methods (like `__getitem__`).
+
+Class methods contain a `__globals__` attribute with the context in which
+the function was created. If the user can call the method, they can also
+access this attribute. One possible solution is to use a pattern like this::
 
     class Foo(object): pass
 
-    def safe_func(*args):
-        pass
+    safe_func = create_func_object_with_custom_globals()
 
     Foo.__getitem__ = safe_func
 
 We must guarantee that `safe_func` is indeed safe, meaning that it is save for the user
 to have unrestricted access to it.
 
+We can try to restrict access to member attributes by writing a custom `__getattribute__`
+function. However, this is easily circumvented with code like
+`object.__getattribute__(obj, 'name')`. I am currently working on implementing `my
+own code execution module`_ that will allow me to detect situations like this.
 
-
+.. _`my own code execution module`: http://www.github.com/chuck1/myexecutor
 
 
 
