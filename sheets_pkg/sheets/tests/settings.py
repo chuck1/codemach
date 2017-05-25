@@ -16,6 +16,7 @@ class Settings(object):
             '__name__',
             "Exception",
             'dir',
+            'getattr',
             'globals',
             'list',
             'object',

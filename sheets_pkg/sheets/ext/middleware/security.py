@@ -121,11 +121,29 @@ class SecurityTest1(object):
     def call_script_exec(self, book, script, code, _globals, res):
 
         e = myexecutor.Executor()
-        e.verbose = 1
+        #e.verbose = 1
+
+        def load_attr(thing, name):
+            if thing is book:
+                if not name in ():
+                    raise sheets.exception.NotAllowedError(
+                            "for security, get attribute {} of {} is forbidden".format(
+                                name, thing))
+
+        def call_function_getattr(f, thing, name):
+            #print('call function callback')
+            #print(f)
+            #print(args)
+            load_attr(thing, name)
+
+        e.signal_load_attr.subscribe(book, load_attr)
+        e.signal_call_function.subscribe(getattr, call_function_getattr)
+        e.signal_call_function.subscribe(object.__getattribute__, call_function_getattr)
 
         with sheets.context.context(book, sheets.context.Context.CELL):
-            exec(code, _globals)
+            #exec(code, _globals)
             e.exec(code, _globals)
+
 
 
 

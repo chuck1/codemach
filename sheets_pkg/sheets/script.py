@@ -67,7 +67,7 @@ class Script(object):
         with sheets.context.context(self.book, sheets.context.Context.SCRIPT):
             try:
                 #exec(code, g)
-                res = self.book.middleware_security.call_script_exec(book, self, self.code, g)
+                self.book.middleware_security.call_script_exec(self.book, self, self.code, g)
             except Exception as e:
                 print(e)
                 #traceback.print_exc()
