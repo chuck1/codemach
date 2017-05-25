@@ -57,13 +57,8 @@ class MySeleniumTests(StaticLiveServerTestCase):
                 EC.presence_of_element_located((By.XPATH, 
                     '//table[@class="htCore"]')))
         
-        e = self.selenium.find_element_by_xpath(
-                '//table[@class="htCore"]/tbody/tr/td')
         
         print('hot table found')
-        print(repr(e))
-        print(dir(e))
-        print('text =',repr(e.text))
 
         # test script pre
         e = self.selenium.find_element_by_xpath(
@@ -75,19 +70,29 @@ class MySeleniumTests(StaticLiveServerTestCase):
                 '//button[@id="script_pre"]')
         e.click()
         time.sleep(3)
-    
+        
         e = self.selenium.find_element_by_xpath(
                 '//textarea[@id="script_pre_output"]')
+        
+        text = e.get_attribute('value')
+
         print('script pre output')
-        print(e.text)
+        print(repr(e.get_attribute('id')))
+        print(repr(text))
 
-        self.assertEqual(e.text, '4\n')
-
+        self.assertEqual(text, '4\n')
+        
         # cell
+        e = self.selenium.find_element_by_xpath(
+                '//table[@class="htCore"]/tbody/tr/td')
+
         e.click()
         e.send_keys('2+2\n')
 
         time.sleep(3)
+
+        print('cell')
+        print(repr(e.text))
 
         self.assertEqual(e.text, '4')
 
@@ -96,6 +101,9 @@ class MySeleniumTests(StaticLiveServerTestCase):
         e.send_keys('a\n')
 
         time.sleep(3)
+
+        print('cell')
+        print(repr(e.text))
 
         self.assertEqual(e.text, '4')
 
@@ -112,9 +120,12 @@ class MySeleniumTests(StaticLiveServerTestCase):
     
         e = self.selenium.find_element_by_xpath(
                 '//textarea[@id="script_post_output"]')
-        print('script post output')
-        print(e.text)
 
-        self.assertEqual(e.text, '4\n')
+        text = e.get_attribute('value')
+
+        print('script post output')
+        print(repr(text))
+
+        self.assertEqual(text, '4\n')
 
 
