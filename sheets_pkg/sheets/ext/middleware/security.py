@@ -134,9 +134,6 @@ class SecurityTest1(object):
             load_attr(thing, name)
 
         def import_name(name, *args):
-            print('import name')
-            print(name)
-            print(args)
             name_split = name.split('.')
         
             if not name_split[0] in self.MODULES_APPROVED:
