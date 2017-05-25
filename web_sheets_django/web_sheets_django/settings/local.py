@@ -9,3 +9,5 @@ STATICFILES_DIRS = [
         os.path.join(BASE_DIR, '../handsontable/dist'),
         os.path.join(os.environ['HOME'], 'static'),]
 
+WEB_SHEETS_PORT = secrets['port_testing']
+
