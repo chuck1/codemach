@@ -2,6 +2,7 @@ import numpy
 import unittest
 
 import sheets
+import sheets.exception
 import sheets.tests.settings
 
 class SetScriptPreTest(unittest.TestCase):
@@ -10,10 +11,13 @@ class SetScriptPreTest(unittest.TestCase):
     
         b.set_script_pre('import os')
         b.do_all()
-    
-        self.assertEqual(
-                repr(b.script_pre.exec_exc),
-                "ImportError(\"module 'os' is not allowed\",)")
+        
+        #print('output')
+        #print(b.script_pre.output)
+
+        self.assertTrue(isinstance(
+                b.script_pre.exec_exc,
+                sheets.exception.NotAllowedError))
     
         b.set_script_pre("a = 1\n")
     

@@ -131,14 +131,22 @@ class SecurityTest1(object):
                                 name, thing))
 
         def call_function_getattr(f, thing, name):
-            #print('call function callback')
-            #print(f)
-            #print(args)
             load_attr(thing, name)
 
-        e.signal_load_attr.subscribe(book, load_attr)
-        e.signal_call_function.subscribe(getattr, call_function_getattr)
-        e.signal_call_function.subscribe(object.__getattribute__, call_function_getattr)
+        def import_name(name, *args):
+            print('import name')
+            print(name)
+            print(args)
+            name_split = name.split('.')
+        
+            if not name_split[0] in self.MODULES_APPROVED:
+                raise sheets.exception.NotAllowedError(
+                        "module '{}' is not allowed".format(name_split[0]))
+
+        e.signal['LOAD_ATTR'].subscribe(book, load_attr)
+        e.signal['CALL_FUNCTION'].subscribe(getattr, call_function_getattr)
+        e.signal['CALL_FUNCTION'].subscribe(object.__getattribute__, call_function_getattr)
+        e.signal['IMPORT_NAME'].subscribe(import_name)
 
         with sheets.context.context(book, sheets.context.Context.CELL):
             #exec(code, _globals)
