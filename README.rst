@@ -7,6 +7,8 @@ Tiny module that executes python code objects.
 Example
 -------
 
+::
+
     import myexecutor
 
     e = myexecutor.Executor()
