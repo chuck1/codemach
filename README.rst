@@ -18,7 +18,7 @@ Example
 
     e.exec(c)
 
-prints
+prints::
 
        LOAD_CONST [<code object func at 0x7f38c20df9c0, file "<string>", line 1>]
        LOAD_CONST [<code object func at 0x7f38c20df9c0, file "<string>", line 1>, 'func']
