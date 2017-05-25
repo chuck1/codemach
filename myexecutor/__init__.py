@@ -5,7 +5,20 @@ import dis
 import types
 
 class Signal(object):
-    
+    def __init__(self):
+        self.__watch = None
+
+    def emmit(self, *args):
+        if self.__watch is not None:
+            self.__watch(*args)
+
+    def subscribe(self, callback):
+        self.__watch = callback
+
+    def unsubscribe(self):
+        self.__watch = None
+
+class SignalThing(object):
     def __init__(self):
         self.__watch = {}
 
@@ -18,14 +31,18 @@ class Signal(object):
 
     def unsubscribe(self, thing):
         del self.__watch[thing]
+   
 
 class Executor(object):
     verbose = 0
     def __init__(self):
         self.__stack = []
         
-        self.signal_call_function = Signal()
-        self.signal_load_attr = Signal()
+        self.signal = {
+                'IMPORT_NAME': Signal(),
+                'CALL_FUNCTION': SignalThing(),
+                'LOAD_ATTR': SignalThing(),
+                }
 
     def exec(self, code, _globals=globals()):
         
@@ -82,6 +99,7 @@ class Executor(object):
                 return_value_set = True
 
             elif i.opcode == 90:
+                # STORE_NAME
                 self.__globals[c.co_names[i.arg]] = self.__stack.pop()
 
             elif i.opcode == 100:
@@ -102,9 +120,18 @@ class Executor(object):
                 name = c.co_names[i.arg]
                 o = self.__stack.pop()
                 
-                self.signal_load_attr.emmit(o, name)
+                self.signal['LOAD_ATTR'].emmit(o, name)
 
                 self.__stack.append(getattr(o, name))
+            
+            elif i.opcode == 108:
+                # IMPORT_NAME
+                TOS = self.__stack.pop()
+                TOS1 = self.__stack.pop()
+
+                self.signal['IMPORT_NAME'].emmit(c.co_names[i.arg], TOS, TOS1)
+
+                self.__stack.append(__import__(c.co_names[i.arg], fromlist=TOS, level=TOS1))
 
             elif i.opcode == 116:
                 # LOAD_GLOBAL
@@ -126,7 +153,7 @@ class Executor(object):
                 if code_or_callable.__class__.__name__ == 'code':
                     ret = self.exec_instructions(code_or_callable, firstargindex)
                 else:
-                    self.signal_call_function.emmit(code_or_callable, *args)
+                    self.signal['CALL_FUNCTION'].emmit(code_or_callable, *args)
 
                     ret = code_or_callable(*args)
                 
@@ -163,16 +190,25 @@ class Executor(object):
     
         return return_value
             
+def test(e, s, mode):
+    c = compile(s, '<string>', 'exec')
+
+    print(e.exec(c))
+    print()
 
 if __name__ == '__main__':
     e = Executor()
+    e.verbose = 1
 
     s = """def func(a, b):\n  return a + b\nfunc(2, 3)"""
+    test(e, s, 'exec')
+    
     s = """object.__getattribute__(object, '__class__')"""
+    test(e, s, 'eval')
+    
+    s = """import math"""
+    test(e, s, 'exec')
 
-    c = compile(s, '<string>', 'eval')
-
-    print(e.exec(c))
 
 
 
