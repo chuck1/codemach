@@ -4,12 +4,28 @@ import sys
 import dis
 import types
 
+class Signal(object):
+    
+    def __init__(self):
+        self.__watch = {}
+
+    def emmit(self, thing, *args):
+        if thing in self.__watch:
+            self.__watch[thing](thing, *args)
+
+    def subscribe(self, thing, callback):
+        self.__watch[thing] = callback
+
+    def unsubscribe(self, thing):
+        del self.__watch[thing]
+
 class Executor(object):
     verbose = 0
     def __init__(self):
         self.__stack = []
-
-        self.watch = {}
+        
+        self.signal_call_function = Signal()
+        self.signal_load_attr = Signal()
 
     def exec(self, code, _globals=globals()):
         
@@ -17,9 +33,6 @@ class Executor(object):
 
         return self.exec_instructions(code)
 
-    def emmit(self, _callable, args):
-        if _callable in self.watch:
-            self.watch[_callable](_callable, args)
 
     def load_name(self, name):
         if name in self.__globals:
@@ -88,6 +101,9 @@ class Executor(object):
                 # LOAD_ATTR
                 name = c.co_names[i.arg]
                 o = self.__stack.pop()
+                
+                self.signal_load_attr.emmit(o, name)
+
                 self.__stack.append(getattr(o, name))
 
             elif i.opcode == 116:
@@ -105,12 +121,13 @@ class Executor(object):
                 
                 firstargindex = len(self.__stack)-i.arg
                 
-                args = self.__stack[-i.arg:]
+                args = tuple(self.__stack[-i.arg:])
     
                 if code_or_callable.__class__.__name__ == 'code':
                     ret = self.exec_instructions(code_or_callable, firstargindex)
                 else:
-                    self.emmit(code_or_callable, args)
+                    self.signal_call_function.emmit(code_or_callable, *args)
+
                     ret = code_or_callable(*args)
                 
                 self.pop(1 + i.arg)
