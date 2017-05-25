@@ -199,7 +199,7 @@ class ClientSocket(mysocket.ClientSocket):
             o(self)
         except Exception as e:
             logger.exception('error processing packet ' + repr(o))
-            sock.send(pickle.dumps(PacketException(str(e))))
+            self.send(pickle.dumps(PacketException(str(e))))
 
 class Server(sheets_backend.Server, mysocket.Server):
     def __init__(self, storage, port):
@@ -215,8 +215,11 @@ class Client(mysocket.Client):
         mysocket.Client.__init__(self, '', port)
 
     def recv_packet(self):
-        o = pickle.loads(self.recv())
-        if not isinstance(o, Packet): raise TypeError()
+        b = self.recv()
+        o = pickle.loads(b)
+        if not isinstance(o, Packet):
+            logger.error('bytes:',repr(b))
+            raise TypeError()
         return o
     
     def book_new(self):

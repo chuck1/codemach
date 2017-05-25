@@ -3,14 +3,14 @@ from setuptools import setup
 
 version = open('VERSION.txt').read()
 
-setup(name='mysocket',
+setup(name='myexecutor',
         version=version,
-        description='convenient wrapper for python socket',
-        url='http://github.com/chuck1/mysocket',
+        description='very simple tool for executing python code objects',
+        url='http://github.com/chuck1/myexecutor',
         author='Charles Rymal',
         author_email='charlesrymal@gmail.com',
         license='MIT',
-        packages=['mysocket'],
+        packages=['myexecutor'],
         zip_safe=False,
         )
 

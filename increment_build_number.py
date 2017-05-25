@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-
+import os
 import re
 import sys
 
-def inc_build():
+def inc_build(folder='.'):
     
-    s = open('VERSION.txt').read()
+    s = open(os.path.join(folder, 'VERSION.txt')).read()
     
     pat = re.compile('(\d+\.\d+[ab])(\d+)')
     
@@ -21,9 +21,14 @@ def inc_build():
     print('old version = '+s)
     print('new version = '+s2)
 
-    open('VERSION.txt','wb').write(s2.encode())
+    open(os.path.join(folder, 'VERSION.txt'),'wb').write(s2.encode())
 
 if __name__=='__main__':
     inc_build()
+    inc_build('myexecutor_pkg')
+    inc_build('mysocket_pkg')
+    inc_build('storage_pkg')
+    inc_build('sheets_pkg')
+    inc_build('sheets_backend_pkg')
     sys.exit(0)
 

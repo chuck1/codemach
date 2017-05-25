@@ -129,14 +129,11 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATICFILES_DIRS = [
-        os.path.join(BASE_DIR, "static"),
-        os.path.join(BASE_DIR, '../handsontable/dist'),
-        os.path.join(os.environ['HOME'], 'static'),]
+STATICFILES_DIRS = []
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, "production", "static")
+STATIC_ROOT = '/var/www/static/web_sheets'
 
 secrets = json.loads(open(os.path.join(BASE_DIR, 'secrets.json'), 'r').read())
 
@@ -176,10 +173,9 @@ LOGGING = {
             },
         'loggers': {
             'django': {
-                'handlers': ['file', 'console'],
+                'handlers': ['file'],
                 'level': 'DEBUG',
                 'propagate': True,
-
                 },
             },
         'formatters': {

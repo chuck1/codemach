@@ -12,6 +12,10 @@ class Storage(storage.Storage):
         self.cls = cls
         self.folder = folder
         self.objects = {}
+        self.__object_new_args = ()
+    
+    def set_object_new_args(self, args):
+        self.__object_new_args = args
 
     def next_id(self):
         if os.path.exists(os.path.join(self.folder, 'object_id.txt')):
@@ -30,10 +34,9 @@ class Storage(storage.Storage):
             f.write(str(i))
 
         return str(i)
-    
 
     def object_new(self):
-        b = self.cls()
+        b = self.cls(*self.__object_new_args)
         i = self.next_id()
         self.objects[i] = b
         self.write(i, b)

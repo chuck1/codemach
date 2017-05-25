@@ -3,57 +3,38 @@ import unittest
 
 import sheets
 
+import sheets.tests.settings
+
 class SetCellTest(unittest.TestCase):
-    def test_helper(self):
-        b = sheets.Book()
+    def test(self):
+        b = sheets.Book(sheets.tests.settings.Settings)
     
-        s = b.sheets["0"]
+        b['0'][0, 0] = '2+2'
+        self.assertEqual(b['0'][0, 0], 4)
+
+        b['0'][0, 0] = '4'
+        b['0'][0, 1] = 'sheet[0, 0]'
+        self.assertEqual(b['0'][0, 1], 4)
+
+        b['0'][0, 0] = '2'
+        b['0'][0, 1] = '3'
+        b['0'][0, 2] = 'sheet[0, 0:2]'
+        print('cell 0,0 = ', b['0'][0, 0])
+        print('cell 0,1 = ', b['0'][0, 1])
+        print('cell 0,2 = ', b['0'][0, 2])
+        self.assertEqual(numpy.all(b['0'][0, 2] == numpy.array([2, 3])), True)
+
+        self.assertEqual(b.context, 0)
+
+        b['0'][0, 0] = 'sheet[0, 0]'
+        self.assertEqual(repr(b['0'][0, 0].item()), "RuntimeError('recursion',)")
+
+        b['0'][0, 0] = ''
+        self.assertEqual(b['0'][0, 0].item(), None)
     
-        b.set_cell("0", 0, 0, "2+2")
+        b['0'][0, 0] = '4'
+        b['1'][0, 0] = 'book[\'0\'][0, 0]'
+        self.assertEqual(b['1'][0, 0], 4)
     
-        assert(s.cells.cells[0, 0].value == 4)
-    
-        b.set_cell("0", 0, 1, "cellshelper[0,0]")
-    
-        assert(s.cells.cells[0, 1].value == 4)
-        
-        b.set_cell("0", 0, 2, "cellshelper[0,0:1]")
-        
-        assert(numpy.all(s.cells.cells[0, 2].value == numpy.array([4, 4])))
-    
-        b.set_cell("0", 1, 0, "cellshelper[1, 0]")
-        
-        #print("cell val:", repr(s.cells.cells[1, 0].value))
-        #print("cell exc:", repr(s.cells.cells[1, 0].exception_eval))
-        
-        assert(repr(s.cells.cells[1, 0].value) == "RuntimeError('recursion',)")
-    
-        b.set_cell("0", 1, 0, "cellshelper[1, 1]")
-    
-        #print(repr(s.cells.cells[1, 0].value))
-        assert(s.cells.cells[1, 0].value.item() is None)
-    
-        b.set_cell("0", 1, 1, "2+2")
-    
-        print(repr(s.cells.cells[1, 1].value))
-        print(repr(s.cells.cells[1, 0].value))
-        assert(s.cells.cells[1, 0].value.item() == 4)
-    
-        b.set_cell("0", 0, 0, "[0, 1]")
-        print(s.cells.cells[0, 0].value)
-        b.set_cell("0", 0, 0, "(0, 1)")
-        print(s.cells.cells[0, 0].value)
-        b.set_cell("0", 0, 0, "{'a':0, 'b':1}")
-        print(s.cells.cells[0, 0].value)
-        b.set_cell("0", 0, 0, "{0, 1}")
-        print(s.cells.cells[0, 0].value)
-    
-        b.set_cell("0", 0, 0, "cellshelper[0, 0, \"1\"]")
-        print(s.cells.cells[0, 0].value)
-    
-        b.set_cell("1", 0, 0, "\"I am a cell in sheet \\\"1\\\"\"")
-    
-        b.set_cell("0", 0, 0, "cellshelper[0, 0, \"1\"]")
-        print(s.cells.cells[0, 0].value)
         
     

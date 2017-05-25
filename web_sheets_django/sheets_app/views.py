@@ -149,8 +149,8 @@ class BookViewView(BookView):
             'cells': json.dumps(cells),
             'script_pre': ret.script_pre,
             'script_pre_output': ret.script_pre_output,
-            'script_post': ret.script_pre,
-            'script_post_output': ret.script_pre_output,
+            'script_post': ret.script_post,
+            'script_post_output': ret.script_post_output,
             'user': user,
             'book': book,
             'sheet_key': sheet_key,
@@ -183,6 +183,7 @@ class ExceptionWithResponse(Exception):
         self.response = response
 
 def sheet_data_response(bp, sheet_key):
+    
     ret = bp.get_sheet_data(sheet_key)
     
     cells = cells_array(ret)

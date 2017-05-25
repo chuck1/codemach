@@ -3,6 +3,8 @@ import sheets
 
 import unittest
 
+import sheets.tests.settings
+
 def code_analysis(code):
     print(code)
     #print(dir(code))
@@ -17,26 +19,83 @@ def code_analysis(code):
 
 class SecurityTest(unittest.TestCase):
 
-    def test_helper(self):
-        b = sheets.Book()
-        
-        s = b.sheets['0']
-        
-        b.set_cell('0', 0, 1, "1")
-        
+    def test(self):
+        b = sheets.Book(sheets.tests.settings.Settings)
+        s = b['0']
+
         ########
         print()
 
-        b.set_cell('0', 0, 0, "cellshelper.__getitem__.__globals__['__builtins__']['open']")
+        b['0'][0, 0] = "dir(book)"
 
         c = s.cells.cells[0, 0]
 
         print('cell =', c)
+        print(repr(c.value))
+
+        ########
+        print()
+
+        b['0'][0, 0] = "dir(book.__eq__)"
+
+        c = s.cells.cells[0, 0]
+
+        #print(repr(b['0'][0, 0]))
+        print('cell =', c)
+        print(repr(c.value))
+        return
         
-        print(s.cells.cells[0, 0].value)
+        self.assertEqual(
+                repr(b['0'][0, 0].item()),
+                'NotAllowedError("cell not allowed to access \'__eq__\'",)')
+
+
+        ########
+        print()
+
+        b['0'][0, 0] = "book.test_func.__func__"
+
+        c = s.cells.cells[0, 0]
+
+        print('cell =', c)
+        print(repr(c.value))
+
+        ########
+        print()
+
+        b['0'][0, 0] = "book.test_func()"
+
+        c = s.cells.cells[0, 0]
+
+        print('cell =', c)
+        print(repr(c.value))
+
+        ########
+        print()
+
+        b['0'][0, 0] = "book.test_callable('hello','world')"
+
+        c = s.cells.cells[0, 0]
+
+        print('cell =', c)
+        print(repr(c.value))
+
+        ########
+        print()
+
+        b['0'][0, 0] = "book.test_callable.__call__.__func__"
+
+        c = s.cells.cells[0, 0]
+
+        print('cell =', c)
+        print(repr(c.value))
 
         if c.code is not None:
             code_analysis(c.code)
+
+        return
+
+
 
         ########
         print()

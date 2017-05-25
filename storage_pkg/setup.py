@@ -1,8 +1,10 @@
 
 from setuptools import setup
 
+version = open('VERSION.txt').read()
+
 setup(name='storage',
-        version='0.1',
+        version=version,
         description='pytohn object storage',
         url='http://github.com/chuck1/storage',
         author='Charles Rymal',
@@ -13,9 +15,8 @@ setup(name='storage',
             'storage.filesystem'
             ],
         zip_safe=False,
-        entry_points={
-            'console_scripts':[
-                'web_sheets_storage = storage:daemon'
-                ]
-            })
+        scripts=[
+                'bin/web_sheets_storage',
+                ],
+            )
 

@@ -20,33 +20,17 @@ import sys
 import io
 import logging
 import fs.osfs
+import inspect
+import contextlib
 
 import sheets.cells
 import sheets.script
-import sheets.helper
+#import sheets.helper
 import sheets.exception
+import sheets.context
+import sheets.middleware
 
 logger = logging.getLogger(__name__)
-
-APPROVED_MODULES = [
-        "math",
-        "numpy",
-        ]
-
-APPROVED_DEFAULT_BUILTINS = {
-        '__build_class__': __build_class__,
-        '__name__': 'module',
-        "Exception": Exception,
-        'dir': dir,
-        'globals': globals,
-        'list': list,
-        'object': object,
-        'print': print,
-        'range': range,
-        "repr": repr,
-        'sum': sum,
-        "type": type,
-        }
 
 class WrapperFile(object):
     def __init__(self, file):
@@ -61,13 +45,49 @@ class WrapperFile(object):
         logger.warning("involving WrapperFile.read({})".format(self))
         return self.file.read()
 
+class Protector(object):
+    def __init__(self, f):
+        self.f = f
+    def __call__(self, *args):
+        print('inside Protector __call__')
+        print('stack:', inspect.stack)
+        print(args)
+        print(*args)
+        self.f(*args)
+
+
+def protector1(f):
+    def wrapper(book, *args):
+        if object.__getattribute__(book, 'context') != sheets.context.Context.NONE:
+            object.__getattribute__(book, 'middleware_security').call_book_method_decorator(
+                    book, f, args)
+        return f(book, *args)
+
+    return wrapper
+
+def context_decorator(context):
+    def wrapper(f):
+        def wrapped(o, *args):
+            with sheets.context.context(book, context):
+                return f(o, *args)
+        return wrapped
+    return wrapper
+
+class Callable(object):
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, *args):
+        return self.func(*args)
+
 class Book(object):
     """
     Book class
     """
-    def __init__(self):
+    def __init__(self, settings=None):
+        self.context = sheets.context.Context.NONE
         
-        self.script_pre = sheets.script.Script()
+        self.script_pre = sheets.script.Script(self)
         """
         ``Script`` object that runs before cell evalutation.
         It has access to cell strings.
@@ -76,61 +96,51 @@ class Book(object):
         by this script.
         """
 
-        self.script_post = sheets.script.Script()
+        self.script_post = sheets.script.Script(self)
         """
         ``Script`` object that runs after cell evaluation.
         It has access to cell strings and values.
         """
 
-        self.sheets = {"0": Sheet()}
+        self.sheets = {"0": Sheet(self)}
+
+        self.cell_stack = list()
+        self.glo = None
+
+        # security testing
+        self.test_callable = Callable(self.test_func_2)
+    
+        self.settings = settings
+
+        # middleware
+        self.middleware_security = sheets.middleware.MiddlewareSecurityManager(
+                self.settings.MIDDLEWARE_SECURITY)
+
+    def get_book(self): return self
 
     def __getstate__(self):
-        return dict((k, getattr(self, k)) for k in ['sheets', 'script_pre', 'script_post'])
+        names = ['sheets', 'script_pre', 'script_post', 'settings', 'context']
+        return dict((k, getattr(self, k)) for k in names)
 
-    def builtin___import__(self, name, globals=None, locals=None, 
-            fromlist=(), level=0):
-        
-        name_split = name.split('.')
-        
-        if not name_split[0] in APPROVED_MODULES:
-            raise ImportError("module '{}' is not allowed".format(name_split[0]))
+    @protector1
+    def __getattribute__(self, name):
+        return object.__getattribute__(self, name)
 
-        return __import__(name, globals, locals, fromlist, level)
+    #@protector
+    def test_func(self):
+        print('this is a test function of Book')
 
-    def builtin_open(self, file, mode='r'):
-        logger.warning("invoking Book.builtin_open({}, {})".format(file, mode))
-
-        #file = open(file, mode)
-
-        test_fs = fs.osfs.OSFS(os.path.join(os.environ['HOME'], 'web_sheets','filesystems','test'))
-        file = test_fs.open(file, mode)
-
-        return WrapperFile(file)
-
-    def builtin_getattr(self, *args):
-        logger.warning("invoking Book.builtin_getattr({})".format(args))
-        obj = args[0]
-        logger.warning("obj={}".format(obj))
-
-        if isinstance(obj, sheets.helper.CellsHelper):
-            raise sheets.exception.NotAllowedError(
-                    "For security, getattr not allowed for CellsHelper objects")
-
-        return getattr(*args)
+    def test_func_2(self, arg1, arg2):
+        return 'test_func_2 with args ' + str(arg1) +' '+ str(arg2)
 
     def reset_globals(self):
-        approved_builtins = {
-                '__import__': self.builtin___import__,
-                'getattr': self.builtin_getattr,
-                'open': self.builtin_open,
-                }
-
-        approved_builtins.update(APPROVED_DEFAULT_BUILTINS)
-
-        self.glo = {
-                "__builtins__": approved_builtins,
-                "sheets": dict((k, s.cells_strings()) for k, s in self.sheets.items())
-                }
+        res = self.middleware_security.call_book_globals(self)
+        self.glo = res._globals
+        
+    def get_globals(self):
+        if self.glo is None:
+            self.reset_globals()
+        return self.glo
 
     def set_script_pre(self, s):
         if self.script_pre.set_string(s):
@@ -141,34 +151,49 @@ class Book(object):
             self.do_all()
 
     def do_all(self):
+        assert(self.context == sheets.context.Context.NONE)
         self.reset_globals()
 
         self.script_pre.execute(self.glo)
         
         self.cell_stack = list()
         for s in self.sheets.values():
+            s.reset_globals()
             s.cells.evaluate(self, s)
 
+        assert(self.context == sheets.context.Context.NONE)
         self.script_post.execute(self.glo)
 
     def set_cell(self, k, r, c, s):
         if not k in self.sheets:
-            self.sheets[k] = Sheet()
+            self.sheets[k] = Sheet(self)
         sheet = self.sheets[k]
         
-        sheet.cells.set_cell(r, c, s)
+        sheet.set_cell(r, c, s)
         
         self.do_all()
 
+    @protector1
+    def __getitem__(self, key):
+        if not key in self.sheets:
+            self.sheets[key] = Sheet(self)
+        return self.sheets[key]
+
 class Sheet(object):
-    def __init__(self):
+    def __init__(self, book):
+        self.book = book
         self.cells = sheets.cells.Cells()
-        
+        self.glo = None
+
     def __getstate__(self):
         return dict((k, getattr(self, k)) for k in ['cells'])
+
+    def get_book(self): return self.book
     
     def set_cell(self, r, c, s):
-        self.cells.set_cell(r, c, s)
+        self.cells.set_cell(self, r, c, s)
+
+        self.book.do_all()
 
     def add_column(self, i):
         self.cells.add_column(i)
@@ -185,6 +210,39 @@ class Sheet(object):
     def cells_strings(self):
         return self.cells.cells_strings()
 
+    def reset_globals(self):
+        res = self.book.middleware_security.call_sheet_globals(self.book, self)
+        self.glo = res._globals
         
+    def get_globals(self):
+        if self.glo is None:
+            self.reset_globals()
+        return self.glo
+
+    def array_values(self, *args):
+        def f(c):
+            if c is None: return None
+            v = c.get_value(self.book, self)
+            return v
+    
+        a = numpy.vectorize(f, otypes=[object])(self.cells.cells.__getitem__(args))
+        return a
+
+    def __getitem__(self, args):
+        return self.array_values(*args)
+
+    def __setitem__(self, args, string):
+        def f(c, s):
+            c.set_string(self, s)
+        
+        self.cells.ensure_size(*args)
+
+        numpy.vectorize(f, otypes=[object])(self.cells.cells.__getitem__(args), string)
+       
+        # lazy
+        self.book.do_all()
+
+
+
 
 

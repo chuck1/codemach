@@ -1,4 +1,6 @@
 
+./increment_build_number.py
+
 virtualenv venv
 
 source venv/bin/activate
@@ -8,12 +10,12 @@ then
 	exit 1
 fi
 
-#pip3 install ./mysocket_pkg
-#pip3 install ./storage_pkg
-#pip3 install ./sheets_pkg
-#pip3 install ./sheets_backend_pkg
+pip3 install ./mysocket_pkg
+pip3 install ./storage_pkg
+pip3 install ./sheets_pkg
+pip3 install ./sheets_backend_pkg
 
-pip3 install . -vvv
+#pip3 install . -v
 
 mkdir -p venv/testing/log/web_sheets_sheets_backend
 

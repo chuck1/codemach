@@ -3,7 +3,7 @@ import traceback
 import sys
 import io
 
-import sheets.helper
+#import sheets.helper
 import sheets.exception
 
 class RecursiveCellRef(Exception): pass
@@ -36,18 +36,6 @@ class Cell(object):
     def __getstate__(self):
         return dict((k, getattr(self, k)) for k in ['r', 'c', 'string'])
 
-    def check_code(self):
-        """
-        If any of the values in co_names contains ``__``, a
-        :py:exc:`sheets.exception.NotAllowedError` is raised.
-        """
-
-        if self.code is None: return
-
-        for name in self.code.co_names:
-            if '__' in name:
-                raise sheets.exception.NotAllowedError(
-                        "For security, use of {} is not allowed".format(name))
 
     def set_string(self, sheet, s):
         """
@@ -55,9 +43,9 @@ class Cell(object):
         """
         if s == self.string: return
         self.string = s
-        self.comp()
+        self.comp(sheet)
         
-    def comp(self):
+    def comp(self, sheet):
         """
         Compile the string.
    
@@ -77,42 +65,40 @@ class Cell(object):
             self.comp_exc = e
 
         try:
-            self.check_code()
+            sheet.book.middleware_security.call_check_cell_code(self)
         except sheets.exception.NotAllowedError as e:
             self.code = None
             self.comp_exc = e
     
 
     def get_globals(self, book, sheet):
-        g = dict(book.glo)
         
-        g.update({
-                'cell': sheets.helper.CellHelper(self.r, self.c),
-                "cellshelper": sheets.helper.CellsHelper(book, sheet),
-                })
+        g = dict(sheet.get_globals())
+ 
         return g
 
     def evaluate(self, book, sheet):
         
-        if not hasattr(self, "comp_exc"): self.comp()
+        if not hasattr(self, "comp_exc"): self.comp(sheet)
 
         if self.comp_exc is not None:
             self.value = 'compile error: '+str(self.comp_exc)
             return
 
         if self.code is None:
-            self.value = ""
+            self.value = None
             return
 
         g = self.get_globals(book, sheet)
 
         try:
-            self.value = eval(self.code, g)
+            res = book.middleware_security.call_cell_eval(book, self, self.code, g)
+            self.value = res.return_value
         except RecursiveCellRef as e:
             raise
         except Exception as e:
-            print("exception during cell({},{}) eval".format(self.r, self.c))
-            print(repr(e))
+            #print("exception during cell({},{}) eval".format(self.r, self.c))
+            #print(repr(e))
             #traceback.print_exc()
             
             self.exception_eval = e
@@ -123,7 +109,6 @@ class Cell(object):
             self.exception_eval = None
 
     def get_value(self, book, sheet):
-        #print(self, self.evaluated)
 
         #print("Cell.get_value ({},{}) s = {} v = {} evaluated = {}".format(
         #    self.r, self.c, repr(self.string), 
@@ -143,4 +128,6 @@ class Cell(object):
         book.cell_stack.pop()
 
         return self.value
+
+
 

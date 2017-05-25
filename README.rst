@@ -18,6 +18,10 @@ Documentation_
 
 .. _Documentation: http://web-sheets.readthedocs.io/en/dev
 
+GitHub_
+
+.. _Github: http://www.github.com/chuck1/web-sheets
+
 Installation
 ------------
 
@@ -179,6 +183,65 @@ testing must utilize virtualenv and socket communication must take place on diff
 
 For tests requiring a running sheets_backend Server, a server will be started
 using a port that is designated for testing.
+
+Processes
+=========
+
+Django
+------
+
+- source
+- settings
+  - wsgi.py and manage.py can load different settings files
+  - settings reads secrets.json
+
+Sheets Backend Server
+---------------------
+
+- sheets_backend python module
+- script file
+  - installed to /usr/local/bin
+- settings module
+  - script loads from default location and has command line input for location
+- storage location
+  - if storage is included, setting should set storage location
+
+Security
+========
+
+Core class access
+-----------------
+
+We must protect the core objects while allowing the user to access
+certain methods (like `__getitem__`).
+
+Class methods contain a `__globals__` attribute with the context in which
+the function was created. If the user can call the method, they can also
+access this attribute. One possible solution is to use a pattern like this::
+
+    class Foo(object): pass
+
+    safe_func = create_func_object_with_custom_globals()
+
+    Foo.__getitem__ = safe_func
+
+We must guarantee that `safe_func` is indeed safe, meaning that it is save for the user
+to have unrestricted access to it.
+
+We can try to restrict access to member attributes by writing a custom `__getattribute__`
+function. However, this is easily circumvented with code like
+`object.__getattribute__(obj, 'name')`. I am currently working on implementing `my
+own code execution module`_ that will allow me to detect situations like this.
+
+.. _`my own code execution module`: http://www.github.com/chuck1/myexecutor
+
+
+
+
+
+
+
+
 
 
 

@@ -20,27 +20,27 @@
 <div id="tablediv"></div>
 
 <div>
-<textarea id="script" rows="10" cols="50">{{ script_pre }}</textarea>
+<textarea id="script_pre" rows="10" cols="50">{{ script_pre }}</textarea>
 </textarea>
 </div>
 
-<button onclick="set_script_pre()">execute</button>
+<button id="script_pre" onclick="set_script_pre()">execute</button>
 
 <div>
-<textarea id="script_output" rows="10" cols="50">{{ script_pre_output }}</textarea>
+<textarea id="script_pre_output" rows="10" cols="50">{{ script_pre_output }}</textarea>
 </div>
 
 <div>
 <textarea id="script_post" rows="10" cols="50">{{ script_post }}</textarea>
 </div>
 
-<button onclick="set_script_post()">execute</button>
+<button id="script_post" onclick="set_script_post()">execute</button>
 
 <div>
 <textarea id="script_post_output" rows="10" cols="50">{{ script_post_output }}</textarea>
 </div>
 
-<!-- script gets token from this element -->
+{% comment %} script gets token from this element {% endcomment %}
 {% csrf_token %}
 
 <script>

@@ -1,8 +1,10 @@
 
 from setuptools import setup
 
+version = open('VERSION.txt').read()
+
 setup(name='sheets_backend',
-        version='0.1',
+        version=version,
         description='backends for managing sheets objects',
         url='http://github.com/chuck1/sheets_backend',
         author='Charles Rymal',
@@ -14,9 +16,8 @@ setup(name='sheets_backend',
             'sheets_backend.tests',
             ],
         zip_safe=False,
-        entry_points={
-            'console_scripts':[
-                'web_sheets_sheets_backend = sheets_backend.daemon:daemon'
-                ]
-            })
+        scripts=[
+                'bin/web_sheets_sheets_backend',
+                ],
+            )
 
