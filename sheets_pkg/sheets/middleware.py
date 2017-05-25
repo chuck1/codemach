@@ -37,6 +37,9 @@ class SecurityGlobalsResult(object):
 class SecurityEvalResult(object):
     pass
 
+class SecurityExecResult(object):
+    pass
+
 class MiddlewareSecurityManager(object):
     def __init__(self, classes):
         self.objects = list()
@@ -72,6 +75,12 @@ class MiddlewareSecurityManager(object):
         res = SecurityEvalResult()
         for o in self.objects:
             o.call_cell_eval(book, cell, code, _globals, res)
+        return res
+
+    def call_script_exec(self, book, script, code, _globals):
+        res = SecurityExecResult()
+        for o in self.objects:
+            o.call_script_exec(book, script, code, _globals, res)
         return res
 
 

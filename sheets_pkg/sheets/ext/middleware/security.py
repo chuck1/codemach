@@ -118,5 +118,15 @@ class SecurityTest1(object):
             #res.return_value = eval(code, _globals)
             res.return_value = e.exec(code, _globals)
 
+    def call_script_exec(self, book, script, code, _globals, res):
+
+        e = myexecutor.Executor()
+        e.verbose = 1
+
+        with sheets.context.context(book, sheets.context.Context.CELL):
+            exec(code, _globals)
+            e.exec(code, _globals)
+
+
 
 
