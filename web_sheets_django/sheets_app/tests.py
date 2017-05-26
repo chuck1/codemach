@@ -8,6 +8,7 @@ import django.conf
 from selenium.webdriver.firefox.webdriver import WebDriver
 
 import core.models
+import sheets_app.book_demos
 
 class MySeleniumTests(StaticLiveServerTestCase):
     @classmethod
@@ -130,8 +131,15 @@ class MySeleniumTests(StaticLiveServerTestCase):
 
     @override_settings(WEB_SHEETS_PORT=django.conf.settings.WEB_SHEETS_PORT_TESTING)
     def test_demo_sum(self):
-        
-        self.selenium.get('%s%s' % (self.live_server_url, '/sheets/book_demo/sum/'))
 
-        time.sleep(3)
+        for k in sheets_app.book_demos.DEMOS.keys():
+            url = '%s%s' % (self.live_server_url, '/sheets/book_demo/' + k + '/')
+
+            self.selenium.get(url)
+
+            time.sleep(3)
+
+
+
+
 
