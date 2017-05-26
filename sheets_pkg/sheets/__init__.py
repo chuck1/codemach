@@ -232,12 +232,24 @@ class Sheet(object):
         return self.array_values(*args)
 
     def __setitem__(self, args, string):
-        def f(c, s):
-            c.set_string(self, s)
+        def f(cell, s, r, c):
+            if cell is None:
+                cell = sheets.cell.Cell(r, c)
+                self.cells.cells[r, c] = cell
+            cell.set_string(self, s)
         
         self.cells.ensure_size(*args)
+        
+        shape = numpy.shape(self.cells.cells)
+        r = numpy.arange(shape[0])
+        c = numpy.arange(shape[1])
 
-        numpy.vectorize(f, otypes=[object])(self.cells.cells.__getitem__(args), string)
+        r = r[args[0]]
+        c = c[args[1]]
+        
+        C, R = numpy.meshgrid(c, r)
+
+        numpy.vectorize(f, otypes=[object])(self.cells.cells.__getitem__(args), string, R, C)
        
         # lazy
         self.book.do_all()
