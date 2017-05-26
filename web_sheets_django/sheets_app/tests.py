@@ -128,4 +128,10 @@ class MySeleniumTests(StaticLiveServerTestCase):
 
         self.assertEqual(text, '4\n')
 
+    @override_settings(WEB_SHEETS_PORT=django.conf.settings.WEB_SHEETS_PORT_TESTING)
+    def test_demo_sum(self):
+        
+        self.selenium.get('%s%s' % (self.live_server_url, '/sheets/book_demo/sum/'))
+
+        time.sleep(3)
 

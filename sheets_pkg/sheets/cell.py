@@ -99,7 +99,7 @@ class Cell(object):
         except Exception as e:
             #print("exception during cell({},{}) eval".format(self.r, self.c))
             #print(repr(e))
-            #traceback.print_exc()
+            traceback.print_exc()
             
             self.exception_eval = e
 

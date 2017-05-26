@@ -1,14 +1,16 @@
 
-def func_import(bp):
-
-    bp.set_script_pre('0', 'import math\nprint(math)\n')
-
-    bp.set_cell('0', 0, 0, 'math.pi')
+import sheets.tests.functions
 
 def get_func(s):
     
     return {
-            'import': func_import
+            'import': sheets.tests.functions.func_import,
+            'named_range': sheets.tests.functions.func_named_range,
+            'sum': sheets.tests.functions.func_sum,
+            'indexof': sheets.tests.functions.func_indexof,
             }[s]
+
+
+
 
 

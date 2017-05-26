@@ -98,7 +98,7 @@ def book_demo(request, book_demo_name):
 
     func(bp)
 
-    return redirect('sheets:book', book.id, 0)
+    return redirect('sheets:book', book.id)
 
 class SimpleMessage(object):
     def __init__(self, msgtype, msg):

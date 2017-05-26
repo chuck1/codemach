@@ -5,7 +5,7 @@ import sheets
 
 import sheets.tests.settings
 
-class SetCellTest(unittest.TestCase):
+class CellTest(unittest.TestCase):
     def test(self):
         b = sheets.Book(sheets.tests.settings.Settings)
     
@@ -36,5 +36,18 @@ class SetCellTest(unittest.TestCase):
         b['1'][0, 0] = 'book[\'0\'][0, 0]'
         self.assertEqual(b['1'][0, 0], 4)
     
-        
+class CellTest2(object):
+    def test(self):
+        b = sheets.Book(sheets.tests.settings.Settings)
+
+        b.set_cell('0', 0, 0, '1')
+        b.set_cell('0', 1, 0, '2')
+        b.set_cell('0', 2, 0, '3')
+        b.set_cell('0', 3, 0, '4')
+        b.set_cell('0', 4, 0, '5')
+
+        b.set_cell('0', 0, 1, 'sum(sheet[0:5, 0])')
+
+        self.assertEqual(b['0'][0, 1], 15)
+       
     

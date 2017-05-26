@@ -3,6 +3,7 @@
 import sys
 import dis
 import types
+import operator
 
 class Signal(object):
     def __init__(self):
@@ -34,15 +35,34 @@ class SignalThing(object):
    
 
 class Executor(object):
-    verbose = 0
-    def __init__(self):
+    def __init__(self, verbose=0):
         self.__stack = []
+        self._locals = {}
+        self.verbose = verbose
         
         self.signal = {
                 'IMPORT_NAME': Signal(),
                 'CALL_FUNCTION': SignalThing(),
                 'LOAD_ATTR': SignalThing(),
                 }
+
+    @staticmethod
+    def cmp_op(i):
+        def not_in(a, b):
+            return not (a in b)
+        return (
+                operator.lt, 
+                operator.le, 
+                operator.eq, 
+                operator.ne, 
+                operator.gt, 
+                operator.ge, 
+                operator.contains, 
+                not_in, 
+                operator.is_, 
+                operator.is_not, 
+                'exception match', 
+                'BAD')[i]
 
     def exec(self, code, _globals=globals()):
         
@@ -66,7 +86,9 @@ class Executor(object):
         del self.__stack[len(self.__stack) - n:]
         return poped
         
-    def exec_instructions(self, c, fai=None):
+    def exec_instructions(self, c):
+
+        if self.verbose > 0:print('------------- begin exec')
 
         inst = dis.Bytecode(c)
         
@@ -124,6 +146,12 @@ class Executor(object):
 
                 self.__stack.append(getattr(o, name))
             
+            elif i.opcode == 107:
+                # COMPARE_OP
+                TOS = self.__stack.pop()
+                TOS1 = self.__stack.pop()
+                self.__stack.append(Executor.cmp_op(i.arg)(TOS1, TOS))
+
             elif i.opcode == 108:
                 # IMPORT_NAME
                 TOS = self.__stack.pop()
@@ -140,8 +168,15 @@ class Executor(object):
 
             elif i.opcode == 124:
                 # LOAD_FAST:
-                self.__stack.append(self.__stack[fai + i.arg])
+                name = c.co_varnames[i.arg]
+                self.__stack.append(self._locals[name])
     
+            elif i.opcode == 125:
+                # STORE_FAST
+                TOS = self.__stack.pop()
+                name = c.co_varnames[i.arg]
+                self._locals[name] = TOS
+
             elif i.opcode == 131:
                 # CALL_FUNCTION
                 code_or_callable = self.__stack[-1-i.arg]
@@ -150,8 +185,14 @@ class Executor(object):
                 
                 args = tuple(self.__stack[-i.arg:])
     
-                if code_or_callable.__class__.__name__ == 'code':
-                    ret = self.exec_instructions(code_or_callable, firstargindex)
+                if isinstance(code_or_callable, types.CodeType):
+                    _c = code_or_callable
+                    e = Executor(self.verbose)
+                    
+                    e._locals = dict((name, arg) for name, arg in zip(
+                        _c.co_varnames[:_c.co_argcount], args))
+                    
+                    ret = e.exec(_c, self.__globals)
                 else:
                     self.signal['CALL_FUNCTION'].emmit(code_or_callable, *args)
 
@@ -183,15 +224,31 @@ class Executor(object):
                     self.__stack.append(slice(TOS2, TOS1, TOS))
                 
             else:
-                raise RuntimeError('unhandled opcode',i.opcode,i.opname,self.__stack)
+                raise RuntimeError('unhandled opcode',i.opcode,i.opname,i.arg,self.__stack)
     
             if self.verbose > 0:
                 print('%13s' % i.opname, self.__stack)
     
+        if self.verbose > 0:print('------------- return')
         return return_value
-            
+        
+def code_info(c):
+    print('------------')
+    print(dir(c))
+    print('argcount ',c.co_argcount)
+    print('consts   ',c.co_consts)
+    print('names    ',c.co_names)
+    print('varnames ',c.co_varnames)
+    dis.dis(c)
+    print('------------')
+    for const in c.co_consts:
+        if isinstance(const, types.CodeType):
+            code_info(const)
+
 def test(e, s, mode):
-    c = compile(s, '<string>', 'exec')
+    c = compile(s, '<string>', mode)
+
+    code_info(c)
 
     print(e.exec(c))
     print()
@@ -200,7 +257,7 @@ if __name__ == '__main__':
     e = Executor()
     e.verbose = 1
 
-    s = """def func(a, b):\n  return a + b\nfunc(2, 3)"""
+    s = """def func(a, b):\n  c = 4\n  return a + b + c\nfunc(2, 3)"""
     test(e, s, 'exec')
     
     s = """object.__getattribute__(object, '__class__')"""
@@ -209,9 +266,14 @@ if __name__ == '__main__':
     s = """import math"""
     test(e, s, 'exec')
 
+    s = """2 == 3"""
+    test(e, s, 'eval')
 
+    s = """c = 4\ndef func():\n  a = 2\n  b = 3\n  return a + b + c\nfunc()"""
+    test(e, s, 'exec')
 
-
+    s = """import math\ndef func():\n  return math.pi\nfunc()"""
+    test(e, s, 'exec')
 
 
 

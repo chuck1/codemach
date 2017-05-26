@@ -31,7 +31,8 @@ class Cells(object):
     def ensure_size(self, r, c):
         R = numpy.shape(self.cells)[0]
         C = numpy.shape(self.cells)[1]
-        if r > (-1):
+        
+        if r > (R - 1):
             shape = (r - R + 1, C)
             self.cells = numpy.append(
                     self.cells,
@@ -40,10 +41,14 @@ class Cells(object):
 
             for i in range(R, r + 1):
                 for j in range(C):
-                    self.cells[i, j] = sheets.cell.Cell(i, j)
+                    #self.cells[i, j] = sheets.cell.Cell(i, j)
+                    pass
 
-        if c > (numpy.shape(self.cells)[1]-1):
-            shape = (numpy.shape(self.cells)[0],c-numpy.shape(self.cells)[1]+1)
+        R = numpy.shape(self.cells)[0]
+        C = numpy.shape(self.cells)[1]
+
+        if c > (C - 1):
+            shape = (R, c - C + 1)
             self.cells = numpy.append(
                     self.cells,
                     numpy.empty(shape,dtype=object),
@@ -51,7 +56,8 @@ class Cells(object):
 
             for i in range(R):
                 for j in range(C, c + 1):
-                    self.cells[i, j] = sheets.cell.Cell(i, j)
+                    #self.cells[i, j] = sheets.cell.Cell(i, j)
+                    pass
 
     def set_cell(self, sheet, r, c, s):
         self.ensure_size(r, c)

@@ -1,5 +1,5 @@
 
-python3 -m unittest sheets.tests
+bash test_sheets.bash
 
 if [ $? -ne 0 ]
 then
