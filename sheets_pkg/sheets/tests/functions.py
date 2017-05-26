@@ -73,6 +73,21 @@ def func_lookup(b):
 
     b.set_cell('0', 0, 2, """lookup('Sue', sheet[:, 0], sheet[:, 1])""")
 
+string_datetime = """
+import datetime
+import pytz
+"""
+
+def func_datetime(b):
+    b.set_script_pre(string_datetime)
+
+    b.set_cell('0', 0, 0, "datetime.datetime.now()")
+    b.set_cell('0', 0, 1, "sheet[0, 0].item().tzinfo")
+    b.set_cell('0', 1, 0, "datetime.datetime.utcnow()")
+    b.set_cell('0', 1, 1, "sheet[1, 0].item().tzinfo")
+    b.set_cell('0', 2, 0, "datetime.datetime.now(pytz.utc)")
+    b.set_cell('0', 2, 1, "sheet[2, 0].item().tzinfo")
+
 class FunctionTest(unittest.TestCase):
     def test_indexof(self):
         b = sheets.Book(sheets.tests.settings.Settings)
@@ -97,6 +112,18 @@ class FunctionTest(unittest.TestCase):
                 b['0'][0, 2])
 
 
+    def test_dateime(self):
+        b = sheets.Book(sheets.tests.settings.Settings)
+        
+        func_datetime(b)
+
+        print('test datetime', b['0'][0, 0])
+        print('test datetime', b['0'][0, 1])
+        print('test datetime', b['0'][1, 0])
+        print('test datetime', b['0'][1, 1])
+        print('test datetime', b['0'][2, 0])
+        print('test datetime', b['0'][2, 1])
+        
 
 
 

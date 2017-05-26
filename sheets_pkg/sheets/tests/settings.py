@@ -9,6 +9,8 @@ class Settings(object):
             "math",
             "numpy",
             "time",
+            "datetime",
+            "pytz",
             )
     
     MIDDLEWARE_SECURITY_BUILTINS_APPROVED = (
