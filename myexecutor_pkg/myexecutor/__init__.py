@@ -269,9 +269,11 @@ if __name__ == '__main__':
     s = """2 == 3"""
     test(e, s, 'eval')
 
-    s = """def func():\n  a = 2\n  b = 3\n  return a + b\nfunc()"""
+    s = """c = 4\ndef func():\n  a = 2\n  b = 3\n  return a + b + c\nfunc()"""
     test(e, s, 'exec')
 
+    s = """import math\ndef func():\n  return math.pi\nfunc()"""
+    test(e, s, 'exec')
 
 
 
