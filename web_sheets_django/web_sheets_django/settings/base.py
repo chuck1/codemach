@@ -133,7 +133,7 @@ STATICFILES_DIRS = []
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = '/var/www/static/web_sheets'
+STATIC_ROOT = '/var/www/web_sheets_django/production/static/'
 
 secrets = json.loads(open(os.path.join(BASE_DIR, 'secrets.json'), 'r').read())
 
