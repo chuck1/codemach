@@ -24,8 +24,11 @@ class SignalThing(object):
         self.__watch = {}
 
     def emmit(self, thing, *args):
-        if thing in self.__watch:
-            self.__watch[thing](thing, *args)
+        try:
+            if thing in self.__watch:
+                self.__watch[thing](thing, *args)
+        except TypeError:
+            pass
 
     def subscribe(self, thing, callback):
         self.__watch[thing] = callback
@@ -181,9 +184,7 @@ class Executor(object):
                 # CALL_FUNCTION
                 code_or_callable = self.__stack[-1-i.arg]
                 
-                firstargindex = len(self.__stack)-i.arg
-                
-                args = tuple(self.__stack[-i.arg:])
+                args = tuple(self.__stack[len(self.__stack) - i.arg:])
     
                 if isinstance(code_or_callable, types.CodeType):
                     _c = code_or_callable
@@ -273,6 +274,9 @@ if __name__ == '__main__':
     test(e, s, 'exec')
 
     s = """import math\ndef func():\n  return math.pi\nfunc()"""
+    test(e, s, 'exec')
+
+    s = """import datetime\ndatetime.datetime.now()"""
     test(e, s, 'exec')
 
 
