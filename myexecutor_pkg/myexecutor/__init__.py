@@ -88,7 +88,7 @@ class Executor(object):
         
     def exec_instructions(self, c):
 
-        print('------------- begin exec')
+        if self.verbose > 0:print('------------- begin exec')
 
         inst = dis.Bytecode(c)
         
@@ -192,7 +192,7 @@ class Executor(object):
                     e._locals = dict((name, arg) for name, arg in zip(
                         _c.co_varnames[:_c.co_argcount], args))
                     
-                    ret = e.exec_instructions(_c)
+                    ret = e.exec(_c, self.__globals)
                 else:
                     self.signal['CALL_FUNCTION'].emmit(code_or_callable, *args)
 
@@ -229,7 +229,7 @@ class Executor(object):
             if self.verbose > 0:
                 print('%13s' % i.opname, self.__stack)
     
-        print('------------- return')
+        if self.verbose > 0:print('------------- return')
         return return_value
         
 def code_info(c):
