@@ -10,6 +10,8 @@ import django.views
 import json
 import numpy
 import logging
+import docutils
+import docutils.core
 
 import sheets_backend.sockets
 
@@ -19,6 +21,9 @@ import sheets_app.book_demos
 logger = logging.getLogger(__name__)
 
 # Create your views here.
+
+def process_rst(s):
+    return docutils.core.publish_parts(s, writer_name="html")['html_body']
 
 def get_user_sheet_id(user, sheet_id):
     return str(user.id) + '_' + sheet_id
@@ -60,7 +65,6 @@ def check_permission(request, book):
             if not (request.user == book.user_creator):
                 return HttpResponseForbidden("You shall not pass.")
     
-
 def index(request, messages=[]):
     if not request.user.is_authenticated():
         return login_redirect(reverse('index'))
@@ -88,7 +92,8 @@ def index(request, messages=[]):
 
 def book_demo(request, book_demo_name):
     
-    func = sheets_app.book_demos.get_func(book_demo_name)
+    cls = sheets_app.book_demos.get_func(book_demo_name)
+    o = cls()
 
     book = book_new_func(book_demo_name)
     book.is_demo = True
@@ -96,7 +101,7 @@ def book_demo(request, book_demo_name):
 
     bp = sheets_backend.sockets.BookProxy(book.book_id, settings.WEB_SHEETS_PORT)
 
-    func(bp)
+    o.setup(bp)
 
     return redirect('sheets:book', book.id)
 
@@ -142,15 +147,23 @@ class BookViewView(BookView):
         print(repr(ret.cells))
         
         cells = cells_array(ret)
+
+        docs_html = process_rst(ret.docs)
         
         print('cells',repr(cells))
-        
+        print('docs', repr(ret.docs))
+        print('docs_html', repr(docs_html))
+
+
+
+
         context = {
             'cells': json.dumps(cells),
             'script_pre': ret.script_pre,
             'script_pre_output': ret.script_pre_output,
             'script_post': ret.script_post,
             'script_post_output': ret.script_post_output,
+            'docs_html': docs_html,
             'user': user,
             'book': book,
             'sheet_key': sheet_key,

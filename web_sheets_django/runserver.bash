@@ -2,7 +2,7 @@
 
 cd ..
 
-./increment_build_number.py
+bash check.bash
 
 virtualenv venv
 

@@ -24,6 +24,11 @@ def inc_build(folder='.'):
     open(os.path.join(folder, 'VERSION.txt'),'wb').write(s2.encode())
 
 if __name__=='__main__':
+
+    if len(sys.argv) == 2:
+        inc_build(sys.argv[1])
+        sys.exit(0)
+
     inc_build()
     inc_build('myexecutor_pkg')
     inc_build('mysocket_pkg')

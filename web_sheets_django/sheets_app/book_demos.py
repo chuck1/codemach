@@ -2,12 +2,15 @@
 import sheets.tests.functions
 
 DEMOS = {
-            'import': sheets.tests.functions.func_import,
-            'named_range': sheets.tests.functions.func_named_range,
-            'sum': sheets.tests.functions.func_sum,
-            'indexof': sheets.tests.functions.func_indexof,
-            'lookup': sheets.tests.functions.func_lookup,
-            'datetime': sheets.tests.functions.func_datetime,
+            'import': sheets.tests.functions.TestImport,
+            'named_range': sheets.tests.functions.TestNamedRange,
+            'sum': sheets.tests.functions.TestSum,
+            'indexof': sheets.tests.functions.TestIndexof,
+            'lookup': sheets.tests.functions.TestLookup,
+            'datetime': sheets.tests.functions.TestDatetime,
+            'string': sheets.tests.functions.TestStrings,
+            'math': sheets.tests.functions.TestMath,
+            'numericaltypes': sheets.tests.functions.TestNumericalTypes,
             }
 
 def get_func(s):

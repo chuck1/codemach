@@ -116,15 +116,27 @@ class Book(object):
         self.middleware_security = sheets.middleware.MiddlewareSecurityManager(
                 self.settings.MIDDLEWARE_SECURITY)
 
+        """
+        string to be interpreted as rst and displayed on webpage
+        """
+        self.docs = ''
+
     def get_book(self): return self
 
     def __getstate__(self):
-        names = ['sheets', 'script_pre', 'script_post', 'settings', 'context']
+        names = ['sheets', 'script_pre', 'script_post', 'settings', 'docs']
         return dict((k, getattr(self, k)) for k in names)
 
-    @protector1
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.context = sheets.context.Context.NONE
+
+    #@protector1
     def __getattribute__(self, name):
         return object.__getattribute__(self, name)
+
+    def set_docs(self, s):
+        self.docs = s
 
     #@protector
     def test_func(self):
