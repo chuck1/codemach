@@ -1,0 +1,12 @@
+Transition to aiohttp web server
+================================
+
+Features that I had created using Django that I will need to recreate
+
+- templates
+- database
+- serving pages
+- connect to compute server
+- oauth
+- selenium tests
+
