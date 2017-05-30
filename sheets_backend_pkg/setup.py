@@ -19,5 +19,6 @@ setup(name='sheets_backend',
         scripts=[
                 'bin/web_sheets_sheets_backend',
                 ],
+        package_data={'': ['*.service']}
             )
 
