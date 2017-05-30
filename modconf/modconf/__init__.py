@@ -1,3 +1,4 @@
+import sys
 
 def import_conf(name, folder=None):
     sys.path.insert(0, folder)
