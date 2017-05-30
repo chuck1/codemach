@@ -1,5 +1,5 @@
 
-./increment_build_number.py
+bash check.bash
 
 virtualenv venv
 
@@ -9,6 +9,8 @@ if [ $? -ne 0 ]
 then
 	exit 1
 fi
+
+pip3 install docutils
 
 pip3 install ./myexecutor_pkg
 pip3 install ./mysocket_pkg

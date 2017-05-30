@@ -36,6 +36,20 @@ class SetCell(Packet):
 
         sock.server.save_book(self.book_id)
 
+class SetDocs(Packet):
+    def __init__(self, book_id, s):
+        self.book_id = book_id
+        self.s = s
+    
+    def __call__(self, sock):
+        book = sock.server.get_book(self.book_id)
+        
+        book.set_docs(self.s)
+
+        sock.send(pickle.dumps(Packet()))
+
+        sock.server.save_book(self.book_id)
+
 class SetScriptPre(Packet):
     def __init__(self, book_id, s):
         self.book_id = book_id
@@ -169,6 +183,7 @@ class ReturnSheetData(Packet):
         self.book_id = book_id
         self.cells = convert_cells(sheet)
         
+        self.docs = book.docs
         self.script_pre = book.script_pre.string
         self.script_pre_output = book.script_pre.output
         self.script_post = book.script_post.string
@@ -239,6 +254,9 @@ class BookProxy(sheets_backend.BookProxy, mysocket.Client):
     def send_recv_packet(self, packet):
         self.send(pickle.dumps(packet))
         return self.recv_packet()
+
+    def set_docs(self, s):
+        return self.send_recv_packet(SetDocs(self.book_id, s))
 
     def set_cell(self, k, r, c, s):
         return self.send_recv_packet(SetCell(self.book_id, k, r, c, s))

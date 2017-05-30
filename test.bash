@@ -16,7 +16,7 @@ fi
 
 cd web_sheets_django
 
-python3 manage.py test
+python3 manage.py test --settings web_sheets_django.settings.local
 
 cd ..
 

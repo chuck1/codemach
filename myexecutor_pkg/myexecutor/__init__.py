@@ -24,8 +24,11 @@ class SignalThing(object):
         self.__watch = {}
 
     def emmit(self, thing, *args):
-        if thing in self.__watch:
-            self.__watch[thing](thing, *args)
+        try:
+            if thing in self.__watch:
+                self.__watch[thing](thing, *args)
+        except TypeError:
+            pass
 
     def subscribe(self, thing, callback):
         self.__watch[thing] = callback
@@ -103,17 +106,57 @@ class Executor(object):
             if i.opcode == 1:
                 self.__stack.pop()
 
+            elif i.opcode == 10:
+                # UNARY_POSITIVE
+                TOS = self.__stack.pop()
+                self.__stack.append(+TOS)
+
+            elif i.opcode == 11:
+                # UNARY_NEGATIVE
+                TOS = self.__stack.pop()
+                self.__stack.append(-TOS)
+
+            elif i.opcode == 19:
+                # BINARY_POWER
+                TOS = self.__stack.pop()
+                TOS1 = self.__stack.pop()
+                self.__stack.append(TOS1 ** TOS)
+
+            elif i.opcode == 22:
+                # BINARY_MODULO
+                TOS = self.__stack.pop()
+                TOS1 = self.__stack.pop()
+                self.__stack.append(TOS1 % TOS)
+
             elif i.opcode == 23:
                 # BINARY_ADD
                 TOS = self.__stack.pop()
                 TOS1 = self.__stack.pop()
-                self.__stack.append(TOS + TOS1)
+                self.__stack.append(TOS1 + TOS)
+
+            elif i.opcode == 24:
+                # BINARY_SUBTRACT
+                TOS = self.__stack.pop()
+                TOS1 = self.__stack.pop()
+                self.__stack.append(TOS1 - TOS)
 
             elif i.opcode == 25:
                 # BINARY_SUBSCR
                 TOS = self.__stack.pop()
                 TOS1 = self.__stack.pop()
                 self.__stack.append(TOS1[TOS])
+
+            elif i.opcode == 26:
+                # BINARY_FLOOR_DIVIDE
+                TOS = self.__stack.pop()
+                TOS1 = self.__stack.pop()
+                self.__stack.append(TOS1 // TOS)
+
+            elif i.opcode == 27:
+                # BINARY_TRUE_DIVIDE
+                TOS = self.__stack.pop()
+                TOS1 = self.__stack.pop()
+                self.__stack.append(TOS1 / TOS)
 
             elif i.opcode == 83:
                 # RETURN_VALUE
@@ -181,9 +224,7 @@ class Executor(object):
                 # CALL_FUNCTION
                 code_or_callable = self.__stack[-1-i.arg]
                 
-                firstargindex = len(self.__stack)-i.arg
-                
-                args = tuple(self.__stack[-i.arg:])
+                args = tuple(self.__stack[len(self.__stack) - i.arg:])
     
                 if isinstance(code_or_callable, types.CodeType):
                     _c = code_or_callable
@@ -227,7 +268,7 @@ class Executor(object):
                 raise RuntimeError('unhandled opcode',i.opcode,i.opname,i.arg,self.__stack)
     
             if self.verbose > 0:
-                print('%13s' % i.opname, self.__stack)
+                print('%20s' % i.opname, self.__stack)
     
         if self.verbose > 0:print('------------- return')
         return return_value
@@ -275,6 +316,11 @@ if __name__ == '__main__':
     s = """import math\ndef func():\n  return math.pi\nfunc()"""
     test(e, s, 'exec')
 
+    s = """import datetime\ndatetime.datetime.now()"""
+    test(e, s, 'exec')
+
+    s = """x=1\ny=1\nx-y\nx/y\nx//y\nx%y\nx**y\n-x\n+x"""
+    test(e, s, 'exec')
 
 
 

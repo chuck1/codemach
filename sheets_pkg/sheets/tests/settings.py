@@ -9,22 +9,30 @@ class Settings(object):
             "math",
             "numpy",
             "time",
+            "datetime",
+            "pytz",
             )
     
     MIDDLEWARE_SECURITY_BUILTINS_APPROVED = (
             '__build_class__',
             '__name__',
-            "Exception",
+            'abs',
+            'complex',
             'dir',
+            'divmod',
+            'Exception',
+            'float',
             'getattr',
             'globals',
+            'int',
             'list',
             'object',
+            'pow',
             'print',
             'range',
-            "repr",
+            'repr',
             'sum',
-            "type",
+            'type',
             )
     
 
