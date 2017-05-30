@@ -1,5 +1,10 @@
 
 class Settings(object):
+    """
+    these config variables must be stored in a class because I want
+    to pickle the Book.settings variable with the book and
+    modules cannot be pickled
+    """
     
     MIDDLEWARE_SECURITY = (
             ('sheets.ext.middleware.security','SecurityTest1'),

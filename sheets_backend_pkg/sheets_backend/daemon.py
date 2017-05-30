@@ -9,34 +9,27 @@ import sheets
 import sheets.tests.settings
 import sheets_backend.sockets
 
+import modconf
+
 def test(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument(
-            '--settings',
-            nargs=1,
-            default=['/etc/web_sheets_sheets_backend'],
-            help='settings module directory')
-    
+            'conf',
+            help='modconf module folder. must contain python module called \'conf\'')
     args = parser.parse_args(argv)
     
-    settings_module_dir = args.settings[0]
+    conf = modconf.import_conf('conf', args.conf)
 
-    sys.path.insert(0, settings_module_dir)
+    logging.config.dictConfig(conf.LOGGING)
 
-    settings_module = __import__('web_sheets_sheets_backend.settings', fromlist=['*'])
+    stor = storage.filesystem.Storage(
+            sheets.Book, 
+            conf.STORAGE_FOLDER)
 
-    settings_class_sheets = sheets.tests.settings.Settings
+    stor.set_object_new_args(
+            (conf.sheets_conf.Settings,))
 
-    logging.config.dictConfig(settings_module.LOGGING)
-
-    port = settings_module.PORT
-    
-    folder = settings_module.STORAGE_FOLDER
-    
-    stor = storage.filesystem.Storage(sheets.Book, folder)
-    stor.set_object_new_args((settings_class_sheets,))
-
-    server = sheets_backend.sockets.Server(stor, port)
+    server = sheets_backend.sockets.Server(stor, conf.PORT)
     
     server.run()
 
