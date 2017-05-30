@@ -14,11 +14,14 @@ setup(name='sheets_backend',
             'sheets_backend',
             'sheets_backend.sockets',
             'sheets_backend.tests',
+            'sheets_backend.templates',
             ],
         zip_safe=False,
         scripts=[
                 'bin/web_sheets_sheets_backend',
                 ],
-        package_data={'': ['*.service']}
+        package_data={'': ['*.service']},
+        install_requires=[
+            'jinja2']
             )
 

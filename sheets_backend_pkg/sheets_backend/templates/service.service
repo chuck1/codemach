@@ -2,8 +2,8 @@
 Description=web_sheets sheets_backend server
 
 [Service]
-User=web_sheets
-ExecStart=/usr/local/bin/web_sheets_sheets_backend /etc/web_sheets_sheets_backend
+User={{ user }}
+ExecStart=/usr/local/bin/{{ script_name }} {{ conf }}
 
 [Install]
 WantedBy=multi-user.target
