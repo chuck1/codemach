@@ -1,5 +1,5 @@
 
-bash check.bash
+make
 
 virtualenv venv
 
@@ -12,10 +12,6 @@ fi
 
 pip3 install docutils
 
-pip3 install ./myexecutor_pkg
-pip3 install ./mysocket_pkg
-pip3 install ./storage_pkg
-pip3 install ./sheets_pkg
 pip3 install ./sheets_backend_pkg
 
 #pip3 install . -v
