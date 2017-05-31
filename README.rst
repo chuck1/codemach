@@ -4,6 +4,12 @@ CodeMach
 
 Tiny module that executes python code objects.
 
+Install
+-------
+::
+
+    pip3 install codemach
+
 Example
 -------
 
