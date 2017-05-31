@@ -1,5 +1,5 @@
 
-./increment_build_number.py
+make
 
 virtualenv venv
 
@@ -10,8 +10,7 @@ then
 	exit 1
 fi
 
-pip3 install ./myexecutor_pkg
-pip3 install ./sheets_pkg
+pip3 install --find-links=package_index -U ws_sheets
 
 bash test_sheets.bash
 

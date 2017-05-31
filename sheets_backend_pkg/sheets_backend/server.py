@@ -14,11 +14,17 @@ import modconf
 def test(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument(
-            'conf',
-            help='modconf module folder. must contain python module called \'conf\'')
-    args = parser.parse_args(argv)
+            '--conf_dir',
+            nargs=1,
+            default=(None,),
+            help='modconf module directory')
+    parser.add_argument(
+            'conf_mod',
+            help='modconf module name')
     
-    conf = modconf.import_conf('conf', args.conf)
+    args = parser.parse_args(argv[1:])
+    
+    conf = modconf.import_conf(args.conf_mod, args.conf_dir[0])
 
     logging.config.dictConfig(conf.LOGGING)
 
@@ -27,13 +33,13 @@ def test(argv):
             conf.STORAGE_FOLDER)
 
     stor.set_object_new_args(
-            (conf.sheets_conf.Settings,))
+            (conf.conf_sheets.Settings,))
 
     server = sheets_backend.sockets.Server(stor, conf.PORT)
     
     server.run()
 
-def daemon(argv):
+def main(argv):
     logger = logging.getLogger(__name__)
     try:
         test(argv)

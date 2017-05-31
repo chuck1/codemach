@@ -1,31 +1,29 @@
 import sys
 import json
-import logging
-import logging.config
 import argparse
-
-import storage.filesystem
+import modconf
 import sheets
 import sheets_backend.sockets
-
+import subprocess
 import unittest
 
 class TestClient(unittest.TestCase):
-    def test(argv):
-    
-        print(sys.path)
 
-        sys.path.insert(0, './testing')
+    def setUp(self):
+        self.conf_mod = 'sheets_backend.tests.conf.simple'
+
+        self.p = subprocess.Popen(('web_sheets_sheets_backend.py', self.conf_mod))
+
+    def tearDown(self):
+        self.p.kill()
+
+    def test(self):
     
-        settings_module = __import__('web_sheets_sheets_backend.settings', fromlist=['*'])
+        conf = modconf.import_conf(self.conf_mod)
+
+        port = conf.PORT
         
-        port = settings_module.PORT
-
-        print(sys.path)
-    
-        print(settings_module)
-
-        print("start client on port {}".format(port))
+        print("connect on port {}".format(port))
         
         client = sheets_backend.sockets.Client(port)
         

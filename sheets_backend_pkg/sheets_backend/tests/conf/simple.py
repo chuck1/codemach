@@ -1,3 +1,6 @@
+import modconf
+
+conf_sheets = modconf.import_conf('sheets.tests.conf.simple')
 
 LOGGING = {
         'version': 1,

@@ -12,7 +12,7 @@ def inc_build(folder='.'):
     m = pat.match(s)
     
     if not m:
-        print('error in version string')
+        print('error in version string: ',repr(s))
         sys.exit(1)
     
     bn = int(m.group(2))
