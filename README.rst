@@ -11,7 +11,7 @@ Example
 
     from codemach import Machine
 
-    m = Machiner()
+    m = Machine()
     m.verbose = 1
 
     s = """def func(a, b):\n  return a + b\nfunc(2, 3)"""
