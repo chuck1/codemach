@@ -1,6 +1,6 @@
 
-MyExecutor
-==========
+CodeMach
+========
 
 Tiny module that executes python code objects.
 
@@ -9,16 +9,16 @@ Example
 
 ::
 
-    import myexecutor
+    from codemach import Machine
 
-    e = myexecutor.Executor()
-    e.verbose = 1
+    m = Machiner()
+    m.verbose = 1
 
     s = """def func(a, b):\n  return a + b\nfunc(2, 3)"""
 
     c = compile(s, '<string>', 'exec')
 
-    e.exec(c)
+    m.exec(c)
 
 prints the following. Each line shows the opname and the stack after the operation.
 ::
