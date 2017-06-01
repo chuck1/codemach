@@ -267,5 +267,31 @@ function sheet_page_load() {
 	});
 
 	get_sheet_data();
+
+
+	// Create WebSocket connection.
+	const socket = new WebSocket(ws_url);
+
+	socket.onclose = function (event) {
+		console.log('closed ', event.reason);
+	};
+
+	socket.onerror = function (event) {
+		console.log('error');
+	};
+
+	// Connection opened
+	socket.addEventListener('open', function (event) {
+		console.log('opened');
+		socket.send(JSON.stringify({'type':'get_sheet_data'}));
+	});
+
+	// Listen for messages
+	socket.addEventListener('message', function (event) {
+		console.log('Message from server', event.data);
+
+	});
+	
 }
+
 

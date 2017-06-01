@@ -1,22 +1,22 @@
 
-bash test_sheets.bash
+install_reqs () {
+for f in `cat $1/requirements.txt`
+do
+	pip3 install -U ./$f
 
-if [ $? -ne 0 ]
-then
-	exit 1
-fi
+	install_reqs $f
+done
+}
 
-python3 -m unittest sheets_backend.tests
+make
 
-if [ $? -ne 0 ]
-then
-	exit 1
-fi
+echo $1
 
+source venv/bin/activate
 
-cd web_sheets_django
+install_reqs $1
 
-python3 manage.py test --settings web_sheets_django.settings.local
+pip3 install -U ./$1
 
-cd ..
+python3 -m unittest $1.tests -v
 

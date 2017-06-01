@@ -7,6 +7,7 @@ do
 	cat $f/VERSION.txt
 	cd $f
 	git branch
+	git status
 	cd ..
 done
 
