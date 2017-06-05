@@ -28,6 +28,20 @@ and return the result.
 
 http://grokbase.com/t/python/python-list/033r5nks47/type-function-does-not-subtype#20030324rcnwbkfedhzbaf3vmiuer3z4xq
 
+Operations
+----------
+
+140 CALL_FUNCTION_VAR
+
+need more testing, but in one test, was used to call a function defined as
+:
+
+    def foo(*args):
+        pass
+
+where TOS1 is the function object and TOS is a tuple of arguments
+
+
 """
 
 class Signal(object):
