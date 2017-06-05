@@ -65,43 +65,62 @@ class CodeType(object):
 class FunctionCall(object):
     pass
 
-def function_wrapper(f):
+def function_wrapper(machine, f):
     def wrapper(*args):
-        print('wrapper called with {}'.format(args))
-        return f(*args)
+        print('wrapper\n{} {}\ncalled with {}'.format(f, machine, args))
+
+        return machine.exec(f.__code__, f.__globals__)
+        #return f(*args)
+    
     return wrapper
 
-class FunctionWrapper(object):
-    def __init__(self, f):
-        self.f = f
-    def __call__(self):
-        print('wrapper called with {}'.format(*args))
-        return f(*args)
+def function_wrapper_class_source(machine, f):
+    def wrapper(*args):
+        print('wrapper\n{} {}\ncalled with {}'.format(f, machine, args))
+
+        res = machine.exec(f.__code__, f.__globals__)
+
+        print('globals after running class source')
+        for k, v in f.__globals__.items():
+            print('  {}'.format(k))
+
+        return res
+        #return f(*args)
+    
+    return wrapper
 
 class FunctionType(object):
-    def __init__(self, code, globals_):
-        #self.function = types.FunctionType(code, globals_)
-        
-        # error
-        #self.function = types.FunctionType(CodeType(code), globals_)
-        
-        self.function = function_wrapper(types.FunctionType(code, globals_))
-        
-        # no effect
-        #self.function.__call__ = FunctionCall()
-
-        # error
-        #self.function.__code__ = CodeType(code)
+    def __init__(self, machine, code, globals_, name):
+        self.func_raw = types.FunctionType(code, globals_, name)
+        self.function = function_wrapper(
+                machine,
+                self.func_raw)
 
     def get_code(self):
-        # for function_wrapper method
+        """
+        return the code object to be used by Machine
+        """
+        print('closures')
+        print(self.function.__closure__)
         return self.function.__closure__[0].cell_contents.__code__
 
-    def get_function(self):
+    def get_function(self, machine):
         """
         return the function object to be passed to builtin.__build_class__
         """
-        return self.function
+        #return self.function
+        return function_wrapper(
+                machine,
+                self.func_raw)
+
+    def get_function_as_class_source(self, machine):
+        return function_wrapper_class_source(
+                machine,
+                self.func_raw)
+
+
+    def __repr__(self):
+        return '<{} object, function {}>'.format(self.__class__.__name__, self.func_raw)
 
 class SignalThing(object):
     def __init__(self):
@@ -168,6 +187,10 @@ class Machine(object):
         else:
             return getattr(b, name)
 
+    def store_name(self, name, val):
+        print('%20s' % 'STORE_NAME', val, '->', name)
+        self.__globals[name] = val
+
     def pop(self, n):
         poped = self.__stack[len(self.__stack) - n:]
         del self.__stack[len(self.__stack) - n:]
@@ -176,7 +199,7 @@ class Machine(object):
     def exec_instructions(self, c):
 
         if self.verbose > 0:print('------------- begin exec')
-
+        
         inst = dis.Bytecode(c)
         
         return_value_set = False
@@ -253,7 +276,9 @@ class Machine(object):
 
             elif i.opcode == 90:
                 # STORE_NAME
-                self.__globals[c.co_names[i.arg]] = self.__stack.pop()
+                name = c.co_names[i.arg]
+                TOS = self.__stack.pop()
+                self.store_name(name, TOS)
 
             elif i.opcode == 100:
                 # LOAD_CONST
@@ -331,12 +356,12 @@ class Machine(object):
                     
                     ret = e.exec(_c, self.__globals)
                 elif (callable_ is builtins.__build_class__) and isinstance(args[0], FunctionType):
+                    #machine = Machine(self.verbose)
+                    machine = MachineClassSource(self.verbose)
 
-                    print(args)
-                    args = (args[0].get_function(), *args[1:])
-                    print(args)
+                    args = (args[0].get_function_as_class_source(machine), *args[1:])
                     self.signal['CALL_FUNCTION'].emmit(callable_, *args)
-    
+                 
                     ret = callable_(*args)
                 else:
                     self.signal['CALL_FUNCTION'].emmit(callable_, *args)
@@ -353,11 +378,15 @@ class Machine(object):
                 
                 #print(i.opname, i.opcode, i.arg, dis.stack_effect(i.opcode, i.arg))
                 n = dis.stack_effect(i.opcode, i.arg)
-                self.pop(-n)
+                args = self.pop(-n)
 
                 code = self.__stack.pop()
-                f = FunctionType(code, self.__globals)
+                f = FunctionType(Machine(self.verbose), code, self.__globals, args[0])
                 self.__stack.append(f)
+
+                print('MAKE_FUNCTION')
+                print('throwing away:', args)
+                print('f.__qualname__:', f.func_raw.__qualname__)
 
             elif i.opcode == 133:
                 # BUILD_SLICE
@@ -378,5 +407,8 @@ class Machine(object):
         if self.verbose > 0:print('------------- return')
         return return_value
         
-
+class MachineClassSource(Machine):
+    def store_name(self, name, val):
+        Machine.store_name(self, name, val)
+        print(self.__class__.__name__, 'store_name', name, val)
 

@@ -57,5 +57,8 @@ class Tests(unittest.TestCase):
     
         s = """class Foo(object):\n  a = 1\nfoo = Foo()"""
         test(e, s, 'exec')
+        
+        s = """class Foo(object):\n  def func(self):\n    return 0\nfoo = Foo()\nfoo.func()"""
+        test(e, s, 'exec')
 
 
