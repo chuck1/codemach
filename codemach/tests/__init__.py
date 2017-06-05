@@ -5,7 +5,6 @@ from codemach import Machine
 
 def code_info(c):
     print('------------')
-    print(dir(c))
     print('argcount ',c.co_argcount)
     print('consts   ',c.co_consts)
     print('names    ',c.co_names)
@@ -18,6 +17,7 @@ def code_info(c):
 
 
 def test(e, s, mode):
+    print('\nsource:\n{}\n'.format(s))
     c = compile(s, '<string>', mode)
 
     code_info(c)
@@ -55,4 +55,7 @@ class Tests(unittest.TestCase):
         s = """x=1\ny=1\nx-y\nx/y\nx//y\nx%y\nx**y\n-x\n+x"""
         test(e, s, 'exec')
     
-    
+        s = """class Foo(object):\n  a = 1\nfoo = Foo()"""
+        test(e, s, 'exec')
+
+

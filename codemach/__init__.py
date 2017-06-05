@@ -4,6 +4,31 @@ import sys
 import dis
 import types
 import operator
+import builtins
+
+"""
+CodeMach
+========
+
+This module was created to solve the security issues
+associated with execution of arbitrary code strings.
+The Machine class can execute python code objects
+and allow the user to intervene.
+
+Handling class method code
+--------------------------
+
+The builtin function __build_class__ requires a function
+object containing the source code of the class.
+If we simple pass this function, it will not be executed
+by the machine, but rather by the default implementation.
+The solution is to pass a function wrapper the within the
+wrapper allow the Machine to execute the actual function
+and return the result.
+
+http://grokbase.com/t/python/python-list/033r5nks47/type-function-does-not-subtype#20030324rcnwbkfedhzbaf3vmiuer3z4xq
+
+"""
 
 class Signal(object):
     def __init__(self):
@@ -18,6 +43,51 @@ class Signal(object):
 
     def unsubscribe(self):
         self.__watch = None
+
+class CodeType(object):
+    def __init__(self, code):
+        self.code = code
+
+class FunctionCall(object):
+    pass
+
+def function_wrapper(f):
+    def wrapper(*args):
+        print('wrapper called with {}'.format(args))
+        return f(*args)
+    return wrapper
+
+class FunctionWrapper(object):
+    def __init__(self, f):
+        self.f = f
+    def __call__(self):
+        print('wrapper called with {}'.format(*args))
+        return f(*args)
+
+class FunctionType(object):
+    def __init__(self, code, globals_):
+        #self.function = types.FunctionType(code, globals_)
+        
+        # error
+        #self.function = types.FunctionType(CodeType(code), globals_)
+        
+        self.function = function_wrapper(types.FunctionType(code, globals_))
+        
+        # no effect
+        #self.function.__call__ = FunctionCall()
+
+        # error
+        #self.function.__code__ = CodeType(code)
+
+    def get_code(self):
+        # for function_wrapper method
+        return self.function.__closure__[0].cell_contents.__code__
+
+    def get_function(self):
+        """
+        return the function object to be passed to builtin.__build_class__
+        """
+        return self.function
 
 class SignalThing(object):
     def __init__(self):
@@ -158,6 +228,10 @@ class Machine(object):
                 TOS1 = self.__stack.pop()
                 self.__stack.append(TOS1 / TOS)
 
+            elif i.opcode == 71:
+                # LOAD_BUILD_CLASS
+                self.__stack.append(builtins.__build_class__)
+
             elif i.opcode == 83:
                 # RETURN_VALUE
                 return_value = self.__stack.pop()
@@ -222,22 +296,38 @@ class Machine(object):
 
             elif i.opcode == 131:
                 # CALL_FUNCTION
-                code_or_callable = self.__stack[-1-i.arg]
+                callable_ = self.__stack[-1-i.arg]
                 
                 args = tuple(self.__stack[len(self.__stack) - i.arg:])
     
-                if isinstance(code_or_callable, types.CodeType):
-                    _c = code_or_callable
+                if isinstance(callable_, types.CodeType):
+                    _c = callable_
                     e = Machine(self.verbose)
                     
                     e._locals = dict((name, arg) for name, arg in zip(
                         _c.co_varnames[:_c.co_argcount], args))
                     
                     ret = e.exec(_c, self.__globals)
-                else:
-                    self.signal['CALL_FUNCTION'].emmit(code_or_callable, *args)
+                elif isinstance(callable_, FunctionType):
+                    _c = callable_.get_code()
+                    e = Machine(self.verbose)
+                    
+                    e._locals = dict((name, arg) for name, arg in zip(
+                        _c.co_varnames[:_c.co_argcount], args))
+                    
+                    ret = e.exec(_c, self.__globals)
+                elif (callable_ is builtins.__build_class__) and isinstance(args[0], FunctionType):
 
-                    ret = code_or_callable(*args)
+                    print(args)
+                    args = (args[0].get_function(), *args[1:])
+                    print(args)
+                    self.signal['CALL_FUNCTION'].emmit(callable_, *args)
+    
+                    ret = callable_(*args)
+                else:
+                    self.signal['CALL_FUNCTION'].emmit(callable_, *args)
+
+                    ret = callable_(*args)
                 
                 self.pop(1 + i.arg)
                 self.__stack.append(ret)
@@ -252,7 +342,8 @@ class Machine(object):
                 self.pop(-n)
 
                 code = self.__stack.pop()
-                self.__stack.append(code)
+                f = FunctionType(code, self.__globals)
+                self.__stack.append(f)
 
             elif i.opcode == 133:
                 # BUILD_SLICE
