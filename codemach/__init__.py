@@ -77,12 +77,17 @@ def function_wrapper(machine, f):
 def function_wrapper_class_source(machine, f):
     def wrapper(*args):
         print('wrapper\n{} {}\ncalled with {}'.format(f, machine, args))
-
+        
         res = machine.exec(f.__code__, f.__globals__)
+        
+        locals().update(machine._dict)
 
-        print('globals after running class source')
-        for k, v in f.__globals__.items():
-            print('  {}'.format(k))
+        print('locals')
+        print(locals().keys())
+        print('stored after running class source')
+        #for k, v in f.__globals__.items():
+        for k, v in machine._dict.items():
+            print('  {} {}'.format(k, v))
 
         return res
         #return f(*args)
@@ -117,7 +122,6 @@ class FunctionType(object):
         return function_wrapper_class_source(
                 machine,
                 self.func_raw)
-
 
     def __repr__(self):
         return '<{} object, function {}>'.format(self.__class__.__name__, self.func_raw)
@@ -363,6 +367,9 @@ class Machine(object):
                     self.signal['CALL_FUNCTION'].emmit(callable_, *args)
                  
                     ret = callable_(*args)
+
+                    print('build class res =', ret)
+                    print(dir(ret))
                 else:
                     self.signal['CALL_FUNCTION'].emmit(callable_, *args)
 
@@ -408,7 +415,13 @@ class Machine(object):
         return return_value
         
 class MachineClassSource(Machine):
+    def __init__(self, *args):
+        Machine.__init__(self, *args)
+        self._dict = {}
+
     def store_name(self, name, val):
-        Machine.store_name(self, name, val)
+        #Machine.store_name(self, name, val)
         print(self.__class__.__name__, 'store_name', name, val)
+        self._dict[name] = val
+
 
