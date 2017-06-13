@@ -143,7 +143,6 @@ class SignalThing(object):
 class Machine(object):
     def __init__(self, verbose=0):
         self.__stack = []
-        self._locals = {}
         self.verbose = verbose
         
         self.signal = {
@@ -170,12 +169,15 @@ class Machine(object):
                 'exception match', 
                 'BAD')[i]
 
-    def exec(self, code, _globals=globals()):
-        
+    def exec(self, code, _globals=globals(), _locals=None):
+        if _locals is None:
+            self._locals = _globals
+        else:
+            self._locals = _locals
+       
         self.__globals = _globals
 
         return self.exec_instructions(code)
-
 
     def load_name(self, name):
         if name in self.__globals:
@@ -189,16 +191,49 @@ class Machine(object):
 
     def store_name(self, name, val):
         print('%20s' % 'STORE_NAME', val, '->', name)
-        self.__globals[name] = val
+        self._locals[name] = val
+        #self.__globals[name] = val
 
     def pop(self, n):
         poped = self.__stack[len(self.__stack) - n:]
         del self.__stack[len(self.__stack) - n:]
         return poped
         
+    def build_class(self, callable_, args):
+        print('build class', args)
+    
+        machine = Machine(self.verbose)
+        l = dict()
+        machine.exec(args[0].get_code(), self.__globals, l)
+        print('l=', l)
+
+        # construct code for class source
+        a = Assembler()
+        for name, value in l.items():
+            a.load_const(value)
+            a.store_name(name)
+        a.load_const(None)
+        a.return_value()
+       
+        #machine = Machine(self.verbose)
+        machine = MachineClassSource(self.verbose)
+
+        #args = (args[0].get_function_as_class_source(machine), *args[1:])
+
+        f = types.FunctionType(a.code(), self.__globals, args[1])
+
+        args = (f, *args[1:])
+
+        self.signal['CALL_FUNCTION'].emmit(callable_, *args)
+                 
+        return callable_(*args)
+
+    
     def exec_instructions(self, c):
 
-        if self.verbose > 0:print('------------- begin exec')
+        if self.verbose > 0:
+            print('------------- begin exec')
+            print('  locals =', self._locals.keys())
         
         inst = dis.Bytecode(c)
         
@@ -343,26 +378,22 @@ class Machine(object):
                     _c = callable_
                     e = Machine(self.verbose)
                     
-                    e._locals = dict((name, arg) for name, arg in zip(
+                    l = dict((name, arg) for name, arg in zip(
                         _c.co_varnames[:_c.co_argcount], args))
                     
-                    ret = e.exec(_c, self.__globals)
+                    ret = e.exec(_c, self.__globals, l)
                 elif isinstance(callable_, FunctionType):
                     _c = callable_.get_code()
                     e = Machine(self.verbose)
                     
                     e._locals = dict((name, arg) for name, arg in zip(
                         _c.co_varnames[:_c.co_argcount], args))
+                    l = dict((name, arg) for name, arg in zip(
+                        _c.co_varnames[:_c.co_argcount], args))
                     
-                    ret = e.exec(_c, self.__globals)
+                    ret = e.exec(_c, self.__globals, l)
                 elif (callable_ is builtins.__build_class__) and isinstance(args[0], FunctionType):
-                    #machine = Machine(self.verbose)
-                    machine = MachineClassSource(self.verbose)
-
-                    args = (args[0].get_function_as_class_source(machine), *args[1:])
-                    self.signal['CALL_FUNCTION'].emmit(callable_, *args)
-                 
-                    ret = callable_(*args)
+                    ret = self.build_class(callable_, args)
                 else:
                     self.signal['CALL_FUNCTION'].emmit(callable_, *args)
 
@@ -411,4 +442,163 @@ class MachineClassSource(Machine):
     def store_name(self, name, val):
         Machine.store_name(self, name, val)
         print(self.__class__.__name__, 'store_name', name, val)
+
+
+
+
+
+
+def inst_to_bytes(inst):
+    if inst.opname in (
+            'LOAD_CONST',
+            'LOAD_NAME',
+            'STORE_NAME',
+            ):
+        return bytes([
+            inst.opcode,
+            inst.arg,
+            0])
+    elif inst.opname in (
+            'BINARY_ADD',
+            'RETURN_VALUE',
+            ):
+        return bytes([inst.opcode])
+    else:
+        raise RuntimeError('unsupported op {}'.format(inst.opname))
+
+class Assembler(object):
+    def __init__(self):
+        self.offset = 0
+        self.insts = list()
+        self.consts = list()
+        self.names = list()
+        self.varnames = list()
+
+    def get_const_arg(self, v):
+        if not v in self.consts:
+            self.consts.append(v)
+        return self.consts.index(v)
+
+    def get_name_arg(self, v):
+        if not v in self.names:
+            self.names.append(v)
+        return self.names.index(v)
+
+    def load_const(self, argval):
+        inst = dis.Instruction(
+                'LOAD_CONST',
+                dis.opname.index('LOAD_CONST'),
+                self.get_const_arg(argval),
+                argval,
+                repr(argval),
+                self.offset,
+                None,
+                False)
+        
+        self.offset += 3
+        
+        self.insts.append(inst)
+
+    def load_name(self, argval):
+        inst = dis.Instruction(
+                'LOAD_NAME',
+                dis.opname.index('LOAD_NAME'),
+                self.get_name_arg(argval),
+                argval,
+                repr(argval),
+                self.offset,
+                None,
+                False)
+        
+        self.offset += 3
+        
+        self.insts.append(inst)
+
+    def store_name(self, argval):
+        inst = dis.Instruction(
+                'STORE_NAME',
+                dis.opname.index('STORE_NAME'),
+                self.get_name_arg(argval),
+                argval,
+                repr(argval),
+                self.offset,
+                None,
+                False)
+        
+        self.offset += 3
+        
+        self.insts.append(inst)
+
+    def binary_add(self):
+        inst = dis.Instruction(
+                'BINARY_ADD',
+                dis.opname.index('BINARY_ADD'),
+                None,
+                None,
+                '',
+                self.offset,
+                None,
+                False)
+        
+        self.offset += 1
+        
+        self.insts.append(inst)
+
+    def return_value(self):
+        inst = dis.Instruction(
+                'RETURN_VALUE',
+                dis.opname.index('RETURN_VALUE'),
+                None,
+                None,
+                '',
+                self.offset,
+                None,
+                False)
+        
+        self.offset += 1
+        
+        self.insts.append(inst)
+
+    def code(self):
+
+        b = b''.join(inst_to_bytes(i) for i in self.insts)
+        print('bytes',b)
+
+        c = types.CodeType(
+                0,
+                0,
+                0,
+                2,
+                64,
+                b,
+                tuple(self.consts),
+                tuple(self.names),
+                tuple(self.varnames),
+                '<constructed code>',
+                '<module>',
+                0,
+                b'')
+
+        return c
+
+
+ 
+def test1():
+ 
+    asm = Assembler()
+    
+    asm.load_const(2)
+    asm.load_const(3)
+    asm.binary_add()
+    asm.return_value()
+    
+    print_asm(insts.insts)
+    
+    c = asm.code()
+    
+    print(c)
+    
+    print('eval')
+    print(eval(c))
+    
 
