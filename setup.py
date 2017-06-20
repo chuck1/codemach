@@ -1,7 +1,8 @@
-
+import re
 from setuptools import setup
 
-version = open('VERSION.txt').read()
+with open('codemach/__init__.py') as f:
+    version = re.findall("^__version__ = '(.*)'", f.read())[0]
 
 setup(name='codemach',
         version=version,
