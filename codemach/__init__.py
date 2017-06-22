@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+__version__ = '0.2a0'
 
 import sys
 import dis
