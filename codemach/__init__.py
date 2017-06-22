@@ -443,11 +443,6 @@ class MachineClassSource(Machine):
         Machine.store_name(self, name, val)
         print(self.__class__.__name__, 'store_name', name, val)
 
-
-
-
-
-
 def inst_to_bytes(inst):
     if inst.opname in (
             'LOAD_CONST',
