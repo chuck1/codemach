@@ -3,6 +3,6 @@ verify_ssl = true
 url = "https://pypi.python.org/simple"
 
 [packages]
-pkgtool = "==0.1b4"
 "-e ../pkgtool" = "*"
 "-e ." = "*"
+toml = "*"

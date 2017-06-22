@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2a07d2f1a14a3526b4ab16774fe61336dfc4b5dfb02334387877e00bb68e043a"
+            "sha256": "0b27edbeff5ce23e269d8aee2b0fb0ca4a625f55b030549910ca4601bf8ff9f9"
         },
         "requires": {},
         "sources": [
@@ -14,18 +14,6 @@
     "default": {
         "-e .": "*",
         "-e ../pkgtool": "*",
-        "pkgtool": {
-            "version": "==0.1b4"
-        },
-        "py": {
-            "version": "==1.4.34"
-        },
-        "pytest": {
-            "version": "==3.1.2"
-        },
-        "setuptools": {
-            "version": "==36.0.1"
-        },
         "toml": {
             "version": "==0.9.2"
         }
