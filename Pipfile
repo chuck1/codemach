@@ -6,3 +6,6 @@ url = "https://pypi.python.org/simple"
 termcolor = "*"
 toml = "*"
 "-e ../pkgtool" = "*"
+
+[packages]
+pkgtool = "==0.1b7"
