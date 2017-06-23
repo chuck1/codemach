@@ -2,7 +2,7 @@
 verify_ssl = true
 url = "https://pypi.python.org/simple"
 
-[packages]
-"-e ../pkgtool" = "*"
-"-e ." = "*"
+[dev-packages]
+termcolor = "*"
 toml = "*"
+"-e ../pkgtool" = "*"
