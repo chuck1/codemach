@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b2f55f3fe3c73b5e8b1f11f5e5832bb08eeb2b73fab5698386ebc0febcd60e2a"
+            "sha256": "c5624c777d104400a352eac707c2b8df748579780eb6954aa363d033523f4f0e"
         },
         "requires": {},
         "sources": [
@@ -11,32 +11,8 @@
             }
         ]
     },
-    "default": {
-        "pkgtool": {
-            "version": "==0.1b19"
-        },
-        "py": {
-            "version": "==1.4.34"
-        },
-        "pytest": {
-            "version": "==3.1.2"
-        },
-        "setuptools": {
-            "version": "==36.0.1"
-        },
-        "termcolor": {
-            "version": "==1.1.0"
-        },
-        "toml": {
-            "version": "==0.9.2"
-        }
-    },
+    "default": {},
     "develop": {
-        "termcolor": {
-            "version": "==1.1.0"
-        },
-        "toml": {
-            "version": "==0.9.2"
-        }
+        "-e .": "*"
     }
 }
