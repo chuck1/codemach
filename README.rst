@@ -1,6 +1,8 @@
 
 CodeMach
 ========
+.. image:: https://travis-ci.org/chuck1/codemach.svg?branch=dev
+    :target: https://travis-ci.org/chuck1/codemach
 
 Tiny module that executes python code objects.
 
