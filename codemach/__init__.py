@@ -37,7 +37,7 @@ Operations
 140 CALL_FUNCTION_VAR
 
 need more testing, but in one test, was used to call a function defined as
-:
+::
 
     def foo(*args):
         pass
@@ -70,25 +70,10 @@ class FunctionCall(object):
 
 def function_wrapper(machine, f):
     def wrapper(*args):
-        logger.debug('wrapper\n{} {}\ncalled with {}'.format(f, machine, args))
+        logger.debug('wrapper {}'.format(f))
+        logger.debug('called with {}'.format(args))
 
         return machine.exec(f.__code__, f.__globals__)
-        #return f(*args)
-    
-    return wrapper
-
-def function_wrapper_class_source(machine, f):
-    def wrapper(*args):
-        logger.debug('wrapper\n{} {}\ncalled with {}'.format(f, machine, args))
-
-        res = machine.exec(f.__code__, f.__globals__)
-
-        logger.debug('globals after running class source')
-        for k, v in f.__globals__.items():
-            logger.debug('  {}'.format(k))
-
-        return res
-        #return f(*args)
     
     return wrapper
 
@@ -106,8 +91,8 @@ class FunctionType(object):
         logger.debug('closures')
         logger.debug(self.function.__closure__)
         return self.function.__closure__[0].cell_contents.__code__
-
-    def get_function(self, machine):
+    
+    def function_wrapped(self, machine):
         """
         return the function object to be passed to builtin.__build_class__
         """
@@ -115,12 +100,6 @@ class FunctionType(object):
         return function_wrapper(
                 machine,
                 self.func_raw)
-
-    def get_function_as_class_source(self, machine):
-        return function_wrapper_class_source(
-                machine,
-                self.func_raw)
-
 
     def __repr__(self):
         return '<{} object, function {}>'.format(self.__class__.__name__, self.func_raw)
@@ -220,8 +199,6 @@ class Machine(object):
         #machine = Machine(self.verbose)
         machine = MachineClassSource(self.verbose)
 
-        #args = (args[0].get_function_as_class_source(machine), *args[1:])
-
         f = types.FunctionType(a.code(), self.__globals, args[1])
 
         args = (f, *args[1:])
@@ -230,12 +207,44 @@ class Machine(object):
                  
         return callable_(*args)
 
+    def call_function(self, i):
+        callable_ = self.__stack[-1-i.arg]
+        
+        args = tuple(self.__stack[len(self.__stack) - i.arg:])
+    
+        if isinstance(callable_, types.CodeType):
+            _c = callable_
+            e = Machine(self.verbose)
+            
+            l = dict((name, arg) for name, arg in zip(
+                _c.co_varnames[:_c.co_argcount], args))
+            
+            ret = e.exec(_c, self.__globals, l)
+        elif isinstance(callable_, FunctionType):
+            _c = callable_.get_code()
+            e = Machine(self.verbose)
+            
+            e._locals = dict((name, arg) for name, arg in zip(
+                _c.co_varnames[:_c.co_argcount], args))
+            l = dict((name, arg) for name, arg in zip(
+                _c.co_varnames[:_c.co_argcount], args))
+            
+            ret = e.exec(_c, self.__globals, l)
+        elif (callable_ is builtins.__build_class__) and isinstance(args[0], FunctionType):
+            ret = self.build_class(callable_, args)
+        else:
+            self.signal['CALL_FUNCTION'].emmit(callable_, *args)
+
+            ret = callable_(*args)
+        
+        self.pop(1 + i.arg)
+        self.__stack.append(ret)
     
     def exec_instructions(self, c):
 
         if self.verbose > 0:
             logger.debug('------------- begin exec')
-            logger.debug('  locals =', self._locals.keys())
+            logger.debug('  locals={}'.format(self._locals.keys()))
         
         inst = dis.Bytecode(c)
         
@@ -372,37 +381,7 @@ class Machine(object):
 
             elif i.opcode == 131:
                 # CALL_FUNCTION
-                callable_ = self.__stack[-1-i.arg]
-                
-                args = tuple(self.__stack[len(self.__stack) - i.arg:])
-    
-                if isinstance(callable_, types.CodeType):
-                    _c = callable_
-                    e = Machine(self.verbose)
-                    
-                    l = dict((name, arg) for name, arg in zip(
-                        _c.co_varnames[:_c.co_argcount], args))
-                    
-                    ret = e.exec(_c, self.__globals, l)
-                elif isinstance(callable_, FunctionType):
-                    _c = callable_.get_code()
-                    e = Machine(self.verbose)
-                    
-                    e._locals = dict((name, arg) for name, arg in zip(
-                        _c.co_varnames[:_c.co_argcount], args))
-                    l = dict((name, arg) for name, arg in zip(
-                        _c.co_varnames[:_c.co_argcount], args))
-                    
-                    ret = e.exec(_c, self.__globals, l)
-                elif (callable_ is builtins.__build_class__) and isinstance(args[0], FunctionType):
-                    ret = self.build_class(callable_, args)
-                else:
-                    self.signal['CALL_FUNCTION'].emmit(callable_, *args)
-
-                    ret = callable_(*args)
-                
-                self.pop(1 + i.arg)
-                self.__stack.append(ret)
+                self.call_function(i)
 
             elif i.opcode == 132:
                 # MAKE_FUNCTION
@@ -410,6 +389,7 @@ class Machine(object):
                     raise RuntimeError('not yet supported')
                 
                 #logger.debug(i.opname, i.opcode, i.arg, dis.stack_effect(i.opcode, i.arg))
+                
                 n = dis.stack_effect(i.opcode, i.arg)
                 args = self.pop(-n)
 
@@ -418,8 +398,8 @@ class Machine(object):
                 self.__stack.append(f)
 
                 logger.debug('MAKE_FUNCTION')
-                logger.debug('throwing away:', args)
-                logger.debug('f.__qualname__:', f.func_raw.__qualname__)
+                logger.debug('throwing away: {}'.format(args[1:]))
+                logger.debug('f.__qualname__: {}'.format(f.func_raw.__qualname__))
 
             elif i.opcode == 133:
                 # BUILD_SLICE
@@ -435,7 +415,7 @@ class Machine(object):
                 raise RuntimeError('unhandled opcode',i.opcode,i.opname,i.arg,self.__stack)
     
             if self.verbose > 0:
-                logger.debug('%20s' % i.opname, self.__stack)
+                logger.debug('{:20} {}'.format(i.opname, [str(s)[:16] for s in self.__stack]))
     
         if self.verbose > 0:logger.debug('------------- return')
         return return_value
@@ -443,7 +423,7 @@ class Machine(object):
 class MachineClassSource(Machine):
     def store_name(self, name, val):
         Machine.store_name(self, name, val)
-        logger.debug(self.__class__.__name__, 'store_name', name, val)
+        logger.debug('{} {} {} {}'.format(self.__class__.__name__, 'store_name', name, val))
 
 def inst_to_bytes(inst):
     if inst.opname in (
@@ -559,7 +539,7 @@ class Assembler(object):
     def code(self):
 
         b = b''.join(inst_to_bytes(i) for i in self.insts)
-        logger.debug('bytes',b)
+        logger.debug('bytes={}'.format(b))
 
         c = types.CodeType(
                 0,
