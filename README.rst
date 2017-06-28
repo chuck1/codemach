@@ -10,6 +10,14 @@ Install
 
     pip3 install codemach
 
+Test
+----
+::
+    git clone git@github.com:chuck1/codemach
+    cd codemach
+    pipenv install
+    pytest
+
 Example
 -------
 
