@@ -67,7 +67,7 @@ class FunctionCall(object):
 
 def function_wrapper(machine, f):
     def wrapper(*args):
-        print('wrapper\n{} {}\ncalled with {}'.format(f, machine, args))
+        logger.debug('wrapper\n{} {}\ncalled with {}'.format(f, machine, args))
 
         return machine.exec(f.__code__, f.__globals__)
         #return f(*args)
@@ -76,13 +76,13 @@ def function_wrapper(machine, f):
 
 def function_wrapper_class_source(machine, f):
     def wrapper(*args):
-        print('wrapper\n{} {}\ncalled with {}'.format(f, machine, args))
+        logger.debug('wrapper\n{} {}\ncalled with {}'.format(f, machine, args))
 
         res = machine.exec(f.__code__, f.__globals__)
 
-        print('globals after running class source')
+        logger.debug('globals after running class source')
         for k, v in f.__globals__.items():
-            print('  {}'.format(k))
+            logger.debug('  {}'.format(k))
 
         return res
         #return f(*args)
@@ -100,8 +100,8 @@ class FunctionType(object):
         """
         return the code object to be used by Machine
         """
-        print('closures')
-        print(self.function.__closure__)
+        logger.debug('closures')
+        logger.debug(self.function.__closure__)
         return self.function.__closure__[0].cell_contents.__code__
 
     def get_function(self, machine):
@@ -138,7 +138,6 @@ class SignalThing(object):
 
     def unsubscribe(self, thing):
         del self.__watch[thing]
-   
 
 class Machine(object):
     def __init__(self, verbose=0):
@@ -190,7 +189,7 @@ class Machine(object):
             return getattr(b, name)
 
     def store_name(self, name, val):
-        print('%20s' % 'STORE_NAME', val, '->', name)
+        logging.debug('{:20} {} -> {}'.format('STORE_NAME', val, name))
         self._locals[name] = val
         #self.__globals[name] = val
 
@@ -200,12 +199,12 @@ class Machine(object):
         return poped
         
     def build_class(self, callable_, args):
-        print('build class', args)
+        logger.debug('build class {}'.format(args))
     
         machine = Machine(self.verbose)
         l = dict()
         machine.exec(args[0].get_code(), self.__globals, l)
-        print('l=', l)
+        logger.debug('l={}'.format(l))
 
         # construct code for class source
         a = Assembler()
@@ -232,8 +231,8 @@ class Machine(object):
     def exec_instructions(self, c):
 
         if self.verbose > 0:
-            print('------------- begin exec')
-            print('  locals =', self._locals.keys())
+            logger.debug('------------- begin exec')
+            logger.debug('  locals =', self._locals.keys())
         
         inst = dis.Bytecode(c)
         
@@ -244,7 +243,7 @@ class Machine(object):
             if return_value_set:
                 raise RuntimeError('RETURN_VALUE is not last opcode')
     
-            #print('se',dis.stack_effect(i.opcode, i.arg))
+            #logger.debug('se',dis.stack_effect(i.opcode, i.arg))
             if i.opcode == 1:
                 self.__stack.pop()
 
@@ -407,7 +406,7 @@ class Machine(object):
                 if i.arg != 0:
                     raise RuntimeError('not yet supported')
                 
-                #print(i.opname, i.opcode, i.arg, dis.stack_effect(i.opcode, i.arg))
+                #logger.debug(i.opname, i.opcode, i.arg, dis.stack_effect(i.opcode, i.arg))
                 n = dis.stack_effect(i.opcode, i.arg)
                 args = self.pop(-n)
 
@@ -415,9 +414,9 @@ class Machine(object):
                 f = FunctionType(Machine(self.verbose), code, self.__globals, args[0])
                 self.__stack.append(f)
 
-                print('MAKE_FUNCTION')
-                print('throwing away:', args)
-                print('f.__qualname__:', f.func_raw.__qualname__)
+                logger.debug('MAKE_FUNCTION')
+                logger.debug('throwing away:', args)
+                logger.debug('f.__qualname__:', f.func_raw.__qualname__)
 
             elif i.opcode == 133:
                 # BUILD_SLICE
@@ -433,15 +432,15 @@ class Machine(object):
                 raise RuntimeError('unhandled opcode',i.opcode,i.opname,i.arg,self.__stack)
     
             if self.verbose > 0:
-                print('%20s' % i.opname, self.__stack)
+                logger.debug('%20s' % i.opname, self.__stack)
     
-        if self.verbose > 0:print('------------- return')
+        if self.verbose > 0:logger.debug('------------- return')
         return return_value
         
 class MachineClassSource(Machine):
     def store_name(self, name, val):
         Machine.store_name(self, name, val)
-        print(self.__class__.__name__, 'store_name', name, val)
+        logger.debug(self.__class__.__name__, 'store_name', name, val)
 
 def inst_to_bytes(inst):
     if inst.opname in (
@@ -557,7 +556,7 @@ class Assembler(object):
     def code(self):
 
         b = b''.join(inst_to_bytes(i) for i in self.insts)
-        print('bytes',b)
+        logger.debug('bytes',b)
 
         c = types.CodeType(
                 0,
@@ -578,22 +577,5 @@ class Assembler(object):
 
 
  
-def test1():
- 
-    asm = Assembler()
-    
-    asm.load_const(2)
-    asm.load_const(3)
-    asm.binary_add()
-    asm.return_value()
-    
-    print_asm(insts.insts)
-    
-    c = asm.code()
-    
-    print(c)
-    
-    print('eval')
-    print(eval(c))
-    
+   
 
