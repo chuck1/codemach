@@ -3,4 +3,3 @@ dist/
 *.egg-info
 *.pyc
 .cache/
-requirements.txt
