@@ -5,6 +5,9 @@ import dis
 import types
 import operator
 import builtins
+import logging
+
+logger = logging.getLogger(__name__)
 
 """
 CodeMach
