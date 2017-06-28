@@ -6,8 +6,10 @@ import types
 import operator
 import builtins
 import logging
+import logging.config
 
 logger = logging.getLogger(__name__)
+logger.propagate=False
 
 """
 CodeMach
