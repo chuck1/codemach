@@ -2,12 +2,7 @@
 next
 ----
 
--
-
-0.3b1
------
-
-- Fix issue with requiring pytool (old name of pkgtool)
+- Work on pkgtool amd development workflow
 
 older
 -----
