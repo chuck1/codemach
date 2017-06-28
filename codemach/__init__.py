@@ -1,4 +1,4 @@
-__version__ = '0.3b6'
+__version__ = '0.3b7'
 
 import sys
 import dis
