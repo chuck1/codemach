@@ -1,4 +1,4 @@
-pkgtool==0.1b23
+pkgtool==0.1b38
 py==1.4.34
 pytest==3.1.2
 termcolor==1.1.0
