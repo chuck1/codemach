@@ -10,7 +10,7 @@ Welcome to codemach's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+   module/index.rst
 
 Indices and tables
 ==================

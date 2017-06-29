@@ -1,0 +1,6 @@
+codemach
+========
+
+.. automodule::
+   :members:
+

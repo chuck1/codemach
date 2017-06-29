@@ -1,16 +1,12 @@
+Changes
+=======
 
 next
 ----
 
-- Work on pkgtool and development workflow
+0.3
+---
 
-older
------
-
-Unfortunately, details of changes of previous version was not recorded.
-Here is a list of features:
-
-- Execute python code objects as a replacement for eval or exec
-- Allow user to monitor code execution from a level below the code itself.
-  This method is non-invasive and impossible to bypass.
+- Execute python code objects.
+- Use signals to monitor imports and function calls.
 
