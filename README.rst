@@ -10,7 +10,7 @@ CodeMach
 
 Small module that executes python code objects.
 
-codemach.readthedocs.io
+https://codemach.readthedocs.io
 
 Install
 -------
