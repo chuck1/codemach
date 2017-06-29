@@ -21,7 +21,8 @@ The Machine class can execute python code objects
 and allow the user to intervene.
 
 .. include:: ../README.rst
-   start-line: 13
+   :start-line: 13
+   :end-line: -1
 
 Operations
 ----------

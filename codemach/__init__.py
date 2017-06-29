@@ -72,7 +72,7 @@ class FunctionType(object):
                 self.func_raw)
 
     def __repr__(self):
-        return '<{} object, function {}>'.format(self.__class__.__name__, self.func_raw)
+        return '<{} object, function={}>'.format(self.__class__.__module__+'.'+self.__class__.__name__, self.func_raw.__name__)
 
 class SignalThing(object):
     def __init__(self):
@@ -421,7 +421,7 @@ class Machine(object):
                 raise RuntimeError('unhandled opcode',i.opcode,i.opname,i.arg,self.__stack)
     
             if self.verbose:
-                print('{:20} {}'.format(i.opname, [repr(s) for s in self.__stack]))
+                print('{:20} {}'.format(i.opname, [(repr(s) if not str(hex(id(s))) in repr(s) else s.__class__) for s in self.__stack ]))
     
         if self.verbose:
             print('------------- return')

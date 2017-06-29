@@ -1,0 +1,20 @@
+    ------------- begin exec
+    LOAD_CONST           [<class 'code'>]
+    LOAD_CONST           [<class 'code'>, "'func'"]
+    MAKE_FUNCTION        ['<codemach.FunctionType object, function=func>']
+    STORE_NAME           []
+    LOAD_NAME            ['<codemach.FunctionType object, function=func>']
+    LOAD_CONST           ['<codemach.FunctionType object, function=func>', '2']
+    LOAD_CONST           ['<codemach.FunctionType object, function=func>', '2', '3']
+    ------------- begin exec
+    LOAD_FAST            ['2']
+    LOAD_FAST            ['2', '3']
+    BINARY_ADD           ['5']
+    RETURN_VALUE         []
+    ------------- return
+    CALL_FUNCTION        ['5']
+    POP_TOP              []
+    LOAD_CONST           ['None']
+    RETURN_VALUE         []
+    ------------- return
+
