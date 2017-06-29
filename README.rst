@@ -1,7 +1,7 @@
 
 CodeMach
 ========
-.. image:: https://travis-ci.org/chuck1/codemach.svg?branch=dev
+.. image:: https://travis-ci.org/chuck1/codemach.svg?branch=master
     :target: https://travis-ci.org/chuck1/codemach
 .. image:: https://codecov.io/gh/chuck1/codemach/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/chuck1/codemach
