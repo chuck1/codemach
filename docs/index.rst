@@ -12,6 +12,7 @@ codemach
 
    module/index.rst
    development.rst
+   changes.rst
 
 Small module that executes python code objects.
 
