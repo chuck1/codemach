@@ -11,27 +11,6 @@ Small module that executes python code objects.
 
 https://codemach.readthedocs.io
 
-Install
--------
-
-::
-
-    pip3 install codemach
-
-Test
-----
-
-::
-
-    git clone git@github.com:chuck1/codemach
-    cd codemach
-    pip3 install -r requirements.txt
-    pip3 install -e .
-    pytest
-
-Example
--------
-
-.. include:: docs/example.rst
+.. include:: docs/readme.rst
 
 

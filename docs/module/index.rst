@@ -1,5 +1,5 @@
-codemach
-========
+Reference
+=========
 
 .. automodule:: codemach
    :members:
