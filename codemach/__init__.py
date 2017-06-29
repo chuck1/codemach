@@ -191,7 +191,7 @@ class Machine(object):
         and then recreating the class source code using an :py:class:`Assembler`.
 
         .. note: We might be able to bypass the call to ``builtins.__build_class__``
-        entirely and manually construct a class object.
+           entirely and manually construct a class object.
         """
         logger.debug('build class {}'.format(args))
     

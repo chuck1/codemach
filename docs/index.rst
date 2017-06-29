@@ -11,9 +11,7 @@ Welcome to codemach's documentation!
    :caption: Contents:
 
    module/index.rst
-
-CodeMach
-========
+   development.rst
 
 This module was created to solve the security issues
 associated with execution of arbitrary code strings.
@@ -54,4 +52,5 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
 
