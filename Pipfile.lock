@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "614c923d490812a6b2eed635d1ab52bd56fb2ee57abe55adde0c410ff1304124"
+            "sha256": "d767d9cc67af5c4e2daff4da9cdc013131e336fad9b96f3d2ab805b8af59d321"
         },
         "requires": {},
         "sources": [
@@ -12,12 +12,8 @@
         ]
     },
     "default": {
-        "pkgtool": "==0.1b51"
-    },
-    "develop": {
-        "-e .": "*",
-        "coverage": {
-            "version": "==4.4.1"
+        "pkgtool": {
+            "version": "==0.1b52"
         },
         "py": {
             "version": "==1.4.34"
@@ -25,11 +21,83 @@
         "pytest": {
             "version": "==3.1.2"
         },
+        "setuptools": {
+            "version": "==36.0.1"
+        },
+        "termcolor": {
+            "version": "==1.1.0"
+        },
+        "toml": {
+            "version": "==0.9.2"
+        }
+    },
+    "develop": {
+        "-e .": "*",
+        "alabaster": {
+            "version": "==0.7.10"
+        },
+        "babel": {
+            "version": "==2.4.0"
+        },
+        "certifi": {
+            "version": "==2017.4.17"
+        },
+        "chardet": {
+            "version": "==3.0.4"
+        },
+        "coverage": {
+            "version": "==4.4.1"
+        },
+        "docutils": {
+            "version": "==0.13.1"
+        },
+        "idna": {
+            "version": "==2.5"
+        },
+        "imagesize": {
+            "version": "==0.7.1"
+        },
+        "jinja2": {
+            "version": "==2.9.6"
+        },
+        "markupsafe": {
+            "version": "==1.0"
+        },
+        "py": {
+            "version": "==1.4.34"
+        },
+        "pygments": {
+            "version": "==2.2.0"
+        },
+        "pytest": {
+            "version": "==3.1.2"
+        },
         "pytest-cov": {
             "version": "==2.5.1"
         },
+        "pytz": {
+            "version": "==2017.2"
+        },
+        "requests": {
+            "version": "==2.18.1"
+        },
         "setuptools": {
             "version": "==36.0.1"
+        },
+        "six": {
+            "version": "==1.10.0"
+        },
+        "snowballstemmer": {
+            "version": "==1.2.1"
+        },
+        "sphinx": {
+            "version": "==1.6.2"
+        },
+        "sphinxcontrib-websupport": {
+            "version": "==1.0.1"
+        },
+        "urllib3": {
+            "version": "==1.21.1"
         }
     }
 }
