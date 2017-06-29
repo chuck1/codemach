@@ -20,7 +20,8 @@ associated with execution of arbitrary code strings.
 The Machine class can execute python code objects
 and allow the user to intervene.
 
-.. include:: readme.rst
+.. include:: ../README.rst
+   start-line: 13
 
 Operations
 ----------
