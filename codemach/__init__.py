@@ -421,7 +421,7 @@ class Machine(object):
                 raise RuntimeError('unhandled opcode',i.opcode,i.opname,i.arg,self.__stack)
     
             if self.verbose:
-                print('{:20} {}'.format(i.opname, [str(s)[:16] for s in self.__stack]))
+                print('{:20} {}'.format(i.opname, [repr(s) for s in self.__stack]))
     
         if self.verbose:
             print('------------- return')
