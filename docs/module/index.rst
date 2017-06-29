@@ -1,6 +1,6 @@
 codemach
 ========
 
-.. automodule::
+.. automodule:: codemach
    :members:
 

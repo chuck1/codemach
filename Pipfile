@@ -2,9 +2,10 @@
 verify_ssl = true
 url = "https://pypi.python.org/simple"
 
-[packages]
-pkgtool = "==0.1b45"
-
 [dev-packages]
 "-e ." = "*"
 pytest-cov = "*"
+Sphinx = "*"
+
+[packages]
+pkgtool = "==0.1b52"
