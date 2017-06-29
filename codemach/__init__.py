@@ -71,6 +71,12 @@ class FunctionCall(object):
     pass
 
 def function_wrapper(machine, f):
+    """
+    Wrap a function so that when called, its code is executed by **machine**.
+
+    :param machine: a :py:class:`Machine` object
+    :param f: a python function object
+    """
     def wrapper(*args):
         logger.debug('wrapper {}'.format(f))
         logger.debug('called with {}'.format(args))
@@ -124,6 +130,11 @@ class SignalThing(object):
         del self.__watch[thing]
 
 class Machine(object):
+    """
+    Class that executes python code objects.
+    
+    :param verbose: verbosity level
+    """
     def __init__(self, verbose=0):
         self.__stack = []
         self.verbose = verbose
@@ -153,6 +164,22 @@ class Machine(object):
                 'BAD')[i]
 
     def exec(self, code, _globals=globals(), _locals=None):
+        """
+        Execute a code object
+        
+        The inputs and behavior of this function should match those of
+        eval_ and exec_.
+
+        .. _eval: https://docs.python.org/3/library/functions.html?highlight=eval#eval
+        .. _exec: https://docs.python.org/3/library/functions.html?highlight=exec#exec
+
+        .. note:: Need to figure out how the internals of this function must change for
+           ``eval`` or ``exec``.
+
+        :param code: a python code object
+        :param _globals: optional globals dictionary
+        :param _locals: optional locals dictionary
+        """
         if _locals is None:
             self._locals = _globals
         else:
@@ -163,6 +190,9 @@ class Machine(object):
         return self.exec_instructions(code)
 
     def load_name(self, name):
+        """
+        Implementation of the LOAD_NAME operation
+        """
         if name in self.__globals:
             return self.__globals[name]
         
@@ -173,16 +203,31 @@ class Machine(object):
             return getattr(b, name)
 
     def store_name(self, name, val):
+        """
+        Implementation of the STORE_NAME operation
+        """
         logging.debug('{:20} {} -> {}'.format('STORE_NAME', val, name))
         self._locals[name] = val
         #self.__globals[name] = val
 
     def pop(self, n):
+        """
+        Pop the **n** topmost items from the stack and return them as a ``list``.
+        """
         poped = self.__stack[len(self.__stack) - n:]
         del self.__stack[len(self.__stack) - n:]
         return poped
         
     def build_class(self, callable_, args):
+        """
+        Implement ``builtins.__build_class__``.
+        We must wrap all class member functions using :py:func:`function_wrapper`.
+        This requires using a :py:class:`Machine` to execute the class source code
+        and then recreating the class source code using an :py:class:`Assembler`.
+
+        .. note: We might be able to bypass the call to ``builtins.__build_class__``
+        entirely and manually construct a class object.
+        """
         logger.debug('build class {}'.format(args))
     
         machine = Machine(self.verbose)
@@ -210,6 +255,11 @@ class Machine(object):
         return callable_(*args)
 
     def call_function(self, i):
+        """
+        Implement the CALL_FUNCTION_ operation.
+
+        .. _CALL_FUNCTION: https://docs.python.org/3/library/dis.html#opcode-CALL_FUNCTION
+        """
         callable_ = self.__stack[-1-i.arg]
         
         args = tuple(self.__stack[len(self.__stack) - i.arg:])
