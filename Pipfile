@@ -7,3 +7,4 @@ pkgtool = "==0.1b45"
 
 [dev-packages]
 "-e ." = "*"
+pytest-cov = "*"

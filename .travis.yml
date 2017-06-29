@@ -14,8 +14,14 @@ python:
 
 install:
 - pip3 install codemach
+- pip install pytest-cov
+- pip install codecov
 
 script:
 - pytest --pyargs codemach
+- py.test --cov=./
+
+after_success:
+- codecov
 
 
