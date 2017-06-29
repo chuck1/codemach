@@ -18,6 +18,11 @@ associated with execution of arbitrary code strings.
 The Machine class can execute python code objects
 and allow the user to intervene.
 
+Examples
+--------
+
+.. include:: example.rst
+
 Handling class method code
 --------------------------
 

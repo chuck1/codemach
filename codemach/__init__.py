@@ -9,8 +9,7 @@ import logging
 import logging.config
 
 logger = logging.getLogger(__name__)
-logger.propagate=False
-
+logger.setLevel(logging.INFO)
 
 class Signal(object):
     def __init__(self):
@@ -98,10 +97,10 @@ class Machine(object):
     
     :param verbose: verbosity level
     """
-    def __init__(self, verbose=0):
+    def __init__(self, verbose=False):
         self.__stack = []
         self.verbose = verbose
-        
+
         self.signal = {
                 'IMPORT_NAME': Signal(),
                 'CALL_FUNCTION': SignalThing(),
@@ -193,12 +192,10 @@ class Machine(object):
         .. note: We might be able to bypass the call to ``builtins.__build_class__``
            entirely and manually construct a class object.
         """
-        logger.debug('build class {}'.format(args))
     
         machine = Machine(self.verbose)
         l = dict()
         machine.exec(args[0].get_code(), self.__globals, l)
-        logger.debug('l={}'.format(l))
 
         # construct code for class source
         a = Assembler()
@@ -259,9 +256,8 @@ class Machine(object):
     
     def exec_instructions(self, c):
 
-        if self.verbose > 0:
-            logger.debug('------------- begin exec')
-            logger.debug('  locals={}'.format(self._locals.keys()))
+        if self.verbose:
+            print('------------- begin exec')
         
         inst = dis.Bytecode(c)
         
@@ -272,7 +268,6 @@ class Machine(object):
             if return_value_set:
                 raise RuntimeError('RETURN_VALUE is not last opcode')
     
-            #logger.debug('se',dis.stack_effect(i.opcode, i.arg))
             if i.opcode == 1:
                 self.__stack.pop()
 
@@ -405,18 +400,12 @@ class Machine(object):
                 if i.arg != 0:
                     raise RuntimeError('not yet supported')
                 
-                #logger.debug(i.opname, i.opcode, i.arg, dis.stack_effect(i.opcode, i.arg))
-                
                 n = dis.stack_effect(i.opcode, i.arg)
                 args = self.pop(-n)
 
                 code = self.__stack.pop()
                 f = FunctionType(Machine(self.verbose), code, self.__globals, args[0])
                 self.__stack.append(f)
-
-                logger.debug('MAKE_FUNCTION')
-                logger.debug('throwing away: {}'.format(args[1:]))
-                logger.debug('f.__qualname__: {}'.format(f.func_raw.__qualname__))
 
             elif i.opcode == 133:
                 # BUILD_SLICE
@@ -431,10 +420,11 @@ class Machine(object):
             else:
                 raise RuntimeError('unhandled opcode',i.opcode,i.opname,i.arg,self.__stack)
     
-            if self.verbose > 0:
-                logger.debug('{:20} {}'.format(i.opname, [str(s)[:16] for s in self.__stack]))
+            if self.verbose:
+                print('{:20} {}'.format(i.opname, [str(s)[:16] for s in self.__stack]))
     
-        if self.verbose > 0:logger.debug('------------- return')
+        if self.verbose:
+            print('------------- return')
         return return_value
         
 class MachineClassSource(Machine):
