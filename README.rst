@@ -10,12 +10,11 @@ CodeMach
 
 Small module that executes python code objects.
 
-codemach.readthedocs.io_
+codemach.readthedocs.io
 
 Install
 -------
 ::
-
     pip3 install codemach
 
 Test
