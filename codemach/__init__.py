@@ -11,43 +11,6 @@ import logging.config
 logger = logging.getLogger(__name__)
 logger.propagate=False
 
-"""
-CodeMach
-========
-
-This module was created to solve the security issues
-associated with execution of arbitrary code strings.
-The Machine class can execute python code objects
-and allow the user to intervene.
-
-Handling class method code
---------------------------
-
-The builtin function __build_class__ requires a function
-object containing the source code of the class.
-If we simple pass this function, it will not be executed
-by the machine, but rather by the default implementation.
-The solution is to pass a function wrapper the within the
-wrapper allow the Machine to execute the actual function
-and return the result.
-
-http://grokbase.com/t/python/python-list/033r5nks47/type-function-does-not-subtype#20030324rcnwbkfedhzbaf3vmiuer3z4xq
-
-Operations
-----------
-
-140 CALL_FUNCTION_VAR
-
-need more testing, but in one test, was used to call a function defined as
-::
-
-    def foo(*args):
-        pass
-
-where TOS1 is the function object and TOS is a tuple of arguments
-
-
-"""
 
 class Signal(object):
     def __init__(self):
@@ -163,7 +126,7 @@ class Machine(object):
                 'exception match', 
                 'BAD')[i]
 
-    def exec(self, code, _globals=globals(), _locals=None):
+    def exec(self, code, _globals=None, _locals=None):
         """
         Execute a code object
         
@@ -180,6 +143,8 @@ class Machine(object):
         :param _globals: optional globals dictionary
         :param _locals: optional locals dictionary
         """
+        if _globals is None:
+            _globals = globals()
         if _locals is None:
             self._locals = _globals
         else:
