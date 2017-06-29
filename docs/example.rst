@@ -1,20 +1,13 @@
-
-.. testsetup::
-
-    import sys
-    import logging
-    import codemach
-    logging.basicConfig(handlers=[logging.StreamHandler(stream=sys.stdout)])
-    
-
 .. testcode::
 
-    import logging
     from codemach import Machine
 
-    m = Machine(logging.INFO)
+    m = Machine(verbose=True)
     
-    s = """def func(a, b):\n  return a + b\nfunc(2, 3)"""
+    s = """
+    def func(a, b):
+        return a + b
+    func(2, 3)"""
 
     c = compile(s, '<string>', 'exec')
 
