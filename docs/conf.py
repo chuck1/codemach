@@ -158,8 +158,8 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
-
-
-
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/': None}
+
+html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'], }
+
