@@ -1,4 +1,4 @@
-CodeMach
+codemach
 ========
 .. image:: https://travis-ci.org/chuck1/codemach.svg?branch=master
     :target: https://travis-ci.org/chuck1/codemach
