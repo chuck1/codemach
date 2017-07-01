@@ -1,6 +1,1 @@
-pkgtool==0.1b53
-py==1.4.34
-pytest==3.1.2
-termcolor==1.1.0
-toml==0.9.2
 
