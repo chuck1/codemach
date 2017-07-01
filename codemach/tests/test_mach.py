@@ -3,8 +3,6 @@ import types
 import dis
 import codemach
 from codemach import Machine
-import logging.config
-
 
 def code_info(c):
     print('------------')
@@ -26,43 +24,8 @@ def _test(e, s, mode):
 
     return e.exec(c)
 
-def log_config():
-    logging.config.dictConfig({
-    'version': 1,
-    'disable_existing_loggers': True,
-    'handlers': {
-        'console':{
-            'level':'DEBUG',
-            'class':'logging.StreamHandler',
-            'formatter': 'basic'
-            },
-        },
-    'loggers':{
-        'codemach': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-            },
-        '__main__': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-            },
-        },
-    'formatters': {
-        "basic":{
-            "format":"%(asctime)s %(process)s %(module)10s %(funcName)16s %(levelname)7s %(message)s"
-            }
-        }
-    })
-
 def test_mach():
-    e = Machine()
-    e.verbose = logging.INFO
-    
-    codemach.logger.propagate = True
-
-    #log_config()
+    e = Machine(verbose=False)
     
     s = """def func(a, b):\n  c = 4\n  return a + b + c\nfunc(2, 3)"""
     _test(e, s, 'exec')
