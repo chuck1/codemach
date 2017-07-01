@@ -8,4 +8,4 @@ pytest-cov = "*"
 Sphinx = "*"
 
 [packages]
-pkgtool = "==0.1b52"
+pkgtool = "==0.1b53"
