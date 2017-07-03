@@ -1,0 +1,11 @@
+{
+    "name": "codemach",
+    "author_email": "charlesrymal@gmail.com",
+    "url": "http://github.com/chuck1/codemach",
+    "license": "MIT",
+    "author": "Charles Rymal",
+    "description": "very simple tool for executing python code objects",
+    "packages": [
+        "codemach"
+    ]
+}
