@@ -1,20 +1,14 @@
 language: python
 python:
-- "3.5"
-- "3.5-dev"
-
+- '3.5'
+- '3.5-dev'
 install:
-- pip3 install -r requirements_setup.txt
-- pip3 install -r requirements.txt
+- python3 -c "import json;l = json.loads(open('Pipfile.lock').read())['default'];print('\n'.join([k+v['version'] for k,v in l.items()]))" > requires
+- pip3 install -r requires
 - pip3 install -e .
 - pip install pytest-cov
 - pip install codecov
-
 script:
-- pytest
 - py.test --cov=./
-
 after_success:
 - codecov
-
-
