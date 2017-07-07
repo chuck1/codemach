@@ -1,3 +1,4 @@
+import io
 import sys
 import dis
 import types
@@ -54,7 +55,10 @@ class Machine(object):
         self.verbose = verbose
         
         self.__callbacks = callbacks
-    
+        
+        if not verbose:
+            self._output = io.StringIO()
+   
     def add_callback(self, opname, callable_):
         if not opname in self.__callbacks:
             self.__callbacks[opname] = async_patterns.Callbacks()
@@ -63,6 +67,12 @@ class Machine(object):
     def call_callbacks(self, opname, *args, **kwargs):
         if not opname in self.__callbacks: return
         self.__callbacks[opname](*args, **kwargs)
+
+    def _print(self, *args):
+        if self.verbose:
+            print(*args)
+        else:
+            print(*args, file=self._output)
 
     @staticmethod
     def cmp_op(i):
@@ -107,6 +117,7 @@ class Machine(object):
             self._locals = _locals
        
         self.__globals = globals_
+        
 
         return self.exec_instructions(code)
 
@@ -214,8 +225,7 @@ class Machine(object):
 
     def exec_instructions(self, c):
 
-        if self.verbose:
-            print('------------- begin exec')
+        self._print('------------- begin exec')
         
         inst = dis.Bytecode(c)
         
@@ -223,6 +233,7 @@ class Machine(object):
         
         ops = {
                 'BUILD_LIST': self.__build_list,
+                'CALL_FUNCTION': self.call_function,
                 }
 
         for i in inst:
@@ -231,8 +242,15 @@ class Machine(object):
                 raise RuntimeError('RETURN_VALUE is not last opcode')
     
             if i.opname in ops:
-                ops[i.opname](i)
-            
+                try:
+                    ops[i.opname](i)
+                except Exception as e:
+                    print('during machine exec {}: {}'.format(i.opname, e))
+                    if not self.verbose:
+                        print('printing output')
+                        print(self._output.getvalue())
+                    raise
+ 
             elif i.opcode == 1:
                 self.__stack.pop()
 
@@ -356,9 +374,6 @@ class Machine(object):
                 name = c.co_varnames[i.arg]
                 self._locals[name] = TOS
 
-            elif i.opcode == 131:
-                # CALL_FUNCTION
-                self.call_function(i)
 
             elif i.opcode == 132:
                 # MAKE_FUNCTION
@@ -385,11 +400,10 @@ class Machine(object):
             else:
                 raise RuntimeError('unhandled opcode',i.opcode,i.opname,i.arg,self.__stack)
     
-            if self.verbose:
-                print('{:20} {}'.format(i.opname, [(repr(s) if not str(hex(id(s))) in repr(s) else s.__class__) for s in self.__stack ]))
+            self._print('{:20} {}'.format(i.opname, [(repr(s) if not str(hex(id(s))) in repr(s) else s.__class__) for s in self.__stack ]))
     
-        if self.verbose:
-            print('------------- return')
+        self._print('------------- return')
+
         return return_value
         
 class MachineClassSource(Machine):
