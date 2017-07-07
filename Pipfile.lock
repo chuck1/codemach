@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "780111ce8496c1d8a8f0a90ed1bf684914200a88dc146b2d4f4ca9fd98c862a5"
+            "sha256": "0eb5fe8dc91f4a439bad94937fa0f0929a6205ea2f36d186840a4b3f29233424"
         },
         "requires": {},
         "sources": [
@@ -11,9 +11,14 @@
             }
         ]
     },
-    "default": {},
+    "default": {
+        "async-patterns": {
+            "version": "==0.3b4"
+        }
+    },
     "develop": {
         "-e .": "*",
+        "-e ../async-patterns": "*",
         "alabaster": {
             "version": "==0.7.10"
         },
