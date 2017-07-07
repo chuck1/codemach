@@ -4,12 +4,11 @@ import types
 import operator
 import builtins
 
-class CodeType(object):
-    def __init__(self, code):
-        self.code = code
+import async_patterns
 
-class FunctionCall(object):
-    pass
+from .assembler import *
+
+__all__ = ['Machine']
 
 def function_wrapper(machine, f):
     """
@@ -19,39 +18,30 @@ def function_wrapper(machine, f):
     :param f: a python function object
     """
     def wrapper(*args):
-        logger.debug('wrapper {}'.format(f))
-        logger.debug('called with {}'.format(args))
-
         return machine.exec(f.__code__, f.__globals__)
     
     return wrapper
 
 class FunctionType(object):
     def __init__(self, machine, code, globals_, name):
+        self._machine = machine
         self.func_raw = types.FunctionType(code, globals_, name)
         self.function = function_wrapper(
                 machine,
                 self.func_raw)
+        self.wrapped = self.function
 
     def get_code(self):
         """
         return the code object to be used by Machine
         """
-        logger.debug('closures')
-        logger.debug(self.function.__closure__)
         return self.function.__closure__[0].cell_contents.__code__
     
-    def function_wrapped(self, machine):
-        """
-        return the function object to be passed to builtin.__build_class__
-        """
-        #return self.function
-        return function_wrapper(
-                machine,
-                self.func_raw)
-
     def __repr__(self):
         return '<{} object, function={}>'.format(self.__class__.__module__+'.'+self.__class__.__name__, self.func_raw.__name__)
+
+    def __call__(self, *args, **kwargs):
+        return self.wrapped(*args, **kwargs)
 
 class Machine(object):
     """
@@ -59,15 +49,20 @@ class Machine(object):
     
     :param verbose: verbosity level
     """
-    def __init__(self, verbose=False):
+    def __init__(self, verbose=False, callbacks={}):
         self.__stack = []
         self.verbose = verbose
+        
+        self.__callbacks = callbacks
+    
+    def add_callback(self, opname, callable_):
+        if not opname in self.__callbacks:
+            self.__callbacks[opname] = async_patterns.Callbacks()
+        self.__callbacks[opname].add_callback(callable_)
 
-        self.signal = {
-                'IMPORT_NAME': Signal(),
-                'CALL_FUNCTION': SignalThing(),
-                'LOAD_ATTR': SignalThing(),
-                }
+    def call_callbacks(self, opname, *args, **kwargs):
+        if not opname in self.__callbacks: return
+        self.__callbacks[opname](*args, **kwargs)
 
     @staticmethod
     def cmp_op(i):
@@ -87,7 +82,7 @@ class Machine(object):
                 'exception match', 
                 'BAD')[i]
 
-    def exec(self, code, _globals=None, _locals=None):
+    def exec(self, code, globals_=None, _locals=None):
         """
         Execute a code object
         
@@ -101,17 +96,17 @@ class Machine(object):
            ``eval`` or ``exec``.
 
         :param code: a python code object
-        :param _globals: optional globals dictionary
+        :param globals_: optional globals dictionary
         :param _locals: optional locals dictionary
         """
-        if _globals is None:
-            _globals = globals()
+        if globals_ is None:
+            globals_ = globals()
         if _locals is None:
-            self._locals = _globals
+            self._locals = globals_
         else:
             self._locals = _locals
        
-        self.__globals = _globals
+        self.__globals = globals_
 
         return self.exec_instructions(code)
 
@@ -132,7 +127,6 @@ class Machine(object):
         """
         Implementation of the STORE_NAME operation
         """
-        logging.debug('{:20} {} -> {}'.format('STORE_NAME', val, name))
         self._locals[name] = val
         #self.__globals[name] = val
 
@@ -174,7 +168,7 @@ class Machine(object):
 
         args = (f, *args[1:])
 
-        self.signal['CALL_FUNCTION'].emmit(callable_, *args)
+        self.call_callbacks('CALL_FUNCTION', callable_, *args)
                  
         return callable_(*args)
 
@@ -187,7 +181,9 @@ class Machine(object):
         callable_ = self.__stack[-1-i.arg]
         
         args = tuple(self.__stack[len(self.__stack) - i.arg:])
-    
+ 
+        self.call_callbacks('CALL_FUNCTION', callable_, *args)
+   
         if isinstance(callable_, types.CodeType):
             _c = callable_
             e = Machine(self.verbose)
@@ -195,27 +191,27 @@ class Machine(object):
             l = dict((name, arg) for name, arg in zip(
                 _c.co_varnames[:_c.co_argcount], args))
             
-            ret = e.exec(_c, self.__globals, l)
+            ret = e.exec(c, self.__globals, l)
         elif isinstance(callable_, FunctionType):
-            _c = callable_.get_code()
-            e = Machine(self.verbose)
+            c = callable_.get_code()
+            m = callable_._machine
             
-            e._locals = dict((name, arg) for name, arg in zip(
-                _c.co_varnames[:_c.co_argcount], args))
-            l = dict((name, arg) for name, arg in zip(
-                _c.co_varnames[:_c.co_argcount], args))
+            l = dict((name, arg) for name, arg in zip(c.co_varnames[:c.co_argcount], args))
             
-            ret = e.exec(_c, self.__globals, l)
+            ret = m.exec(c, self.__globals, l)
+
         elif (callable_ is builtins.__build_class__) and isinstance(args[0], FunctionType):
             ret = self.build_class(callable_, args)
-        else:
-            self.signal['CALL_FUNCTION'].emmit(callable_, *args)
 
+        else:
             ret = callable_(*args)
         
         self.pop(1 + i.arg)
         self.__stack.append(ret)
     
+    def __build_list(self, i):
+        self.__stack.append(list(self.pop(i.arg)))
+
     def exec_instructions(self, c):
 
         if self.verbose:
@@ -224,13 +220,20 @@ class Machine(object):
         inst = dis.Bytecode(c)
         
         return_value_set = False
-    
-        for i in inst:
+        
+        ops = {
+                'BUILD_LIST': self.__build_list,
+                }
 
+        for i in inst:
+            
             if return_value_set:
                 raise RuntimeError('RETURN_VALUE is not last opcode')
     
-            if i.opcode == 1:
+            if i.opname in ops:
+                ops[i.opname](i)
+            
+            elif i.opcode == 1:
                 self.__stack.pop()
 
             elif i.opcode == 10:
@@ -312,13 +315,13 @@ class Machine(object):
             elif i.opcode == 102:
                 # BUILD_TUPLE
                 self.__stack.append(tuple(self.pop(i.arg)))
-
+            
             elif i.opcode == 106:
                 # LOAD_ATTR
                 name = c.co_names[i.arg]
                 o = self.__stack.pop()
                 
-                self.signal['LOAD_ATTR'].emmit(o, name)
+                self.call_callbacks('LOAD_ATTR', o, name)
 
                 self.__stack.append(getattr(o, name))
             
@@ -333,7 +336,7 @@ class Machine(object):
                 TOS = self.__stack.pop()
                 TOS1 = self.__stack.pop()
 
-                self.signal['IMPORT_NAME'].emmit(c.co_names[i.arg], TOS, TOS1)
+                self.call_callbacks('IMPORT_NAME', c.co_names[i.arg], TOS, TOS1)
 
                 self.__stack.append(__import__(c.co_names[i.arg], fromlist=TOS, level=TOS1))
 
@@ -392,6 +395,5 @@ class Machine(object):
 class MachineClassSource(Machine):
     def store_name(self, name, val):
         Machine.store_name(self, name, val)
-        logger.debug('{} {} {} {}'.format(self.__class__.__name__, 'store_name', name, val))
 
 

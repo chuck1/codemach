@@ -4,6 +4,8 @@ import types
 import operator
 import builtins
 
+__all__ = ['Assembler']
+
 def inst_to_bytes(inst):
     if inst.opname in (
             'LOAD_CONST',
@@ -118,7 +120,6 @@ class Assembler(object):
     def code(self):
 
         b = b''.join(inst_to_bytes(i) for i in self.insts)
-        logger.debug('bytes={}'.format(b))
 
         c = types.CodeType(
                 0,

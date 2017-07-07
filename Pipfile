@@ -2,10 +2,8 @@
 verify_ssl = true
 url = "https://pypi.python.org/simple"
 
-[packages]
-
 [dev-packages]
 "-e ." = "*"
 pytest-cov = "*"
 Sphinx = "*"
-
+"-e ../async-patterns" = "*"
