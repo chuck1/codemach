@@ -17,8 +17,15 @@ def test2():
  
     asm = Assembler()
     
-    asm.load_name('list')
+    def func(*args): return args
+
+    asm.load_name('func')
+    asm.load_const(0)
+    asm.load_const(1)
+    asm.call_function(2)
+    asm.return_value()
     
     c = asm.code()
-    
+
+    assert eval(c) == (0, 1)
 
