@@ -11,6 +11,7 @@ def inst_to_bytes(inst):
             'LOAD_CONST',
             'LOAD_NAME',
             'STORE_NAME',
+            'CALL_FUNCTION',
             ):
         return bytes([
             inst.opcode,
@@ -114,6 +115,21 @@ class Assembler(object):
                 False)
         
         self.offset += 1
+        
+        self.insts.append(inst)
+
+    def call_function(self, argc):
+        inst = dis.Instruction(
+                'CALL_FUNCTION',
+                dis.opname.index('CALL_FUNCTION'),
+                argc,
+                argc,
+                repr(argc),
+                self.offset,
+                None,
+                False)
+        
+        self.offset += 3
         
         self.insts.append(inst)
 

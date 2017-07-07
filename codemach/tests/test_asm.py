@@ -9,12 +9,16 @@ def test1():
     asm.binary_add()
     asm.return_value()
     
-    #print_asm(insts.insts)
+    c = asm.code()
+    
+    assert eval(c) == 5
+
+def test2():
+ 
+    asm = Assembler()
+    
+    asm.load_name('list')
     
     c = asm.code()
     
-    print(c)
-    
-    print('eval')
-    print(eval(c))
- 
+
