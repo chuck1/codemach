@@ -8,4 +8,3 @@ pytest-cov = "*"
 Sphinx = "*"
 [packages]
 async_patterns = "==0.3b5"
-async-patterns = "==0.3b4"
