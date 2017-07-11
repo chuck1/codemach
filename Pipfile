@@ -1,12 +1,11 @@
 [[source]]
 verify_ssl = true
 url = "https://pypi.python.org/simple"
-
 [packages]
+async_patterns = "==0.3b7"
 async-patterns = "==0.3b6"
-
 [dev-packages]
-"-e ." = "*"
-"-e ../async-patterns" = "*"
 pytest-cov = "*"
 Sphinx = "*"
+"-e ." = "*"
+"-e ../async-patterns" = "*"
