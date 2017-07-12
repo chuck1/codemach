@@ -6,10 +6,18 @@ from codemach import Machine
 
 def code_info(c):
     print('------------')
-    print('argcount ',c.co_argcount)
-    print('consts   ',c.co_consts)
-    print('names    ',c.co_names)
-    print('varnames ',c.co_varnames)
+    print('argcount         ',c.co_argcount)
+    print('consts           ',c.co_consts)
+    print('names            ',c.co_names)
+    print('varnames         ',c.co_varnames)
+    print('co_cellvars      ', c.co_cellvars)
+    print('co_flags         ', c.co_flags)
+    print('co_freevars      ', c.co_freevars)
+    print('co_kwonlyargcount', c.co_kwonlyargcount)
+    print('co_lnotab        ', c.co_lnotab)
+    print('co_name          ', c.co_name)
+    print('co_nlocals       ', c.co_nlocals)
+    print('co_stacksize     ', c.co_stacksize)
     dis.dis(c)
     print('------------')
     for const in c.co_consts:
@@ -52,11 +60,6 @@ def test_mach():
     s = """x=1\ny=1\nx-y\nx/y\nx//y\nx%y\nx**y\n-x\n+x"""
     _test(e, s, 'exec')
 
-    s = """class Foo(object):\n  a = 1\nfoo = Foo()"""
-    _test(e, s, 'exec')
-    
-    s = """class Foo(object):\n  def func(self):\n    return 0\nfoo = Foo()\nfoo.func()"""
-    _test(e, s, 'exec')
 
     s = "a=[0];b=a[0]"
     _test(e, s, 'exec')
@@ -121,6 +124,40 @@ for a in [0, 1]:
 """
     _test(None, s, "exec")
 
+def test_func_args():
+    s = """
+def func(*args):
+    return args
+assert func(1, 2) == (1, 2)
+"""
+    _test(None, s, "exec")
+
+def test_class1():
+    s = """
+class Foo(object):
+    a = 1
+foo = Foo()
+"""
+    _test(None, s, 'exec')
+
+def test_class2():
+    s = """
+class Foo(object):
+    def func(self):
+        return 0
+foo = Foo()
+assert foo.func() == 0
+"""
+    _test(None, s, 'exec')
+
+def test_unpack():
+    s = """
+a, b, c = (1, 2, 3)
+assert a == 1
+assert b == 2
+assert c == 3
+"""
+    _test(None, s, 'exec')
 
 
 
