@@ -12,17 +12,38 @@ from .assembler import *
 
 __all__ = ['Machine']
 
-def function_wrapper(machine, f):
+def function_wrapper(m, f):
     """
     Wrap a function so that when called, its code is executed by **machine**.
 
     :param machine: a :py:class:`Machine` object
     :param f: a python function object
     """
-    def wrapper(*args):
-        return machine.exec(f.__code__, f.__globals__)
+    def wrapped(*args):
+        c = f.__code__
+
+        l = {}
+
+        varnames = list(c.co_varnames)
+        
+        m._print('wrapped')
+        m._print(f)
+        m._print(args)
+        #self._print('callable = {}'.format(callable_))
+        #self._print('closure  = {}'.format(callable_.function.__closure__))
+        #self._print('args     = {}'.format(args))
+        #self._print('varnames = {}'.format(varnames))
+
+        args = list(args)
+        for _ in range(c.co_argcount):
+            l[varnames.pop(0)] = args.pop(0)
+        
+        if varnames:
+            l[varnames.pop(0)] = tuple(args)
+
+        return m.exec(f.__code__, f.__globals__, l)
     
-    return wrapper
+    return wrapped
 
 class FunctionType(object):
     def __init__(self, machine, code, globals_, name):
@@ -42,8 +63,8 @@ class FunctionType(object):
     def __repr__(self):
         return '<{} object, function={}>'.format(self.__class__.__module__+'.'+self.__class__.__name__, self.func_raw.__name__)
 
-    def __call__(self, *args, **kwargs):
-        return self.wrapped(*args, **kwargs)
+    def __call__(self, args):
+        return self.wrapped(args)
 
 class InstructionIterator:
     def __init__(self, inst):
@@ -183,10 +204,18 @@ class Machine(object):
         .. note: We might be able to bypass the call to ``builtins.__build_class__``
            entirely and manually construct a class object.
         """
-    
+        self._print('build_class')
+        self._print(callable_)
+        self._print('args=',args)
+        
+        if isinstance(args[0], FunctionType):
+            c = args[0].get_code()
+        else:
+            c = args[0].__closure__[0].cell_contents.__code__
+
         machine = Machine(self.verbose)
         l = dict()
-        machine.exec(args[0].get_code(), self.__globals, l)
+        machine.exec(c, self.__globals, l)
 
         # construct code for class source
         a = Assembler()
@@ -196,8 +225,7 @@ class Machine(object):
         a.load_const(None)
         a.return_value()
        
-        #machine = Machine(self.verbose)
-        machine = MachineClassSource(self.verbose)
+        machine = Machine(self.verbose)
 
         f = types.FunctionType(a.code(), self.__globals, args[1])
 
@@ -228,14 +256,35 @@ class Machine(object):
             
             ret = e.exec(c, self.__globals, l)
         elif isinstance(callable_, FunctionType):
-            c = callable_.get_code()
-            m = callable_._machine
             
-            l = dict((name, arg) for name, arg in zip(c.co_varnames[:c.co_argcount], args))
-            
-            ret = m.exec(c, self.__globals, l)
+            if False:
+                c = callable_.get_code()
+                m = callable_._machine
+                
+                # construct locals
+                l = {}
+                varnames = list(c.co_varnames)
+                
+                self._print('callable = {}'.format(callable_))
+                self._print('closure  = {}'.format(callable_.function.__closure__))
+                self._print('args     = {}'.format(args))
+                self._print('varnames = {}'.format(varnames))
+    
+                args = list(args)
+                for _ in range(c.co_argcount):
+                    l[varnames.pop(0)] = args.pop(0)
+                
+                if varnames:
+                    l[varnames.pop(0)] = tuple(args)
+    
+                ret = m.exec(c, self.__globals, l)
+            else:
+                ret = callable_(args)
 
         elif (callable_ is builtins.__build_class__) and isinstance(args[0], FunctionType):
+            ret = self.build_class(callable_, args)
+        
+        elif callable_ is builtins.__build_class__:
             ret = self.build_class(callable_, args)
 
         else:
@@ -268,6 +317,20 @@ class Machine(object):
     def __inst_pop_block(self, i):
         self.__blocks.pop()
 
+    def __inst_pop_jump_if_true(self, i):
+        if self.__stack.pop():
+            self._ii.jump(i.arg)
+
+    def __inst_unpack_sequence(self, i):
+        TOS = self.__stack.pop()
+        for el in reversed(TOS):
+            self.__stack.append(el)
+
+    def __inst_raise_varargs(self, i):
+        cls = self.__stack.pop()
+        args = self.pop(i.arg-1)
+        raise cls(*args)
+
     def exec_instructions(self, c):
 
         self._print('------------- begin exec')
@@ -289,6 +352,9 @@ class Machine(object):
                 'FOR_ITER': self.__inst_for_iter,
                 'JUMP_ABSOLUTE': self.__inst_jump_absolute,
                 'POP_BLOCK': self.__inst_pop_block,
+                'POP_JUMP_IF_TRUE': self.__inst_pop_jump_if_true,
+                'UNPACK_SEQUENCE': self.__inst_unpack_sequence,
+                'RAISE_VARARGS': self.__inst_raise_varargs,
                 }
         
         #for i in inst:
@@ -442,7 +508,12 @@ class Machine(object):
                 args = self.pop(-n)
 
                 code = self.__stack.pop()
+                
                 f = FunctionType(Machine(self.verbose), code, self.__globals, args[0])
+                
+                # experimenting
+                f = f.wrapped
+
                 self.__stack.append(f)
 
             elif i.opcode == 133:
@@ -464,8 +535,4 @@ class Machine(object):
 
         return return_value
         
-class MachineClassSource(Machine):
-    def store_name(self, name, val):
-        Machine.store_name(self, name, val)
-
 
