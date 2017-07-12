@@ -1,8 +1,5 @@
-import sys
 import dis
 import types
-import operator
-import builtins
 
 __all__ = ['Assembler']
 
@@ -34,12 +31,12 @@ class Assembler(object):
         self.varnames = list()
 
     def get_const_arg(self, v):
-        if not v in self.consts:
+        if v not in self.consts:
             self.consts.append(v)
         return self.consts.index(v)
 
     def get_name_arg(self, v):
-        if not v in self.names:
+        if v not in self.names:
             self.names.append(v)
         return self.names.index(v)
 

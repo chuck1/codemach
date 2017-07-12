@@ -105,12 +105,12 @@ class Machine(object):
             self._output = io.StringIO()
    
     def add_callback(self, opname, callable_):
-        if not opname in self.__callbacks:
+        if opname not in self.__callbacks:
             self.__callbacks[opname] = async_patterns.Callbacks()
         self.__callbacks[opname].add_callback(callable_)
 
     def call_callbacks(self, opname, *args, **kwargs):
-        if not opname in self.__callbacks: return
+        if opname not in self.__callbacks: return
         self.__callbacks[opname](*args, **kwargs)
 
     def _print(self, *args):
