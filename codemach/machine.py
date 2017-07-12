@@ -4,6 +4,7 @@ import dis
 import types
 import operator
 import builtins
+import pprint
 
 import async_patterns
 
@@ -44,6 +45,27 @@ class FunctionType(object):
     def __call__(self, *args, **kwargs):
         return self.wrapped(*args, **kwargs)
 
+class InstructionIterator:
+    def __init__(self, inst):
+        self._inst = list(inst)
+
+        self._tab = dict((i.offset, (i, a)) for i, a in zip(self._inst, range(len(self._inst))))
+    
+    def __iter__(self):
+        self._iter = iter(self._inst)
+        return self
+
+    def __next__(self):
+        return next(self._iter)
+
+    def jump(self, offset):
+        i, a = self._tab[offset]
+
+        self._iter = iter(self._inst)
+
+        for _ in range(a):
+            next(self._iter)
+
 class Machine(object):
     """
     Class that executes python code objects.
@@ -52,6 +74,8 @@ class Machine(object):
     """
     def __init__(self, verbose=False, callbacks={}):
         self.__stack = []
+        self.__blocks = []
+
         self.verbose = verbose
         
         self.__callbacks = callbacks
@@ -223,6 +247,27 @@ class Machine(object):
     def __build_list(self, i):
         self.__stack.append(list(self.pop(i.arg)))
 
+    def __inst_setup_loop(self, i):
+        self.__blocks.append(i.arg)
+    
+    def __inst_get_iter(self, i):
+        self.__stack.append(iter(self.__stack.pop()))
+
+    def __inst_for_iter(self, i):
+        TOS = self.__stack[-1]
+        
+        try:
+            self.__stack.append(TOS.__next__())
+        except StopIteration:
+            self.__stack.pop()
+            self._ii.jump(i.arg + i.offset + 3)
+
+    def __inst_jump_absolute(self, i):
+        self._ii.jump(i.arg)
+
+    def __inst_pop_block(self, i):
+        self.__blocks.pop()
+
     def exec_instructions(self, c):
 
         self._print('------------- begin exec')
@@ -231,19 +276,32 @@ class Machine(object):
         
         return_value_set = False
         
+        self._ii = InstructionIterator(inst)
+
+        if self.verbose:
+            pprint.pprint(self._ii._tab)
+
         ops = {
                 'BUILD_LIST': self.__build_list,
                 'CALL_FUNCTION': self.call_function,
+                'SETUP_LOOP': self.__inst_setup_loop,
+                'GET_ITER': self.__inst_get_iter,
+                'FOR_ITER': self.__inst_for_iter,
+                'JUMP_ABSOLUTE': self.__inst_jump_absolute,
+                'POP_BLOCK': self.__inst_pop_block,
                 }
-
-        for i in inst:
+        
+        #for i in inst:
+        for i in self._ii:
             
             if return_value_set:
                 raise RuntimeError('RETURN_VALUE is not last opcode')
-    
+            
             if i.opname in ops:
                 try:
+                    
                     ops[i.opname](i)
+                    
                 except Exception as e:
                     print('during machine exec {}: {}'.format(i.opname, e))
                     if not self.verbose:

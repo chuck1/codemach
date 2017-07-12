@@ -114,4 +114,13 @@ def test_cmp_op_not_in():
 def test_build_tuple():
     assert _test(None, "(0, 1)", "eval") == (0, 1)
 
+def test_loop():
+    s = """
+for a in [0, 1]:
+    continue
+"""
+    _test(None, s, "exec")
+
+
+
 
