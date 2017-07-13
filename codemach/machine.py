@@ -309,7 +309,7 @@ class Machine(object):
             self.__stack.append(TOS.__next__())
         except StopIteration:
             self.__stack.pop()
-            self._ii.jump(i.arg + i.offset + 3)
+            self._ii.jump(i.arg + i.offset + 2)
 
     def __inst_jump_absolute(self, i):
         self._ii.jump(i.arg)

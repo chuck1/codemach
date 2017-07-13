@@ -4,23 +4,9 @@ import types
 __all__ = ['Assembler']
 
 def inst_to_bytes(inst):
-    if inst.opname in (
-            'LOAD_CONST',
-            'LOAD_NAME',
-            'STORE_NAME',
-            'CALL_FUNCTION',
-            ):
-        return bytes([
-            inst.opcode,
-            inst.arg,
-            0])
-    elif inst.opname in (
-            'BINARY_ADD',
-            'RETURN_VALUE',
-            ):
-        return bytes([inst.opcode])
-    else:
-        raise RuntimeError('unsupported op {}'.format(inst.opname))
+    return bytes([
+        inst.opcode,
+        inst.arg])
 
 class Assembler(object):
     def __init__(self):
@@ -51,7 +37,7 @@ class Assembler(object):
                 None,
                 False)
         
-        self.offset += 3
+        self.offset += 2
         
         self.insts.append(inst)
 
@@ -66,7 +52,7 @@ class Assembler(object):
                 None,
                 False)
         
-        self.offset += 3
+        self.offset += 2
         
         self.insts.append(inst)
 
@@ -81,7 +67,7 @@ class Assembler(object):
                 None,
                 False)
         
-        self.offset += 3
+        self.offset += 2
         
         self.insts.append(inst)
 
@@ -89,7 +75,7 @@ class Assembler(object):
         inst = dis.Instruction(
                 'BINARY_ADD',
                 dis.opname.index('BINARY_ADD'),
-                None,
+                0,
                 None,
                 '',
                 self.offset,
@@ -104,14 +90,14 @@ class Assembler(object):
         inst = dis.Instruction(
                 'RETURN_VALUE',
                 dis.opname.index('RETURN_VALUE'),
-                None,
+                0,
                 None,
                 '',
                 self.offset,
                 None,
                 False)
         
-        self.offset += 1
+        self.offset += 2
         
         self.insts.append(inst)
 
@@ -126,13 +112,13 @@ class Assembler(object):
                 None,
                 False)
         
-        self.offset += 3
+        self.offset += 2
         
         self.insts.append(inst)
 
     def code(self):
-
-        b = b''.join(inst_to_bytes(i) for i in self.insts)
+    
+        b = b''.join(bytes([i.opcode, i.arg]) for i in self.insts)
 
         c = types.CodeType(
                 0,
