@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "650302dc5e76bb5fcf9513188cb52f6c63e6ad814c05ee9087efb8508b051c6e"
+            "sha256": "d7e40ec9708be0685e19aebf92956b9e4e1ab4135181eae8be9eff8c58ee2cfb"
         },
         "requires": {},
         "sources": [
@@ -13,7 +13,7 @@
     },
     "default": {
         "async-patterns": {
-            "version": "==0.3b10"
+            "version": "==0.3b11"
         }
     },
     "develop": {
