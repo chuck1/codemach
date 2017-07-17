@@ -11,7 +11,15 @@ with open(os.path.join(c['name'], '__init__.py')) as f:
 
 with open('Pipfile.lock') as f:
     p = json.loads(f.read())
-    install_requires=[k + v['version'] for k, v in p['default'].items()]
+
+def _install_requires():
+    for k, v in p['default'].items():
+        if isinstance(v, str):
+            yield k + v
+        else:
+            yield k + v['version'] 
+
+install_requires = list(_install_requires())
 
 kwargs = {
         'name': c['name'],
