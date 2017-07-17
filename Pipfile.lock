@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c08faeef8bb6d35b65c91a019df3195874aca47f41a5e93e1cb895bdb33b366e"
+            "sha256": "650302dc5e76bb5fcf9513188cb52f6c63e6ad814c05ee9087efb8508b051c6e"
         },
         "requires": {},
         "sources": [
@@ -13,7 +13,7 @@
     },
     "default": {
         "async-patterns": {
-            "version": "==0.3b9"
+            "version": "==0.3b10"
         }
     },
     "develop": {
@@ -68,7 +68,7 @@
             "version": "==2.18.1"
         },
         "setuptools": {
-            "version": "==36.0.1"
+            "version": "==36.2.0"
         },
         "six": {
             "version": "==1.10.0"
