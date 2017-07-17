@@ -1,7 +1,7 @@
 language: python
 python:
-- '3.5'
-- '3.5-dev'
+- '3.6'
+- '3.6-dev'
 install:
 - python3 -c "import json;l = json.loads(open('Pipfile.lock').read())['default'];print('\n'.join([k+v['version'] for k,v in l.items()]))" > requires
 - pip3 install -r requires
