@@ -9,7 +9,9 @@ install:
 - pip install pytest-cov
 - pip install codecov
 script:
-- py.test --cov=`python3 -c "import json;print(json.load(open('Setup.lock'))['name'])"`
+- d=`python3 -c "import json;print(json.load(open('Setup.lock'))['name'])"`
+- echo $d
+- py.test --cov=$d
 after_success:
 - codecov
 
