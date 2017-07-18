@@ -4,7 +4,6 @@ verify_ssl = true
 [dev-packages]
 Sphinx = "*"
 "-e ." = "*"
-"-e ../async-patterns" = "*"
 pytest-cov = "*"
 [packages]
-async-patterns = "==0.3b11"
+async-patterns = "==0.3b13"

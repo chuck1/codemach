@@ -4,15 +4,15 @@ codemach
     :target: https://travis-ci.org/chuck1/codemach
 .. image:: https://codecov.io/gh/chuck1/codemach/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/chuck1/codemach
+.. image:: https://readthedocs.org/projects/codemach/badge/?version=latest
+   :target: http://codemach.readthedocs.io/
+   :alt: Documentation Status
 .. image:: https://img.shields.io/pypi/v/codemach.svg
    :target: https://pypi.python.org/pypi/codemach
-.. image:: https://readthedocs.org/projects/codemach/badge/?version=dev
-   :target: http://codemach.readthedocs.io/en/dev/?badge=dev
-   :alt: Documentation Status
+.. image:: https://img.shields.io/pypi/pyversions/codemach.svg
+   :target: https://pypi.python.org/pypi/codemach
 
 Small module that executes python code objects.
-
-https://codemach.readthedocs.io
 
 Install
 -------

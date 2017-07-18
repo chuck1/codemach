@@ -9,3 +9,7 @@ packages = [
 	'codemach',
 ]
 
+classifiers = [
+	'Programming Language :: Python :: 3.6'
+]
+

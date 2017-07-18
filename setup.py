@@ -34,6 +34,7 @@ kwargs = {
         'scripts': c.get('scripts',[]),
         'package_data': c.get('package_data',{}),
         'install_requires': install_requires,
+        'classifiers': c.get('classifiers', [])
         }
 
 setup(**kwargs)
