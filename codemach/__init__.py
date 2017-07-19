@@ -1,4 +1,4 @@
-__version__ = '0.4b13'
+__version__ = '0.4b14'
 
 from .assembler import *
 from .machine import *
