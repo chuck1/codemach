@@ -1,14 +1,15 @@
 {
-    "author_email": "charlesrymal@gmail.com",
-    "description": "very simple tool for executing python code objects",
-    "url": "http://github.com/chuck1/codemach",
-    "license": "MIT",
-    "author": "Charles Rymal",
-    "name": "codemach",
-    "packages": [
-        "codemach"
-    ],
     "classifiers": [
         "Programming Language :: Python :: 3.6"
-    ]
+    ],
+    "packages": [
+        "codemach",
+        "codemach.assembler"
+    ],
+    "author": "Charles Rymal",
+    "name": "codemach",
+    "url": "http://github.com/chuck1/codemach",
+    "description": "very simple tool for executing python code objects",
+    "license": "MIT",
+    "author_email": "charlesrymal@gmail.com"
 }
