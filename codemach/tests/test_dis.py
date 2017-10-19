@@ -4,7 +4,8 @@ import sys
 import dis
 import types
 
-from codemach import Machine, Assembler
+from codemach.machine import Machine
+from codemach.assembler import Assembler
 
 def print_code(c):
     print('argcount      ',c.co_argcount)

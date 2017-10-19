@@ -21,16 +21,17 @@ Install
 
     pip3 install codemach
 
-Test
-----
+Development
+-----------
 
 ::
 
     git clone git@github.com:chuck1/codemach
     cd codemach
-    pip3 install -r requirements.txt
-    pip3 install -e .
-    pytest
+    pipenv --python /usr/bin/python3.6
+    pipenv install
+    pipenv run pip3 install -e .
+    pipenv run pytest
 
 Example
 -------

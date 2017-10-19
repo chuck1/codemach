@@ -2,7 +2,7 @@ import unittest
 import types
 import dis
 import codemach
-from codemach import Machine
+from codemach.machine import Machine
 
 def code_info(c):
     print('------------')

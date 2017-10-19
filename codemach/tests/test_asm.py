@@ -1,4 +1,6 @@
-from codemach import Assembler
+import sys
+print(sys.path)
+from codemach.assembler import Assembler
 
 def test1():
  

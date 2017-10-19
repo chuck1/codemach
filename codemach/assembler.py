@@ -1,8 +1,6 @@
 import dis
 import types
 
-__all__ = ['Assembler']
-
 def inst_to_bytes(inst):
     return bytes([
         inst.opcode,
