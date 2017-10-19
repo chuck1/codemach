@@ -7,7 +7,6 @@ license = 'MIT'
 
 packages = [
 	'codemach',
-	'codemach.assembler',
 ]
 
 classifiers = [
