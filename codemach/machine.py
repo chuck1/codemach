@@ -331,6 +331,11 @@ class Machine(object):
         args = self.pop(i.arg-1)
         raise cls(*args)
 
+    def __inst_binary_multiply(self, i):
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        self.__stack.append(TOS1 * TOS)
+
     def exec_instructions(self, c):
 
         self._print('------------- begin exec')
@@ -345,6 +350,7 @@ class Machine(object):
             pprint.pprint(self._ii._tab)
 
         ops = {
+                'BINARY_MULTIPLY': self.__inst_binary_multiply,
                 'BUILD_LIST': self.__build_list,
                 'CALL_FUNCTION': self.call_function,
                 'SETUP_LOOP': self.__inst_setup_loop,

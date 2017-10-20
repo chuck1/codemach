@@ -57,7 +57,7 @@ def test_mach():
     s = """import datetime\ndatetime.datetime.now()"""
     _test(e, s, 'exec')
 
-    s = """x=1\ny=1\nx-y\nx/y\nx//y\nx%y\nx**y\n-x\n+x"""
+    s = """x = 1\ny = 1\nx * y\nx - y\nx / y\nx // y\nx % y\nx ** y\n-x\n+x"""
     _test(e, s, 'exec')
 
 
