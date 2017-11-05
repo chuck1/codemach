@@ -14,7 +14,7 @@ sphinxcontrib-websupport==1.0.1
 jinja2==2.9.6
 pytest==3.2.3
 requests==2.18.4
-coverage==4.4.1
+coverage==4.4.2
 certifi==2017.7.27.1
 snowballstemmer==1.2.1
 idna==2.6
