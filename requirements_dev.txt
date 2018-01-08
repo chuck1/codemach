@@ -8,7 +8,7 @@ imagesize==0.7.1
 docutils==0.14
 pygments==2.2.0
 chardet==3.0.4
-sphinx==1.6.4
+sphinx==1.6.6
 markupsafe==1.0
 sphinxcontrib-websupport==1.0.1
 jinja2==2.9.6
