@@ -11,7 +11,7 @@ chardet==3.0.4
 sphinx==1.6.7
 markupsafe==1.0
 sphinxcontrib-websupport==1.0.1
-jinja2==2.9.6
+jinja2==2.10
 pytest==3.4.0
 requests==2.18.4
 certifi==2018.1.18
