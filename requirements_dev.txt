@@ -8,14 +8,14 @@ imagesize==0.7.1
 docutils==0.14
 pygments==2.2.0
 chardet==3.0.4
-sphinx==1.6.4
+sphinx==1.6.7
 markupsafe==1.0
 sphinxcontrib-websupport==1.0.1
 jinja2==2.9.6
-pytest==3.2.3
+pytest==3.4.0
 requests==2.18.4
-coverage==4.4.1
 certifi==2018.1.18
+coverage==4.5
 snowballstemmer==1.2.1
 idna==2.6
 pytz==2017.2
