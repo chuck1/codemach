@@ -12,57 +12,17 @@ from .assembler import *
 
 __all__ = ['Machine']
 
-def function_wrapper(m, f):
-    """
-    Wrap a function so that when called, its code is executed by **machine**.
-
-    :param machine: a :py:class:`Machine` object
-    :param f: a python function object
-    """
-    def wrapped(*args):
-        c = f.__code__
-
-        l = {}
-
-        varnames = list(c.co_varnames)
-        
-        print("====================================================")
-        print(m.verbose)
-        print("====================================================")
-    
-        m._print('wrapped')
-        m._print(f)
-        m._print(args)
-        #self._print('callable = {}'.format(callable_))
-        #self._print('closure  = {}'.format(callable_.function.__closure__))
-        #self._print('args     = {}'.format(args))
-        #self._print('varnames = {}'.format(varnames))
-
-        args = list(args)
-        for _ in range(c.co_argcount):
-            l[varnames.pop(0)] = args.pop(0)
-        
-        if varnames:
-            l[varnames.pop(0)] = tuple(args)
-
-        return m.execute(f.__globals__, l)
-    
-    return wrapped
-
 class FunctionType(object):
     def __init__(self, machine, code, globals_, name):
         self._machine = machine
+        self.code = code
         self.func_raw = types.FunctionType(code, globals_, name)
-        self.function = function_wrapper(
-                machine,
-                self.func_raw)
-        self.wrapped = self.function
 
     def get_code(self):
         """
         return the code object to be used by Machine
         """
-        return self.function.__closure__[0].cell_contents.__code__
+        return self.code
     
     def __repr__(self):
         return '<{} object, function={}>'.format(self.__class__.__module__+'.'+self.__class__.__name__, self.func_raw.__name__)
@@ -417,21 +377,9 @@ class Machine(object):
 
         self.call_callbacks('CALL_FUNCTION', callable_, *args)
    
-        if isinstance(callable_, types.CodeType):
-            _c = callable_
-            e = Machine(self.verbose)
-            
-            l = dict((name, arg) for name, arg in zip(
-                _c.co_varnames[:_c.co_argcount], args))
-            
-            ret = e.exec(c, self.__globals, l)
-
-        elif isinstance(callable_, FunctionType):
+        if isinstance(callable_, FunctionType):
             ret = callable_(*args)
 
-        elif (callable_ is builtins.__build_class__) and isinstance(args[0], FunctionType):
-            ret = self.build_class(callable_, args)
-        
         elif callable_ is builtins.__build_class__:
             ret = self.build_class(callable_, args)
 
