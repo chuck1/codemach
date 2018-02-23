@@ -159,7 +159,7 @@ assert c == 3
 """
     _test(None, s, 'exec')
 
-def test_yield():
+def _test_yield():
     s = """
 def f():
     yield 1

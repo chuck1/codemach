@@ -93,6 +93,7 @@ class Machine(object):
     
     :param verbose: verbosity level
     """
+
     def __init__(self, verbose=False, callbacks={}):
         self.__stack = []
         self.__blocks = []
@@ -103,6 +104,20 @@ class Machine(object):
         
         if not verbose:
             self._output = io.StringIO()
+
+        self.ops = {
+                'BINARY_MULTIPLY': self.__inst_binary_multiply,
+                'BUILD_LIST': self.__build_list,
+                'CALL_FUNCTION': self.call_function,
+                'SETUP_LOOP': self.__inst_setup_loop,
+                'GET_ITER': self.__inst_get_iter,
+                'FOR_ITER': self.__inst_for_iter,
+                'JUMP_ABSOLUTE': self.__inst_jump_absolute,
+                'POP_BLOCK': self.__inst_pop_block,
+                'POP_JUMP_IF_TRUE': self.__inst_pop_jump_if_true,
+                'UNPACK_SEQUENCE': self.__inst_unpack_sequence,
+                'RAISE_VARARGS': self.__inst_raise_varargs,
+                }
    
     def add_callback(self, opname, callable_):
         if opname not in self.__callbacks:
@@ -296,13 +311,13 @@ class Machine(object):
     def __build_list(self, i):
         self.__stack.append(list(self.pop(i.arg)))
 
-    def __inst_setup_loop(self, i):
+    def __inst_setup_loop(self, c, i):
         self.__blocks.append(i.arg)
     
-    def __inst_get_iter(self, i):
+    def __inst_get_iter(self, c, i):
         self.__stack.append(iter(self.__stack.pop()))
 
-    def __inst_for_iter(self, i):
+    def __inst_for_iter(self, c, i):
         TOS = self.__stack[-1]
         
         try:
@@ -311,30 +326,45 @@ class Machine(object):
             self.__stack.pop()
             self._ii.jump(i.arg + i.offset + 2)
 
-    def __inst_jump_absolute(self, i):
+    def __inst_jump_absolute(self, c, i):
         self._ii.jump(i.arg)
 
-    def __inst_pop_block(self, i):
+    def __inst_pop_block(self, c, i):
         self.__blocks.pop()
 
-    def __inst_pop_jump_if_true(self, i):
+    def __inst_pop_jump_if_true(self, c, i):
         if self.__stack.pop():
             self._ii.jump(i.arg)
 
-    def __inst_unpack_sequence(self, i):
+    def __inst_unpack_sequence(self, c, i):
         TOS = self.__stack.pop()
         for el in reversed(TOS):
             self.__stack.append(el)
 
-    def __inst_raise_varargs(self, i):
+    def __inst_raise_varargs(self, c, i):
         cls = self.__stack.pop()
         args = self.pop(i.arg-1)
         raise cls(*args)
 
-    def __inst_binary_multiply(self, i):
+    def __inst_binary_multiply(self, c, i):
         TOS = self.__stack.pop()
         TOS1 = self.__stack.pop()
         self.__stack.append(TOS1 * TOS)
+
+    def iterate_instructions(self, c):
+        inst = dis.Bytecode(c)
+        
+        self._ii = InstructionIterator(inst)
+
+        if self.verbose:
+            pprint.pprint(self._ii._tab)
+        
+        #for i in inst:
+        for i in self._ii:
+            yield_value = self.execute_instruction(i, c)
+            
+            if i.opname == 'YIELD_VALUE':
+                yield yield_value
 
     def exec_instructions(self, c):
 
@@ -348,165 +378,138 @@ class Machine(object):
 
         if self.verbose:
             pprint.pprint(self._ii._tab)
-
-        ops = {
-                'BINARY_MULTIPLY': self.__inst_binary_multiply,
-                'BUILD_LIST': self.__build_list,
-                'CALL_FUNCTION': self.call_function,
-                'SETUP_LOOP': self.__inst_setup_loop,
-                'GET_ITER': self.__inst_get_iter,
-                'FOR_ITER': self.__inst_for_iter,
-                'JUMP_ABSOLUTE': self.__inst_jump_absolute,
-                'POP_BLOCK': self.__inst_pop_block,
-                'POP_JUMP_IF_TRUE': self.__inst_pop_jump_if_true,
-                'UNPACK_SEQUENCE': self.__inst_unpack_sequence,
-                'RAISE_VARARGS': self.__inst_raise_varargs,
-                }
         
         #for i in inst:
         for i in self._ii:
-            
             if return_value_set:
                 raise RuntimeError('RETURN_VALUE is not last opcode')
+
+            ret = self.execute_instruction(i, c)
+
+            if i.opname == "RETURN_VALUE":
+                return ret
+        
+        self._print('------------- return')
+
+    def __inst_unary_positive(self, c, i):
+                TOS = self.__stack.pop()
+                self.__stack.append(+TOS)
+        
+    def __inst_unary_negative(self, c, i):
+                TOS = self.__stack.pop()
+                self.__stack.append(-TOS)
+        
+    def __inst_binary_power(self, c, i):
+                TOS = self.__stack.pop()
+                TOS1 = self.__stack.pop()
+                self.__stack.append(TOS1 ** TOS)
+
+    def execute_instruction(self, i, c):
             
-            if i.opname in ops:
+            ret = None
+
+            if i.opname in self.ops:
                 try:
-                    
-                    ops[i.opname](i)
-                    
+                    ret = self.ops[i.opname](c, i)
                 except Exception as e:
                     print('during machine exec {}: {}'.format(i.opname, e))
                     if not self.verbose:
                         print('printing output')
                         print(self._output.getvalue())
                     raise
- 
+
             elif i.opcode == 1:
                 self.__stack.pop()
+            else:
+                raise RuntimeError('unhandled opcode',i.opcode,i.opname,i.arg,self.__stack)
+    
+            self._print('{:20} {}'.format(i.opname, [(repr(s) if not str(hex(id(s))) in repr(s) else s.__class__) for s in self.__stack ]))
+    
+            return ret
 
-            elif i.opcode == 10:
-                # UNARY_POSITIVE
-                TOS = self.__stack.pop()
-                self.__stack.append(+TOS)
-
-            elif i.opcode == 11:
-                # UNARY_NEGATIVE
-                TOS = self.__stack.pop()
-                self.__stack.append(-TOS)
-
-            elif i.opcode == 19:
-                # BINARY_POWER
-                TOS = self.__stack.pop()
-                TOS1 = self.__stack.pop()
-                self.__stack.append(TOS1 ** TOS)
-
-            elif i.opcode == 22:
-                # BINARY_MODULO
+    def __inst_binary_modulo(self, c, i):
                 TOS = self.__stack.pop()
                 TOS1 = self.__stack.pop()
                 self.__stack.append(TOS1 % TOS)
 
-            elif i.opcode == 23:
-                # BINARY_ADD
+    def __inst_binary_add(self, c, i):
                 TOS = self.__stack.pop()
                 TOS1 = self.__stack.pop()
                 self.__stack.append(TOS1 + TOS)
 
-            elif i.opcode == 24:
-                # BINARY_SUBTRACT
+    def __inst_binary_subtract(self, c, i):
                 TOS = self.__stack.pop()
                 TOS1 = self.__stack.pop()
                 self.__stack.append(TOS1 - TOS)
 
-            elif i.opcode == 25:
-                # BINARY_SUBSCR
+    def __inst_binary_subscr(self, c, i):
                 TOS = self.__stack.pop()
                 TOS1 = self.__stack.pop()
                 self.__stack.append(TOS1[TOS])
 
-            elif i.opcode == 26:
-                # BINARY_FLOOR_DIVIDE
+    def __inst_binary_floor_divide(self, c, i):
                 TOS = self.__stack.pop()
                 TOS1 = self.__stack.pop()
                 self.__stack.append(TOS1 // TOS)
 
-            elif i.opcode == 27:
-                # BINARY_TRUE_DIVIDE
+    def __inst_binary_true_divide(self, c, i):
                 TOS = self.__stack.pop()
                 TOS1 = self.__stack.pop()
                 self.__stack.append(TOS1 / TOS)
 
-            elif i.opcode == 71:
-                # LOAD_BUILD_CLASS
+    def __inst_load_build_class(self, c, i):
                 self.__stack.append(builtins.__build_class__)
 
-            elif i.opcode == 83:
-                # RETURN_VALUE
+    def __inst_return_value(self, c, i):
                 return_value = self.__stack.pop()
-                return_value_set = True
-
-            elif i.opcode == 90:
-                # STORE_NAME
+                return return_value
+    
+    def __inst_store_name(self, c, i):
                 name = c.co_names[i.arg]
                 TOS = self.__stack.pop()
                 self.store_name(name, TOS)
-
-            elif i.opcode == 100:
-                # LOAD_CONST
+    
+    def __inst_load_const(self, c, i):
                 self.__stack.append(c.co_consts[i.arg])
 
-            elif i.opcode == 101:
-                # LOAD_NAME
+    def __inst_load_name(self, c, i):
                 name = c.co_names[i.arg]
                 self.__stack.append(self.load_name(name))
 
-            elif i.opcode == 102:
-                # BUILD_TUPLE
+    def __inst_build_tuple(self, c, i):
                 self.__stack.append(tuple(self.pop(i.arg)))
-            
-            elif i.opcode == 106:
-                # LOAD_ATTR
+    
+    def __inst_load_attr(self, c, i): 
                 name = c.co_names[i.arg]
                 o = self.__stack.pop()
-                
                 self.call_callbacks('LOAD_ATTR', o, name)
-
                 self.__stack.append(getattr(o, name))
-            
-            elif i.opcode == 107:
-                # COMPARE_OP
+    
+    def __inst_compare_op(self, c, i):
                 TOS = self.__stack.pop()
                 TOS1 = self.__stack.pop()
                 self.__stack.append(Machine.cmp_op(i.arg)(TOS1, TOS))
 
-            elif i.opcode == 108:
-                # IMPORT_NAME
+    def __inst_import_name(self, c, i):
                 TOS = self.__stack.pop()
                 TOS1 = self.__stack.pop()
-
                 self.call_callbacks('IMPORT_NAME', c.co_names[i.arg], TOS, TOS1)
-
                 self.__stack.append(__import__(c.co_names[i.arg], fromlist=TOS, level=TOS1))
 
-            elif i.opcode == 116:
-                # LOAD_GLOBAL
+    def __inst_load_global(self, c, i):
                 name = c.co_names[i.arg]
                 self.__stack.append(self.load_name(name))
 
-            elif i.opcode == 124:
-                # LOAD_FAST:
+    def __inst_load_fast(self, c, i):
                 name = c.co_varnames[i.arg]
                 self.__stack.append(self._locals[name])
-    
-            elif i.opcode == 125:
-                # STORE_FAST
+   
+    def __inst_store_fast(self, c, i): 
                 TOS = self.__stack.pop()
                 name = c.co_varnames[i.arg]
                 self._locals[name] = TOS
 
-
-            elif i.opcode == 132:
-                # MAKE_FUNCTION
+    def __inst_make_function(self, c, i):
                 if i.arg != 0:
                     raise RuntimeError('not yet supported')
                 
@@ -522,8 +525,7 @@ class Machine(object):
 
                 self.__stack.append(f)
 
-            elif i.opcode == 133:
-                # BUILD_SLICE
+    def __inst_build_slice(self, c, i):
                 TOS = self.__stack.pop()
                 TOS1 = self.__stack.pop()
                 if i.arg == 2:
@@ -532,13 +534,4 @@ class Machine(object):
                     TOS2 = self.__stack.pop()
                     self.__stack.append(slice(TOS2, TOS1, TOS))
                 
-            else:
-                raise RuntimeError('unhandled opcode',i.opcode,i.opname,i.arg,self.__stack)
-    
-            self._print('{:20} {}'.format(i.opname, [(repr(s) if not str(hex(id(s))) in repr(s) else s.__class__) for s in self.__stack ]))
-    
-        self._print('------------- return')
-
-        return return_value
-        
 
