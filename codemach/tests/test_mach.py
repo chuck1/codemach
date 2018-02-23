@@ -1,6 +1,7 @@
 import os
 import types
 import dis
+from pprint import pprint
 import pytest
 import codemach
 from codemach.machine import Machine
@@ -43,6 +44,7 @@ def _test(_, s, mode, globals_=None):
     ("binary_power.py", ("BINARY_POWER", None)),
     ("binary_true_divide.py", ("BINARY_TRUE_DIVIDE", None)),
     ("build_tuple.py", ("BUILD_TUPLE", None)),
+    ("raise_varargs.py", ("RAISE_VARARGS", None)),
     ("unary_negative.py", ("UNARY_NEGATIVE", None)),
     ("unary_positive.py", ("UNARY_POSITIVE", None)),
     ("yield.py", ("YIELD_VALUE", None)),
@@ -186,12 +188,29 @@ assert c == 3
 """
     _test(None, s, 'exec')
 
-def _test_yield():
-    s = """
-def f():
-    yield 1
-next(iter(f()))
 """
-    _test(None, s, 'exec')
+def test_raise():
     
+    class TestException(Exception): pass
 
+    s = "\n\nraise TestException()\n"
+    c = compile(s, '<string>', 'exec')
+
+    m = Machine(c, verbose=True)
+
+    code_info(c)
+
+    try:
+        m.execute()
+    except Exception as e:
+        print(e)
+        raise
+    else:
+        raise Exception()
+   
+    pprint(m.inst_history)
+
+    assert m.contains_op_history(("RAISE_VARARGS", None))
+
+
+"""
