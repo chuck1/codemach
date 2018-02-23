@@ -4,7 +4,7 @@ import dis
 import types
 import operator
 import builtins
-import pprint
+from pprint import pprint
 
 import async_patterns
 
@@ -26,6 +26,10 @@ def function_wrapper(m, f):
 
         varnames = list(c.co_varnames)
         
+        print("====================================================")
+        print(m.verbose)
+        print("====================================================")
+    
         m._print('wrapped')
         m._print(f)
         m._print(args)
@@ -63,9 +67,47 @@ class FunctionType(object):
     def __repr__(self):
         return '<{} object, function={}>'.format(self.__class__.__module__+'.'+self.__class__.__name__, self.func_raw.__name__)
 
-    def __call__(self, args):
-        return self.wrapped(args)
+    def __call__(self, *args):
 
+        m = self._machine
+        c = self.func_raw.__code__
+        f = self.func_raw
+
+        l = {}
+
+        varnames = list(c.co_varnames)
+            
+        print(m.verbose)
+        m._print('wrapped')
+        m._print('self         ', self.__class__)
+        m._print('f            ', f)
+        m._print('args         ', args)
+        m._print('c.co_argcount', c.co_argcount)
+        m._print('varnames     ', varnames)
+        #self._print('callable = {}'.format(callable_))
+        #self._print('closure  = {}'.format(callable_.function.__closure__))
+        #self._print('args     = {}'.format(args))
+        #self._print('varnames = {}'.format(varnames))
+
+        args = self.build_args(args)
+
+        for _ in range(c.co_argcount):
+            l[varnames.pop(0)] = args.pop(0)
+        
+        if varnames:
+            l[varnames.pop(0)] = tuple(args)
+
+        return m.execute(f.__globals__, l)
+
+        #return self.wrapped(args)
+
+    def build_args(self, args):
+        return list(args)
+
+class FunctionTypeClassFunction(FunctionType):
+    def build_args(self, args):
+        return [self.object] + list(args)
+        
 class InstructionIterator:
     def __init__(self, inst):
         self._inst = list(inst)
@@ -236,7 +278,7 @@ class Machine(object):
         self._ii = InstructionIterator(self.instructions)
 
         if self.verbose:
-            pprint.pprint(self._ii._tab)
+            pprint(self._ii._tab)
         
         #for i in inst:
         for i in self._ii:
@@ -254,7 +296,7 @@ class Machine(object):
         self._ii = InstructionIterator(self.instructions)
 
         if self.verbose:
-            pprint.pprint(self._ii._tab)
+            pprint(self._ii._tab)
         
         #for i in inst:
         for i in self._ii:
@@ -333,12 +375,13 @@ class Machine(object):
             c = args[0].get_code()
         else:
             c = args[0].__closure__[0].cell_contents.__code__
-
-        machine = Machine(c, self.verbose)
+        
+        # execute the original class source code
+        machine = MachineClassSource(c, self.verbose)
         l = dict()
         machine.execute(self.__globals, l)
 
-        # construct code for class source
+        # construct new code for class source
         a = Assembler()
         for name, value in l.items():
             a.load_const(value)
@@ -362,10 +405,16 @@ class Machine(object):
 
         .. _CALL_FUNCTION: https://docs.python.org/3/library/dis.html#opcode-CALL_FUNCTION
         """
+
         callable_ = self.__stack[-1-i.arg]
         
         args = tuple(self.__stack[len(self.__stack) - i.arg:])
  
+        self._print('call function')
+        self._print('function ', callable_)
+        self._print('i.arg    ', i.arg)
+        self._print('args     ', args)
+
         self.call_callbacks('CALL_FUNCTION', callable_, *args)
    
         if isinstance(callable_, types.CodeType):
@@ -376,31 +425,9 @@ class Machine(object):
                 _c.co_varnames[:_c.co_argcount], args))
             
             ret = e.exec(c, self.__globals, l)
+
         elif isinstance(callable_, FunctionType):
-            
-            if False:
-                c = callable_.get_code()
-                m = callable_._machine
-                
-                # construct locals
-                l = {}
-                varnames = list(c.co_varnames)
-                
-                self._print('callable = {}'.format(callable_))
-                self._print('closure  = {}'.format(callable_.function.__closure__))
-                self._print('args     = {}'.format(args))
-                self._print('varnames = {}'.format(varnames))
-    
-                args = list(args)
-                for _ in range(c.co_argcount):
-                    l[varnames.pop(0)] = args.pop(0)
-                
-                if varnames:
-                    l[varnames.pop(0)] = tuple(args)
-    
-                ret = m.exec(c, self.__globals, l)
-            else:
-                ret = callable_(args)
+            ret = callable_(*args)
 
         elif (callable_ is builtins.__build_class__) and isinstance(args[0], FunctionType):
             ret = self.build_class(callable_, args)
@@ -536,10 +563,15 @@ class Machine(object):
                 self.__stack.append(tuple(self.pop(i.arg)))
     
     def __inst_load_attr(self, c, i): 
-                name = c.co_names[i.arg]
-                o = self.__stack.pop()
-                self.call_callbacks('LOAD_ATTR', o, name)
-                self.__stack.append(getattr(o, name))
+        name = c.co_names[i.arg]
+        o = self.__stack.pop()
+        self.call_callbacks('LOAD_ATTR', o, name)
+        a = getattr(o, name)
+
+        if isinstance(a, FunctionTypeClassFunction):
+            a.object = o
+
+        self.__stack.append(a)
     
     def __inst_compare_op(self, c, i):
                 TOS = self.__stack.pop()
@@ -570,14 +602,26 @@ class Machine(object):
                     raise RuntimeError('not yet supported')
                 
                 n = dis.stack_effect(i.opcode, i.arg)
+
                 args = self.pop(-n)
 
                 code = self.__stack.pop()
                 
-                f = FunctionType(Machine(code, self.verbose), code, self.__globals, args[0])
+                m = Machine(code, self.verbose)
+
+                # so that all instruction history is appended inst_history object of
+                # root Machine
+                m.inst_history = self.inst_history
+                
+                if isinstance(self, MachineClassSource):
+                    function_type = FunctionTypeClassFunction
+                else:
+                    function_type = FunctionType
+
+                f = function_type(m, code, self.__globals, args[0])
                 
                 # experimenting
-                f = f.wrapped
+                #f = f.wrapped
 
                 self.__stack.append(f)
 
@@ -589,5 +633,6 @@ class Machine(object):
                 else:
                     TOS2 = self.__stack.pop()
                     self.__stack.append(slice(TOS2, TOS1, TOS))
-                
+
+class MachineClassSource(Machine): pass
 

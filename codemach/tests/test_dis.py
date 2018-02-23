@@ -80,7 +80,7 @@ def analyze(s):
    
     print('stack')
     
-    m = Machine(c)
+    m = Machine(c, verbose=True)
     ret = m.execute()
     print('return:',ret)
     print()
