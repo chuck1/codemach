@@ -42,6 +42,7 @@ def _test(_, s, mode, globals_=None):
     ("binary_modulo.py", ("BINARY_MODULO", None)),
     ("binary_power.py", ("BINARY_POWER", None)),
     ("binary_true_divide.py", ("BINARY_TRUE_DIVIDE", None)),
+    ("build_tuple.py", ("BUILD_TUPLE", None)),
     ("unary_negative.py", ("UNARY_NEGATIVE", None)),
     ("unary_positive.py", ("UNARY_POSITIVE", None)),
     ("yield.py", ("YIELD_VALUE", None)),

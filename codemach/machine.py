@@ -123,6 +123,7 @@ class Machine(object):
                 'BINARY_POWER': self.__inst_binary_power,
                 'BUILD_LIST': self.__build_list,
                 'BUILD_SLICE': self.__inst_build_slice,
+                'BUILD_TUPLE': self.__inst_build_tuple,
                 'CALL_FUNCTION': self.call_function,
                 'COMPARE_OP': self.__inst_compare_op,
                 'IMPORT_NAME': self.__inst_import_name,
