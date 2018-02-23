@@ -12,57 +12,17 @@ from .assembler import *
 
 __all__ = ['Machine']
 
-def function_wrapper(m, f):
-    """
-    Wrap a function so that when called, its code is executed by **machine**.
-
-    :param machine: a :py:class:`Machine` object
-    :param f: a python function object
-    """
-    def wrapped(*args):
-        c = f.__code__
-
-        l = {}
-
-        varnames = list(c.co_varnames)
-        
-        print("====================================================")
-        print(m.verbose)
-        print("====================================================")
-    
-        m._print('wrapped')
-        m._print(f)
-        m._print(args)
-        #self._print('callable = {}'.format(callable_))
-        #self._print('closure  = {}'.format(callable_.function.__closure__))
-        #self._print('args     = {}'.format(args))
-        #self._print('varnames = {}'.format(varnames))
-
-        args = list(args)
-        for _ in range(c.co_argcount):
-            l[varnames.pop(0)] = args.pop(0)
-        
-        if varnames:
-            l[varnames.pop(0)] = tuple(args)
-
-        return m.execute(f.__globals__, l)
-    
-    return wrapped
-
 class FunctionType(object):
     def __init__(self, machine, code, globals_, name):
         self._machine = machine
+        self.code = code
         self.func_raw = types.FunctionType(code, globals_, name)
-        self.function = function_wrapper(
-                machine,
-                self.func_raw)
-        self.wrapped = self.function
 
     def get_code(self):
         """
         return the code object to be used by Machine
         """
-        return self.function.__closure__[0].cell_contents.__code__
+        return self.code
     
     def __repr__(self):
         return '<{} object, function={}>'.format(self.__class__.__module__+'.'+self.__class__.__name__, self.func_raw.__name__)
@@ -129,7 +89,20 @@ class InstructionIterator:
         for _ in range(a):
             next(self._iter)
 
-class Machine(object):
+class Block:
+    def __init__(self, machine, jump_to):
+        self.machine = machine
+        self.jump_to = jump_to
+
+    def raise_varargs(self, e, args):
+        # TODO figure out what to do with args
+        raise e
+    
+class BlockTry(Block):
+    def raise_varargs(self, e, args):
+        self.machine._ii.jump(self.jump_to)
+
+class Machine:
     """
     Class that executes python code objects.
     
@@ -141,7 +114,7 @@ class Machine(object):
         self.instructions = dis.Bytecode(self.code)
 
         self.__stack = []
-        self.__blocks = []
+        self.__blocks = [Block(self, None)]
         
         self.verbose = verbose
         
@@ -163,8 +136,10 @@ class Machine(object):
                 'BINARY_POWER': self.__inst_binary_power,
                 'BUILD_LIST': self.__build_list,
                 'BUILD_SLICE': self.__inst_build_slice,
+                'BUILD_TUPLE': self.__inst_build_tuple,
                 'CALL_FUNCTION': self.call_function,
                 'COMPARE_OP': self.__inst_compare_op,
+                'DUP_TOP': self.__inst_dup_top,
                 'IMPORT_NAME': self.__inst_import_name,
                 'LOAD_ATTR': self.__inst_load_attr,
                 'LOAD_BUILD_CLASS': self.__inst_load_build_class,
@@ -177,12 +152,16 @@ class Machine(object):
                 'RETURN_VALUE': self.__inst_return_value,
                 'STORE_NAME': self.__inst_store_name,
                 'STORE_FAST': self.__inst_store_fast,
+                'SETUP_EXCEPT': self.__inst_setup_except,
                 'SETUP_LOOP': self.__inst_setup_loop,
                 'GET_ITER': self.__inst_get_iter,
                 'FOR_ITER': self.__inst_for_iter,
                 'JUMP_ABSOLUTE': self.__inst_jump_absolute,
+                'JUMP_FORWARD': self.__inst_jump_forward,
                 'POP_BLOCK': self.__inst_pop_block,
+                'POP_EXCEPT': self.__inst_pop_except,
                 'POP_JUMP_IF_TRUE': self.__inst_pop_jump_if_true,
+                'POP_JUMP_IF_FALSE': self.__inst_pop_jump_if_false,
                 'UNPACK_SEQUENCE': self.__inst_unpack_sequence,
                 'RAISE_VARARGS': self.__inst_raise_varargs,
                 'UNARY_NEGATIVE': self.__inst_unary_negative,
@@ -221,6 +200,10 @@ class Machine(object):
             print(*args, file=self._output)
 
     @staticmethod
+    def exception_match(a, b):
+        return isinstance(a, b)
+    
+    @staticmethod
     def cmp_op(i):
         def not_in(a, b):
             return not (a in b)
@@ -235,7 +218,7 @@ class Machine(object):
                 not_in, 
                 operator.is_, 
                 operator.is_not, 
-                'exception match', 
+                Machine.exception_match,
                 'BAD')[i]
 
     def execute(self, globals_=None, _locals=None):
@@ -314,6 +297,7 @@ class Machine(object):
         except KeyError:
             raise Exception('unhandled opcode', i.opcode, i.opname, i.arg, self.__stack)
         else:
+            self.inst_history.append(i)
             try:
                 ret = op(self.code, i)
             except Exception as e:
@@ -322,8 +306,6 @@ class Machine(object):
                     print('printing output')
                     print(self._output.getvalue())
                 raise
-            else:
-                self.inst_history.append(i)
 
         self._print('{:20} {}'.format(i.opname, [(repr(s) if not str(hex(id(s))) in repr(s) else s.__class__) for s in self.__stack ]))
 
@@ -417,21 +399,9 @@ class Machine(object):
 
         self.call_callbacks('CALL_FUNCTION', callable_, *args)
    
-        if isinstance(callable_, types.CodeType):
-            _c = callable_
-            e = Machine(self.verbose)
-            
-            l = dict((name, arg) for name, arg in zip(
-                _c.co_varnames[:_c.co_argcount], args))
-            
-            ret = e.exec(c, self.__globals, l)
-
-        elif isinstance(callable_, FunctionType):
+        if isinstance(callable_, FunctionType):
             ret = callable_(*args)
 
-        elif (callable_ is builtins.__build_class__) and isinstance(args[0], FunctionType):
-            ret = self.build_class(callable_, args)
-        
         elif callable_ is builtins.__build_class__:
             ret = self.build_class(callable_, args)
 
@@ -446,9 +416,15 @@ class Machine(object):
 
     def __inst_pop_top(self, c, i):
         self.__stack.pop()
+    
+    def __inst_dup_top(self, c, i):
+        self.__stack.append(self.__stack[-1])
+
+    def __inst_setup_except(self, c, i):
+        self.__blocks.append(BlockTry(self, i.arg + i.offset + 2))
 
     def __inst_setup_loop(self, c, i):
-        self.__blocks.append(i.arg)
+        self.__blocks.append(Block(self, i.arg + i.offset + 2))
     
     def __inst_get_iter(self, c, i):
         self.__stack.append(iter(self.__stack.pop()))
@@ -464,12 +440,27 @@ class Machine(object):
 
     def __inst_jump_absolute(self, c, i):
         self._ii.jump(i.arg)
+    
+    def __inst_jump_forward(self, c, i):
+        self._ii.jump(i.arg + i.offset + 2)
 
     def __inst_pop_block(self, c, i):
         self.__blocks.pop()
 
+    def __inst_pop_except(self, c, i):
+        # TODO
+        # from docs :
+        # "In addition to popping extraneous values from the frame stack, 
+        # the last three popped values are used to restore the exception state."
+        b = self.__blocks.pop()
+        assert isinstance(b, BlockTry)
+
     def __inst_pop_jump_if_true(self, c, i):
         if self.__stack.pop():
+            self._ii.jump(i.arg)
+
+    def __inst_pop_jump_if_false(self, c, i):
+        if not self.__stack.pop():
             self._ii.jump(i.arg)
 
     def __inst_unpack_sequence(self, c, i):
@@ -478,34 +469,36 @@ class Machine(object):
             self.__stack.append(el)
 
     def __inst_raise_varargs(self, c, i):
-        cls = self.__stack.pop()
+        e = self.__stack.pop()
         args = self.pop(i.arg-1)
-        raise cls(*args)
+        #e = self.__stack[-1]
+        #args = self.__stack[-i.arg-1:-1]
+        self.__stack += [None, args, e]
+
+        self.__blocks[-1].raise_varargs(e, args)
 
     def __inst_binary_multiply(self, c, i):
         TOS = self.__stack.pop()
         TOS1 = self.__stack.pop()
         self.__stack.append(TOS1 * TOS)
 
-
     def __inst_unary_positive(self, c, i):
-                TOS = self.__stack.pop()
-                self.__stack.append(+TOS)
+        TOS = self.__stack.pop()
+        self.__stack.append(+TOS)
         
     def __inst_unary_negative(self, c, i):
-                TOS = self.__stack.pop()
-                self.__stack.append(-TOS)
+        TOS = self.__stack.pop()
+        self.__stack.append(-TOS)
         
     def __inst_binary_power(self, c, i):
-                TOS = self.__stack.pop()
-                TOS1 = self.__stack.pop()
-                self.__stack.append(TOS1 ** TOS)
-
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        self.__stack.append(TOS1 ** TOS)
 
     def __inst_binary_modulo(self, c, i):
-                TOS = self.__stack.pop()
-                TOS1 = self.__stack.pop()
-                self.__stack.append(TOS1 % TOS)
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        self.__stack.append(TOS1 % TOS)
 
     def __inst_binary_add(self, c, i):
                 TOS = self.__stack.pop()
