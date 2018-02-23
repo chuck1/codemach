@@ -163,7 +163,7 @@ def test_yield():
     s = """
 def f():
     yield 1
-next(f())
+next(iter(f()))
 """
     _test(None, s, 'exec')
     
