@@ -44,6 +44,7 @@ def _test(_, s, mode, globals_=None):
     ("binary_true_divide.py", ("BINARY_TRUE_DIVIDE", None)),
     ("unary_negative.py", ("UNARY_NEGATIVE", None)),
     ("unary_positive.py", ("UNARY_POSITIVE", None)),
+    ("yield.py", ("YIELD_VALUE", None)),
     ])
 def test_from_file(filename, inst):
     with open(os.path.join("codemach/tests/source", filename)) as f:

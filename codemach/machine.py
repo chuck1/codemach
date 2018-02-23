@@ -145,6 +145,7 @@ class Machine(object):
                 'RAISE_VARARGS': self.__inst_raise_varargs,
                 'UNARY_NEGATIVE': self.__inst_unary_negative,
                 'UNARY_POSITIVE': self.__inst_unary_positive,
+                'YIELD_VALUE': self.__inst_yield_value,
                 }
     
     def contains_op(self, opname):
@@ -220,8 +221,11 @@ class Machine(object):
             self._locals = _locals
        
         self.__globals = globals_
-        
-        return self.execute_instructions()
+
+        if self.contains_op("YIELD_VALUE"):
+            return self.iterate_instructions()
+        else:
+            return self.execute_instructions()
 
     def execute_instructions(self):
 
@@ -502,16 +506,24 @@ class Machine(object):
                 self.__stack.append(TOS1 / TOS)
 
     def __inst_load_build_class(self, c, i):
-                self.__stack.append(builtins.__build_class__)
+        self.__stack.append(builtins.__build_class__)
 
     def __inst_return_value(self, c, i):
-                return_value = self.__stack.pop()
-                return return_value
-    
+        return self.__stack.pop()
+   
+    def __inst_yield_value(self, c, i):
+        # documentation here
+        # https://docs.python.org/3.6/library/dis.html#opcode-YIELD_VALUE
+        # says that YIELD_VALUE "Pops TOS and yields it from a generator"
+        # but instructions have a POP_TOP after each YIELD_VALUE which was 
+        # causing "pop from empty list" error
+        #return self.__stack.pop()
+        return self.__stack[0]
+
     def __inst_store_name(self, c, i):
-                name = c.co_names[i.arg]
-                TOS = self.__stack.pop()
-                self.store_name(name, TOS)
+        name = c.co_names[i.arg]
+        TOS = self.__stack.pop()
+        self.store_name(name, TOS)
     
     def __inst_load_const(self, c, i):
                 self.__stack.append(c.co_consts[i.arg])
