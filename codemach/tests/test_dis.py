@@ -80,11 +80,10 @@ def analyze(s):
    
     print('stack')
     
-    m = Machine()
-    ret = m.exec(c)
+    m = Machine(c, verbose=True)
+    ret = m.execute()
     print('return:',ret)
     print()
-
  
 def test1(): 
     s = "a = 5\nc = 1 + a"
