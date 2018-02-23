@@ -41,7 +41,7 @@ def function_wrapper(m, f):
         if varnames:
             l[varnames.pop(0)] = tuple(args)
 
-        return m.exec(f.__code__, f.__globals__, l)
+        return m.execute(f.__globals__, l)
     
     return wrapped
 
@@ -94,21 +94,47 @@ class Machine(object):
     :param verbose: verbosity level
     """
 
-    def __init__(self, verbose=False, callbacks={}):
+    def __init__(self, code, verbose=False, callbacks={}):
+        self.code = code
+        self.instructions = dis.Bytecode(self.code)
+
         self.__stack = []
         self.__blocks = []
-
+        
         self.verbose = verbose
         
         self.__callbacks = callbacks
         
+        self.inst_history = []
+
         if not verbose:
             self._output = io.StringIO()
 
         self.ops = {
+                'BINARY_ADD': self.__inst_binary_add,
                 'BINARY_MULTIPLY': self.__inst_binary_multiply,
+                'BINARY_SUBTRACT': self.__inst_binary_subtract,
+                'BINARY_MODULO': self.__inst_binary_modulo,
+                'BINARY_SUBSCR': self.__inst_binary_subscr,
+                'BINARY_TRUE_DIVIDE': self.__inst_binary_true_divide,
+                'BINARY_FLOOR_DIVIDE': self.__inst_binary_floor_divide,
+                'BINARY_POWER': self.__inst_binary_power,
                 'BUILD_LIST': self.__build_list,
+                'BUILD_SLICE': self.__inst_build_slice,
                 'CALL_FUNCTION': self.call_function,
+                'COMPARE_OP': self.__inst_compare_op,
+                'IMPORT_NAME': self.__inst_import_name,
+                'LOAD_ATTR': self.__inst_load_attr,
+                'LOAD_BUILD_CLASS': self.__inst_load_build_class,
+                'LOAD_CONST': self.__inst_load_const,
+                'LOAD_GLOBAL': self.__inst_load_global,
+                'LOAD_FAST': self.__inst_load_fast,
+                'LOAD_NAME': self.__inst_load_name,
+                'MAKE_FUNCTION': self.__inst_make_function,
+                'POP_TOP': self.__inst_pop_top,
+                'RETURN_VALUE': self.__inst_return_value,
+                'STORE_NAME': self.__inst_store_name,
+                'STORE_FAST': self.__inst_store_fast,
                 'SETUP_LOOP': self.__inst_setup_loop,
                 'GET_ITER': self.__inst_get_iter,
                 'FOR_ITER': self.__inst_for_iter,
@@ -117,8 +143,25 @@ class Machine(object):
                 'POP_JUMP_IF_TRUE': self.__inst_pop_jump_if_true,
                 'UNPACK_SEQUENCE': self.__inst_unpack_sequence,
                 'RAISE_VARARGS': self.__inst_raise_varargs,
+                'UNARY_NEGATIVE': self.__inst_unary_negative,
+                'UNARY_POSITIVE': self.__inst_unary_positive,
                 }
-   
+    
+    def contains_op(self, opname):
+        for i in self.instructions:
+            if i.opname == opname:
+                return True
+        return False
+
+    def contains_op_history(self, inst):
+        for i in self.inst_history:
+            if i.opname == inst[0]:
+                if inst[1] is None:
+                    return True
+                elif i.arg == inst[1]:
+                    return True
+        return False
+
     def add_callback(self, opname, callable_):
         if opname not in self.__callbacks:
             self.__callbacks[opname] = async_patterns.Callbacks()
@@ -152,7 +195,7 @@ class Machine(object):
                 'exception match', 
                 'BAD')[i]
 
-    def exec(self, code, globals_=None, _locals=None):
+    def execute(self, globals_=None, _locals=None):
         """
         Execute a code object
         
@@ -178,8 +221,67 @@ class Machine(object):
        
         self.__globals = globals_
         
+        return self.execute_instructions()
 
-        return self.exec_instructions(code)
+    def execute_instructions(self):
+
+        self._print('------------- begin exec')
+        
+        return_value_set = False
+        
+        self._ii = InstructionIterator(self.instructions)
+
+        if self.verbose:
+            pprint.pprint(self._ii._tab)
+        
+        #for i in inst:
+        for i in self._ii:
+            if return_value_set:
+                raise RuntimeError('RETURN_VALUE is not last opcode')
+
+            ret = self.execute_instruction(i)
+
+            if i.opname == "RETURN_VALUE":
+                return ret
+        
+        self._print('------------- return')
+
+    def iterate_instructions(self):
+        self._ii = InstructionIterator(self.instructions)
+
+        if self.verbose:
+            pprint.pprint(self._ii._tab)
+        
+        #for i in inst:
+        for i in self._ii:
+            yield_value = self.execute_instruction(i)
+            
+            if i.opname == 'YIELD_VALUE':
+                yield yield_value
+
+    def execute_instruction(self, i):
+            
+        ret = None
+
+        try:
+            op = self.ops[i.opname]
+        except KeyError:
+            raise Exception('unhandled opcode', i.opcode, i.opname, i.arg, self.__stack)
+        else:
+            try:
+                ret = op(self.code, i)
+            except Exception as e:
+                print('during machine exec {}: {}'.format(i.opname, e))
+                if not self.verbose:
+                    print('printing output')
+                    print(self._output.getvalue())
+                raise
+            else:
+                self.inst_history.append(i)
+
+        self._print('{:20} {}'.format(i.opname, [(repr(s) if not str(hex(id(s))) in repr(s) else s.__class__) for s in self.__stack ]))
+
+        return ret
 
     def load_name(self, name):
         """
@@ -228,9 +330,9 @@ class Machine(object):
         else:
             c = args[0].__closure__[0].cell_contents.__code__
 
-        machine = Machine(self.verbose)
+        machine = Machine(c, self.verbose)
         l = dict()
-        machine.exec(c, self.__globals, l)
+        machine.execute(self.__globals, l)
 
         # construct code for class source
         a = Assembler()
@@ -240,7 +342,7 @@ class Machine(object):
         a.load_const(None)
         a.return_value()
        
-        machine = Machine(self.verbose)
+        #machine = Machine(self.verbose)
 
         f = types.FunctionType(a.code(), self.__globals, args[1])
 
@@ -250,7 +352,7 @@ class Machine(object):
                  
         return callable_(*args)
 
-    def call_function(self, i):
+    def call_function(self, c, i):
         """
         Implement the CALL_FUNCTION_ operation.
 
@@ -308,8 +410,11 @@ class Machine(object):
         self.pop(1 + i.arg)
         self.__stack.append(ret)
     
-    def __build_list(self, i):
+    def __build_list(self, c, i):
         self.__stack.append(list(self.pop(i.arg)))
+
+    def __inst_pop_top(self, c, i):
+        self.__stack.pop()
 
     def __inst_setup_loop(self, c, i):
         self.__blocks.append(i.arg)
@@ -351,45 +456,6 @@ class Machine(object):
         TOS1 = self.__stack.pop()
         self.__stack.append(TOS1 * TOS)
 
-    def iterate_instructions(self, c):
-        inst = dis.Bytecode(c)
-        
-        self._ii = InstructionIterator(inst)
-
-        if self.verbose:
-            pprint.pprint(self._ii._tab)
-        
-        #for i in inst:
-        for i in self._ii:
-            yield_value = self.execute_instruction(i, c)
-            
-            if i.opname == 'YIELD_VALUE':
-                yield yield_value
-
-    def exec_instructions(self, c):
-
-        self._print('------------- begin exec')
-        
-        inst = dis.Bytecode(c)
-        
-        return_value_set = False
-        
-        self._ii = InstructionIterator(inst)
-
-        if self.verbose:
-            pprint.pprint(self._ii._tab)
-        
-        #for i in inst:
-        for i in self._ii:
-            if return_value_set:
-                raise RuntimeError('RETURN_VALUE is not last opcode')
-
-            ret = self.execute_instruction(i, c)
-
-            if i.opname == "RETURN_VALUE":
-                return ret
-        
-        self._print('------------- return')
 
     def __inst_unary_positive(self, c, i):
                 TOS = self.__stack.pop()
@@ -404,28 +470,6 @@ class Machine(object):
                 TOS1 = self.__stack.pop()
                 self.__stack.append(TOS1 ** TOS)
 
-    def execute_instruction(self, i, c):
-            
-            ret = None
-
-            if i.opname in self.ops:
-                try:
-                    ret = self.ops[i.opname](c, i)
-                except Exception as e:
-                    print('during machine exec {}: {}'.format(i.opname, e))
-                    if not self.verbose:
-                        print('printing output')
-                        print(self._output.getvalue())
-                    raise
-
-            elif i.opcode == 1:
-                self.__stack.pop()
-            else:
-                raise RuntimeError('unhandled opcode',i.opcode,i.opname,i.arg,self.__stack)
-    
-            self._print('{:20} {}'.format(i.opname, [(repr(s) if not str(hex(id(s))) in repr(s) else s.__class__) for s in self.__stack ]))
-    
-            return ret
 
     def __inst_binary_modulo(self, c, i):
                 TOS = self.__stack.pop()
@@ -518,7 +562,7 @@ class Machine(object):
 
                 code = self.__stack.pop()
                 
-                f = FunctionType(Machine(self.verbose), code, self.__globals, args[0])
+                f = FunctionType(Machine(code, self.verbose), code, self.__globals, args[0])
                 
                 # experimenting
                 f = f.wrapped

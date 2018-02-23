@@ -1,6 +1,7 @@
-import unittest
+import os
 import types
 import dis
+import pytest
 import codemach
 from codemach.machine import Machine
 
@@ -25,29 +26,51 @@ def code_info(c):
             code_info(const)
 
 def _test(_, s, mode, globals_=None):
-    m = Machine(verbose=True)
     #print('\nsource:\n{}\n'.format(s))
     c = compile(s, '<string>', mode)
 
+    m = Machine(c, verbose=True)
+
     code_info(c)
 
-    return m.exec(c, globals_=globals_)
+    return m.execute(globals_=globals_)
+
+@pytest.mark.parametrize("filename,inst", [
+    ("comp_equal.py", ("COMPARE_OP", 2)),
+    ("import.py", ("IMPORT_NAME", None)),
+    ("binary_floor_divide.py", ("BINARY_FLOOR_DIVIDE", None)),
+    ("binary_modulo.py", ("BINARY_MODULO", None)),
+    ("binary_power.py", ("BINARY_POWER", None)),
+    ("binary_true_divide.py", ("BINARY_TRUE_DIVIDE", None)),
+    ("unary_negative.py", ("UNARY_NEGATIVE", None)),
+    ("unary_positive.py", ("UNARY_POSITIVE", None)),
+    ])
+def test_from_file(filename, inst):
+    with open(os.path.join("codemach/tests/source", filename)) as f:
+        s = f.read()
+    
+    c = compile(s, '<string>', 'exec')
+
+    m = Machine(c, verbose=True)
+
+    code_info(c)
+    
+    m.execute()
+
+    for i in m.inst_history:
+        print(i)
+    
+    assert m.contains_op_history(inst)
 
 def test_mach():
-    e = Machine(verbose=False)
-    
+    e = None
+
     s = """def func(a, b):\n  c = 4\n  return a + b + c\nfunc(2, 3)"""
     _test(e, s, 'exec')
     
     s = """object.__getattribute__(object, '__class__')"""
     _test(e, s, 'eval')
     
-    s = """import math"""
-    _test(e, s, 'exec')
-
-    s = """2 == 3"""
-    _test(e, s, 'eval')
-
     s = """c = 4\ndef func():\n  a = 2\n  b = 3\n  return a + b + c\nfunc()"""
     _test(e, s, 'exec')
 
@@ -57,7 +80,7 @@ def test_mach():
     s = """import datetime\ndatetime.datetime.now()"""
     _test(e, s, 'exec')
 
-    s = """x = 1\ny = 1\nx * y\nx - y\nx / y\nx // y\nx % y\nx ** y\n-x\n+x"""
+    s = """x = 1\ny = 1\nx * y\nx - y\n\n"""
     _test(e, s, 'exec')
 
 
@@ -91,14 +114,16 @@ def watch(*args):
     log.append(args)
 
 def test2():
-    m = Machine(verbose=False)
-    m.add_callback('CALL_FUNCTION', watch)
     
     c = compile('def func1():\n  return 1\ndef func2():\n  return 1 + func1()', '<string>', 'exec')
-    
+ 
+    m = Machine(c, verbose=False)
+
+    m.add_callback('CALL_FUNCTION', watch)
+   
     g = {}
     
-    m.exec(c, g)
+    m.execute(g)
     
     # no functions called yet
     assert log == []
