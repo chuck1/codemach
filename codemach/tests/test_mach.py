@@ -36,20 +36,28 @@ def _test(_, s, mode, globals_=None):
 
     return m.execute(globals_=globals_)
 
-@pytest.mark.parametrize("filename,inst", [
-    ("comp_equal.py", ("COMPARE_OP", 2)),
-    ("import.py", ("IMPORT_NAME", None)),
-    ("binary_floor_divide.py", ("BINARY_FLOOR_DIVIDE", None)),
-    ("binary_modulo.py", ("BINARY_MODULO", None)),
-    ("binary_power.py", ("BINARY_POWER", None)),
-    ("binary_true_divide.py", ("BINARY_TRUE_DIVIDE", None)),
-    ("build_tuple.py", ("BUILD_TUPLE", None)),
-    ("raise_varargs.py", ("RAISE_VARARGS", None)),
-    ("unary_negative.py", ("UNARY_NEGATIVE", None)),
-    ("unary_positive.py", ("UNARY_POSITIVE", None)),
-    ("yield.py", ("YIELD_VALUE", None)),
+def end_format_value_0x5(m):
+    assert m.globals_['b'] == '1 '
+
+@pytest.mark.parametrize("filename,inst,end", [
+    ("comp_equal.py", ("COMPARE_OP", 2), None),
+    ("import.py", ("IMPORT_NAME", None), None),
+    ("binary_floor_divide.py", ("BINARY_FLOOR_DIVIDE", None), None),
+    ("binary_modulo.py", ("BINARY_MODULO", None), None),
+    ("binary_power.py", ("BINARY_POWER", None), None),
+    ("binary_true_divide.py", ("BINARY_TRUE_DIVIDE", None), None),
+    ("build_tuple.py", ("BUILD_TUPLE", None), None),
+    ("format_value.py", ("FORMAT_VALUE", 0x0), None),
+    ("format_value_0x1.py", ("FORMAT_VALUE", 0x1), None),
+    ("format_value_0x2.py", ("FORMAT_VALUE", 0x2), None),
+    ("format_value_0x4.py", ("FORMAT_VALUE", 0x4), None),
+    ("format_value_0x5.py", ("FORMAT_VALUE", 0x5), end_format_value_0x5),
+    ("raise_varargs.py", ("RAISE_VARARGS", None), None),
+    ("unary_negative.py", ("UNARY_NEGATIVE", None), None),
+    ("unary_positive.py", ("UNARY_POSITIVE", None), None),
+    ("yield.py", ("YIELD_VALUE", None), None),
     ])
-def test_from_file(filename, inst):
+def test_from_file(filename, inst, end):
     with open(os.path.join("codemach/tests/source", filename)) as f:
         s = f.read()
     
@@ -65,6 +73,9 @@ def test_from_file(filename, inst):
         print(i)
     
     assert m.contains_op_history(inst)
+
+    if end:
+        end(m)
 
 def test_mach():
     e = None

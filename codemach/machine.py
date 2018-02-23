@@ -140,6 +140,7 @@ class Machine:
                 'CALL_FUNCTION': self.call_function,
                 'COMPARE_OP': self.__inst_compare_op,
                 'DUP_TOP': self.__inst_dup_top,
+                'FORMAT_VALUE': self.__inst_format_value,
                 'IMPORT_NAME': self.__inst_import_name,
                 'LOAD_ATTR': self.__inst_load_attr,
                 'LOAD_BUILD_CLASS': self.__inst_load_build_class,
@@ -245,7 +246,7 @@ class Machine:
         else:
             self._locals = _locals
        
-        self.__globals = globals_
+        self.globals_ = globals_
 
         if self.contains_op("YIELD_VALUE"):
             return self.iterate_instructions()
@@ -315,10 +316,10 @@ class Machine:
         """
         Implementation of the LOAD_NAME operation
         """
-        if name in self.__globals:
-            return self.__globals[name]
+        if name in self.globals_:
+            return self.globals_[name]
         
-        b = self.__globals['__builtins__']
+        b = self.globals_['__builtins__']
         if isinstance(b, dict):
             return b[name]
         else:
@@ -329,7 +330,7 @@ class Machine:
         Implementation of the STORE_NAME operation
         """
         self._locals[name] = val
-        #self.__globals[name] = val
+        #self.globals_[name] = val
 
     def pop(self, n):
         """
@@ -361,7 +362,7 @@ class Machine:
         # execute the original class source code
         machine = MachineClassSource(c, self.verbose)
         l = dict()
-        machine.execute(self.__globals, l)
+        machine.execute(self.globals_, l)
 
         # construct new code for class source
         a = Assembler()
@@ -373,7 +374,7 @@ class Machine:
        
         #machine = Machine(self.verbose)
 
-        f = types.FunctionType(a.code(), self.__globals, args[1])
+        f = types.FunctionType(a.code(), self.globals_, args[1])
 
         args = (f, *args[1:])
 
@@ -611,7 +612,7 @@ class Machine:
                 else:
                     function_type = FunctionType
 
-                f = function_type(m, code, self.__globals, args[0])
+                f = function_type(m, code, self.globals_, args[0])
                 
                 # experimenting
                 #f = f.wrapped
@@ -627,5 +628,29 @@ class Machine:
                     TOS2 = self.__stack.pop()
                     self.__stack.append(slice(TOS2, TOS1, TOS))
 
+    def __inst_format_value(self, c, i):
+        fmt_spec = ''
+        if i.arg & 0x4 == 0x4:
+            fmt_spec = self.__stack.pop()
+        
+        TOS = self.__stack.pop()
+
+        if i.arg & 0x3 == 0x0:
+            s = TOS.__format__(fmt_spec)
+            self.__stack.append(s)
+
+        elif i.arg & 0x3 == 0x1:
+            s = str(TOS).__format__(fmt_spec)
+            self.__stack.append(s)
+
+        elif i.arg & 0x3 == 0x2:
+            s = repr(TOS).__format__(fmt_spec)
+            self.__stack.append(s)
+
+        else:
+            raise NotImplementedError()
+
 class MachineClassSource(Machine): pass
+
+
 
