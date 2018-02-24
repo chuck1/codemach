@@ -351,6 +351,8 @@ class Machine:
 
         .. note: We might be able to bypass the call to ``builtins.__build_class__``
            entirely and manually construct a class object.
+
+           https://github.com/python/cpython/blob/master/Python/bltinmodule.c
         """
         self._print('build_class')
         self._print(callable_)
