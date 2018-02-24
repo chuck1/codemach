@@ -46,6 +46,14 @@ def end_format_value_0x5(m):
     ("binary_modulo.py", ("BINARY_MODULO", None), None),
     ("binary_power.py", ("BINARY_POWER", None), None),
     ("binary_true_divide.py", ("BINARY_TRUE_DIVIDE", None), None),
+    (
+        "binary_multiply.py",
+        ("BINARY_MULTIPLY", None),
+        None),
+    (
+        "binary_matrix_multiply.py",
+        ("BINARY_MATRIX_MULTIPLY", None),
+        None),
     ("build_tuple.py", ("BUILD_TUPLE", None), None),
     ("format_value.py", ("FORMAT_VALUE", 0x0), None),
     ("format_value_0x1.py", ("FORMAT_VALUE", 0x1), None),
@@ -56,6 +64,18 @@ def end_format_value_0x5(m):
     ("unary_negative.py", ("UNARY_NEGATIVE", None), None),
     ("unary_positive.py", ("UNARY_POSITIVE", None), None),
     ("yield.py", ("YIELD_VALUE", None), None),
+    (
+        "function_0.py",
+        ("MAKE_FUNCTION", None),
+        None),
+    (
+        "function_1.py",
+        ("MAKE_FUNCTION", None),
+        None),
+    (
+        "load_attr_0.py",
+        ("LOAD_ATTR", None),
+        None),
     ])
 def test_from_file(filename, inst, end):
     with open(os.path.join("codemach/tests/source", filename)) as f:
@@ -79,16 +99,7 @@ def test_from_file(filename, inst, end):
 
 def test_mach():
     e = None
-
-    s = """def func(a, b):\n  c = 4\n  return a + b + c\nfunc(2, 3)"""
-    _test(e, s, 'exec')
     
-    s = """object.__getattribute__(object, '__class__')"""
-    _test(e, s, 'eval')
-    
-    s = """c = 4\ndef func():\n  a = 2\n  b = 3\n  return a + b + c\nfunc()"""
-    _test(e, s, 'exec')
-
     s = """import math\ndef func():\n  return math.pi\nfunc()"""
     _test(e, s, 'exec')
 

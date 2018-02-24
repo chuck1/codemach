@@ -128,6 +128,7 @@ class Machine:
         self.ops = {
                 'BINARY_ADD': self.__inst_binary_add,
                 'BINARY_MULTIPLY': self.__inst_binary_multiply,
+                'BINARY_MATRIX_MULTIPLY': self.__inst_binary_matrix_multiply,
                 'BINARY_SUBTRACT': self.__inst_binary_subtract,
                 'BINARY_MODULO': self.__inst_binary_modulo,
                 'BINARY_SUBSCR': self.__inst_binary_subscr,
@@ -150,6 +151,7 @@ class Machine:
                 'LOAD_NAME': self.__inst_load_name,
                 'MAKE_FUNCTION': self.__inst_make_function,
                 'POP_TOP': self.__inst_pop_top,
+                'ROT_TWO': self.__inst_rot_two,
                 'RETURN_VALUE': self.__inst_return_value,
                 'STORE_NAME': self.__inst_store_name,
                 'STORE_FAST': self.__inst_store_fast,
@@ -360,6 +362,7 @@ class Machine:
             c = args[0].__closure__[0].cell_contents.__code__
         
         # execute the original class source code
+        print('execute original class source code')
         machine = MachineClassSource(c, self.verbose)
         l = dict()
         machine.execute(self.globals_, l)
@@ -372,6 +375,9 @@ class Machine:
         a.load_const(None)
         a.return_value()
        
+        print('new code for class source')
+        dis.dis(a.code())
+
         #machine = Machine(self.verbose)
 
         f = types.FunctionType(a.code(), self.globals_, args[1])
@@ -394,9 +400,9 @@ class Machine:
         args = tuple(self.__stack[len(self.__stack) - i.arg:])
  
         self._print('call function')
-        self._print('function ', callable_)
-        self._print('i.arg    ', i.arg)
-        self._print('args     ', args)
+        self._print('\tfunction ', callable_)
+        self._print('\ti.arg    ', i.arg)
+        self._print('\targs     ', args)
 
         self.call_callbacks('CALL_FUNCTION', callable_, *args)
    
@@ -418,6 +424,9 @@ class Machine:
     def __inst_pop_top(self, c, i):
         self.__stack.pop()
     
+    def __inst_rot_two(self, c, i):
+        self.__stack += self.pop(2)
+
     def __inst_dup_top(self, c, i):
         self.__stack.append(self.__stack[-1])
 
@@ -482,6 +491,11 @@ class Machine:
         TOS = self.__stack.pop()
         TOS1 = self.__stack.pop()
         self.__stack.append(TOS1 * TOS)
+
+    def __inst_binary_matrix_multiply(self, c, i):
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        self.__stack.append(operator.matmul(TOS1, TOS))
 
     def __inst_unary_positive(self, c, i):
         TOS = self.__stack.pop()
