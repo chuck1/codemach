@@ -584,65 +584,65 @@ class Machine:
         self.__stack.append(a)
     
     def __inst_compare_op(self, c, i):
-                TOS = self.__stack.pop()
-                TOS1 = self.__stack.pop()
-                self.__stack.append(Machine.cmp_op(i.arg)(TOS1, TOS))
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        self.__stack.append(Machine.cmp_op(i.arg)(TOS1, TOS))
 
     def __inst_import_name(self, c, i):
-                TOS = self.__stack.pop()
-                TOS1 = self.__stack.pop()
-                self.call_callbacks('IMPORT_NAME', c.co_names[i.arg], TOS, TOS1)
-                self.__stack.append(__import__(c.co_names[i.arg], fromlist=TOS, level=TOS1))
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        self.call_callbacks('IMPORT_NAME', c.co_names[i.arg], TOS, TOS1)
+        self.__stack.append(__import__(c.co_names[i.arg], fromlist=TOS, level=TOS1))
 
     def __inst_load_global(self, c, i):
-                name = c.co_names[i.arg]
-                self.__stack.append(self.load_name(name))
+        name = c.co_names[i.arg]
+        self.__stack.append(self.load_name(name))
 
     def __inst_load_fast(self, c, i):
-                name = c.co_varnames[i.arg]
-                self.__stack.append(self._locals[name])
+        name = c.co_varnames[i.arg]
+        self.__stack.append(self._locals[name])
    
     def __inst_store_fast(self, c, i): 
-                TOS = self.__stack.pop()
-                name = c.co_varnames[i.arg]
-                self._locals[name] = TOS
+        TOS = self.__stack.pop()
+        name = c.co_varnames[i.arg]
+        self._locals[name] = TOS
 
     def __inst_make_function(self, c, i):
-                if i.arg != 0:
-                    raise RuntimeError('not yet supported')
-                
-                n = dis.stack_effect(i.opcode, i.arg)
+        if i.arg != 0:
+            raise RuntimeError('not yet supported')
+        
+        n = dis.stack_effect(i.opcode, i.arg)
 
-                args = self.pop(-n)
+        args = self.pop(-n)
 
-                code = self.__stack.pop()
-                
-                m = Machine(code, self.verbose)
+        code = self.__stack.pop()
+        
+        m = Machine(code, self.verbose)
 
-                # so that all instruction history is appended inst_history object of
-                # root Machine
-                m.inst_history = self.inst_history
-                
-                if isinstance(self, MachineClassSource):
-                    function_type = FunctionTypeClassFunction
-                else:
-                    function_type = FunctionType
+        # so that all instruction history is appended inst_history object of
+        # root Machine
+        m.inst_history = self.inst_history
+        
+        if isinstance(self, MachineClassSource):
+            function_type = FunctionTypeClassFunction
+        else:
+            function_type = FunctionType
 
-                f = function_type(m, code, self.globals_, args[0])
-                
-                # experimenting
-                #f = f.wrapped
+        f = function_type(m, code, self.globals_, args[0])
+        
+        # experimenting
+        #f = f.wrapped
 
-                self.__stack.append(f)
+        self.__stack.append(f)
 
     def __inst_build_slice(self, c, i):
-                TOS = self.__stack.pop()
-                TOS1 = self.__stack.pop()
-                if i.arg == 2:
-                    self.__stack.append(slice(TOS1, TOS))
-                else:
-                    TOS2 = self.__stack.pop()
-                    self.__stack.append(slice(TOS2, TOS1, TOS))
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        if i.arg == 2:
+            self.__stack.append(slice(TOS1, TOS))
+        else:
+            TOS2 = self.__stack.pop()
+            self.__stack.append(slice(TOS2, TOS1, TOS))
 
     def __inst_format_value(self, c, i):
         fmt_spec = ''
