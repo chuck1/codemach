@@ -84,11 +84,6 @@ def function_wrapper_class_source(machine, f):
 
         print('locals')
         print(locals().keys())
-        print('stored after running class source')
-        #for k, v in f.__globals__.items():
-        for k, v in machine._dict.items():
-            print('  {} {}'.format(k, v))
-
         return res
         #return f(*args)
     
