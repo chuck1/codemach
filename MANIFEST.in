@@ -1,0 +1,2 @@
+include Setup.lock
+include Pipfile.lock

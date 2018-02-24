@@ -1,0 +1,15 @@
+name = 'codemach'
+description = 'very simple tool for executing python code objects'
+url = 'http://github.com/chuck1/codemach'
+author = 'Charles Rymal'
+author_email = 'charlesrymal@gmail.com'
+license = 'MIT'
+
+packages = [
+	'codemach',
+]
+
+classifiers = [
+	'Programming Language :: Python :: 3.6'
+]
+

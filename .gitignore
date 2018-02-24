@@ -2,3 +2,9 @@ build/
 dist/
 *.egg-info
 *.pyc
+.cache/
+_build/
+.dev/
+.coverage
+env/
+.pytest_cache/

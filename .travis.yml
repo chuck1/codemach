@@ -1,0 +1,18 @@
+language: python
+python:
+- '3.6'
+- 3.6-dev
+install:
+- pip3 install -r requirements_dev.txt
+- pip3 install -e .
+script:
+- d=`python3 -c "import json;print(json.load(open('Setup.lock'))['name'])"`
+- echo $d
+- py.test --cov=$d
+after_success:
+- codecov
+notifications:
+  slack:
+    on_success: change
+    on_failure: always
+    secure: W7qrekz+a07iMj4TjeKujHk2r1e5/cfol0Mu1kdasUJIY0wOaTS+UQwJahtpaekJSIozhsVXV72YRj+1leLKPHFiBDZYAI9lONea73rfluO60Pwb/umePbGASwA7Nod25SRHUYQ2Q3SOIw8e+32LPJThFp5hQ/ls2xS1RKOiHNso+hCxY4jUy3u8QrmwyiUnOyfltHvslKgC7Z3N8DyExjhosV3zUjAxgEpvUHdVL48JEoJnRmFn/Q1DQmvJyHkRXtdb5m3WRkLI1vT+2zEcwZl0bcNL0LvWJSVBlsVgUL0nUADmx5YXk+Rp7BIfprl5mKuKYxJqC1cvvqT/3VKKjevBUZoHsFyP3sv4yj2hn0Aj0FysQkLyg9/4iwUNflHzSC2SqVe4lcdhl9t571NIQntmAjwQrv+CnNjf3cXF9z/oI/4RtZJB2z+GHSICSMDHsnztaz4njaNc6Y2i4sRUoB7RZviBoObYFCgtTnR7TIGo5GJf4+GzqMPVWr0YXfB3BMpm0oRTFMFP9sZ4HniTnY3N3COBKNv/De0hPN7fEivWmuIxOrhU0KuOyCUcWFZKPT4YNq3V5ho91UNsL6daV9Ly2+IVGdLSrc/blor09Hqecg6zNIyVUshTS323tmj9u+OOynLIYfF+cx3ga9hyERjN7IFYbifUt/0tCtbLeZU=
