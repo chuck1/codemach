@@ -77,6 +77,10 @@ def end_format_value_0x5(m):
         ("MAKE_FUNCTION", None),
         None),
     (
+        "function_2.py",
+        ("MAKE_FUNCTION", None),
+        None),
+    (
         "load_attr_0.py",
         ("LOAD_ATTR", None),
         None),
@@ -173,14 +177,6 @@ def test_cmp_op_not_in():
 
 def test_build_tuple():
     assert _test(None, "(0, 1)", "eval") == (0, 1)
-
-def test_func_args():
-    s = """
-def func(*args):
-    return args
-assert func(1, 2) == (1, 2)
-"""
-    _test(None, s, "exec")
 
 def test_class1():
     s = """
