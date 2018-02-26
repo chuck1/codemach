@@ -76,6 +76,10 @@ def end_format_value_0x5(m):
         "load_attr_0.py",
         ("LOAD_ATTR", None),
         None),
+    (
+        "class_function.py",
+        ("BUILD_CLASS", None),
+        None),
     ])
 def test_from_file(filename, inst, end):
     with open(os.path.join("codemach/tests/source", filename)) as f:

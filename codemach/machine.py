@@ -12,6 +12,23 @@ from .assembler import *
 
 __all__ = ['Machine']
 
+def wrap_function(f, m):
+    def wrapped(*args):
+
+        args = list(args)
+        code = f.__code__
+        l = {}
+
+        varnames = list(code.co_varnames)
+        for _ in range(code.co_argcount):
+            l[varnames.pop(0)] = args.pop(0)
+        
+        if varnames:
+            l[varnames.pop(0)] = tuple(args)
+
+        return m.execute(f.__globals__, l)
+    return wrapped
+
 class FunctionType(object):
     def __init__(self, machine, code, globals_, name):
         self._machine = machine
@@ -49,7 +66,7 @@ class FunctionType(object):
         #self._print('args     = {}'.format(args))
         #self._print('varnames = {}'.format(varnames))
 
-        args = self.build_args(args)
+        args = list(args)
 
         for _ in range(c.co_argcount):
             l[varnames.pop(0)] = args.pop(0)
@@ -61,12 +78,7 @@ class FunctionType(object):
 
         #return self.wrapped(args)
 
-    def build_args(self, args):
-        return list(args)
 
-class FunctionTypeClassFunction(FunctionType):
-    def build_args(self, args):
-        return [self.object] + list(args)
         
 class InstructionIterator:
     def __init__(self, inst):
@@ -578,8 +590,8 @@ class Machine:
         self.call_callbacks('LOAD_ATTR', o, name)
         a = getattr(o, name)
 
-        if isinstance(a, FunctionTypeClassFunction):
-            a.object = o
+        #if isinstance(a, FunctionTypeClassFunction):
+        #    a.object = o
 
         self.__stack.append(a)
     
@@ -616,7 +628,9 @@ class Machine:
         args = self.pop(-n)
 
         code = self.__stack.pop()
-        
+        name = args[0]
+        func_raw = types.FunctionType(code, self.globals_, name)
+
         m = Machine(code, self.verbose)
 
         # so that all instruction history is appended inst_history object of
@@ -624,7 +638,8 @@ class Machine:
         m.inst_history = self.inst_history
         
         if isinstance(self, MachineClassSource):
-            function_type = FunctionTypeClassFunction
+            function_type = FunctionType
+            #function_type = FunctionTypeClassFunction
         else:
             function_type = FunctionType
 
@@ -632,6 +647,8 @@ class Machine:
         
         # experimenting
         #f = f.wrapped
+
+        f = wrap_function(func_raw, m)
 
         self.__stack.append(f)
 
