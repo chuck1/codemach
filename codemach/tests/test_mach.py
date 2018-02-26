@@ -96,6 +96,10 @@ def end_format_value_0x5(m):
         "loop_0x0.py",
         ("SETUP_LOOP", None),
         None),
+    (
+        "unpack.py",
+        ("UNPACK_SEQUENCE", None),
+        None),
     ])
 def test_from_file(filename, inst, end):
     with open(os.path.join("codemach/tests/source", filename)) as f:
@@ -150,7 +154,9 @@ def watch(*args):
     log.append(args)
 
 def test2():
-    
+    # Test getting objects created by the executed code.
+    # Test callbacks.
+
     c = compile('def func1():\n  return 1\ndef func2():\n  return 1 + func1()', '<string>', 'exec')
  
     m = Machine(c, verbose=False)
@@ -175,59 +181,7 @@ def test2():
 def test_cmp_op_not_in():
     assert _test(None, "0 not in [0]", "eval") == False
 
-def test_build_tuple():
-    assert _test(None, "(0, 1)", "eval") == (0, 1)
-
-def test_class1():
-    s = """
-class Foo(object):
-    a = 1
-foo = Foo()
-"""
-    _test(None, s, 'exec')
-
-def test_class2():
-    s = """
-class Foo(object):
-    def func(self):
-        return 0
-foo = Foo()
-assert foo.func() == 0
-"""
-    _test(None, s, 'exec')
-
-def test_unpack():
-    s = """
-a, b, c = (1, 2, 3)
-assert a == 1
-assert b == 2
-assert c == 3
-"""
-    _test(None, s, 'exec')
-
-"""
-def test_raise():
-    
-    class TestException(Exception): pass
-
-    s = "\n\nraise TestException()\n"
-    c = compile(s, '<string>', 'exec')
-
-    m = Machine(c, verbose=True)
-
-    code_info(c)
-
-    try:
-        m.execute()
-    except Exception as e:
-        print(e)
-        raise
-    else:
-        raise Exception()
-   
-    pprint(m.inst_history)
-
-    assert m.contains_op_history(("RAISE_VARARGS", None))
 
 
-"""
+
+
