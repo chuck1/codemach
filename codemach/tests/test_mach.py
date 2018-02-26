@@ -51,6 +51,10 @@ def end_format_value_0x5(m):
         ("BINARY_MULTIPLY", None),
         None),
     (
+        "binary_subtract.py",
+        ("BINARY_SUBTRACT", None),
+        None),
+    (
         "binary_matrix_multiply.py",
         ("BINARY_MATRIX_MULTIPLY", None),
         None),
@@ -109,10 +113,6 @@ def test_mach():
 
     s = """import datetime\ndatetime.datetime.now()"""
     _test(e, s, 'exec')
-
-    s = """x = 1\ny = 1\nx * y\nx - y\n\n"""
-    _test(e, s, 'exec')
-
 
     s = "a=[0];b=a[0]"
     _test(e, s, 'exec')
