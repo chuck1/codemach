@@ -88,6 +88,10 @@ def end_format_value_0x5(m):
         "build_slice_0x0.py",
         ("BUILD_SLICE", None),
         None),
+    (
+        "loop_0x0.py",
+        ("SETUP_LOOP", None),
+        None),
     ])
 def test_from_file(filename, inst, end):
     with open(os.path.join("codemach/tests/source", filename)) as f:
@@ -169,13 +173,6 @@ def test_cmp_op_not_in():
 
 def test_build_tuple():
     assert _test(None, "(0, 1)", "eval") == (0, 1)
-
-def test_loop():
-    s = """
-for a in [0, 1]:
-    continue
-"""
-    _test(None, s, "exec")
 
 def test_func_args():
     s = """
