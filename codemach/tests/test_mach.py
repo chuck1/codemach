@@ -78,7 +78,7 @@ def end_format_value_0x5(m):
         None),
     (
         "class_function.py",
-        ("BUILD_CLASS", None),
+        ("LOAD_BUILD_CLASS", None),
         None),
     ])
 def test_from_file(filename, inst, end):

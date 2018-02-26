@@ -156,6 +156,7 @@ class Machine:
                 'FORMAT_VALUE': self.__inst_format_value,
                 'IMPORT_NAME': self.__inst_import_name,
                 'LOAD_ATTR': self.__inst_load_attr,
+                'STORE_ATTR': self.__inst_store_attr,
                 'LOAD_BUILD_CLASS': self.__inst_load_build_class,
                 'LOAD_CONST': self.__inst_load_const,
                 'LOAD_GLOBAL': self.__inst_load_global,
@@ -589,12 +590,13 @@ class Machine:
         o = self.__stack.pop()
         self.call_callbacks('LOAD_ATTR', o, name)
         a = getattr(o, name)
-
-        #if isinstance(a, FunctionTypeClassFunction):
-        #    a.object = o
-
         self.__stack.append(a)
     
+    def __inst_store_attr(self, c, i):
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        setattr(TOS, c.co_names[i.arg], TOS1)
+
     def __inst_compare_op(self, c, i):
         TOS = self.__stack.pop()
         TOS1 = self.__stack.pop()
