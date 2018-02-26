@@ -84,6 +84,10 @@ def end_format_value_0x5(m):
         "class_function.py",
         ("LOAD_BUILD_CLASS", None),
         None),
+    (
+        "build_slice_0x0.py",
+        ("BUILD_SLICE", None),
+        None),
     ])
 def test_from_file(filename, inst, end):
     with open(os.path.join("codemach/tests/source", filename)) as f:
@@ -126,12 +130,6 @@ def test_mach():
 
     a = Sliceable()
 
-    s = "a[0:1:2]"
-    _test(e, s, 'exec', {'a':a})
-
-    s = "a[:]"
-    _test(e, s, 'exec', {'a':a})
-    
     s = "a[0,0]"
     assert _test(e, s, 'eval', {'a':a}) == 2
 
