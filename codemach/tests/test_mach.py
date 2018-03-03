@@ -46,6 +46,18 @@ def end_format_value_0x5(m):
     ("binary_modulo.py", ("BINARY_MODULO", None), None),
     ("binary_power.py", ("BINARY_POWER", None), None),
     ("binary_true_divide.py", ("BINARY_TRUE_DIVIDE", None), None),
+    (
+        "binary_multiply.py",
+        ("BINARY_MULTIPLY", None),
+        None),
+    (
+        "binary_subtract.py",
+        ("BINARY_SUBTRACT", None),
+        None),
+    (
+        "binary_matrix_multiply.py",
+        ("BINARY_MATRIX_MULTIPLY", None),
+        None),
     ("build_tuple.py", ("BUILD_TUPLE", None), None),
     ("format_value.py", ("FORMAT_VALUE", 0x0), None),
     ("format_value_0x1.py", ("FORMAT_VALUE", 0x1), None),
@@ -56,6 +68,38 @@ def end_format_value_0x5(m):
     ("unary_negative.py", ("UNARY_NEGATIVE", None), None),
     ("unary_positive.py", ("UNARY_POSITIVE", None), None),
     ("yield.py", ("YIELD_VALUE", None), None),
+    (
+        "function_0.py",
+        ("MAKE_FUNCTION", None),
+        None),
+    (
+        "function_1.py",
+        ("MAKE_FUNCTION", None),
+        None),
+    (
+        "function_2.py",
+        ("MAKE_FUNCTION", None),
+        None),
+    (
+        "load_attr_0.py",
+        ("LOAD_ATTR", None),
+        None),
+    (
+        "class_function.py",
+        ("LOAD_BUILD_CLASS", None),
+        None),
+    (
+        "build_slice_0x0.py",
+        ("BUILD_SLICE", None),
+        None),
+    (
+        "loop_0x0.py",
+        ("SETUP_LOOP", None),
+        None),
+    (
+        "unpack.py",
+        ("UNPACK_SEQUENCE", None),
+        None),
     ])
 def test_from_file(filename, inst, end):
     with open(os.path.join("codemach/tests/source", filename)) as f:
@@ -79,25 +123,12 @@ def test_from_file(filename, inst, end):
 
 def test_mach():
     e = None
-
-    s = """def func(a, b):\n  c = 4\n  return a + b + c\nfunc(2, 3)"""
-    _test(e, s, 'exec')
     
-    s = """object.__getattribute__(object, '__class__')"""
-    _test(e, s, 'eval')
-    
-    s = """c = 4\ndef func():\n  a = 2\n  b = 3\n  return a + b + c\nfunc()"""
-    _test(e, s, 'exec')
-
     s = """import math\ndef func():\n  return math.pi\nfunc()"""
     _test(e, s, 'exec')
 
     s = """import datetime\ndatetime.datetime.now()"""
     _test(e, s, 'exec')
-
-    s = """x = 1\ny = 1\nx * y\nx - y\n\n"""
-    _test(e, s, 'exec')
-
 
     s = "a=[0];b=a[0]"
     _test(e, s, 'exec')
@@ -111,12 +142,6 @@ def test_mach():
 
     a = Sliceable()
 
-    s = "a[0:1:2]"
-    _test(e, s, 'exec', {'a':a})
-
-    s = "a[:]"
-    _test(e, s, 'exec', {'a':a})
-    
     s = "a[0,0]"
     assert _test(e, s, 'eval', {'a':a}) == 2
 
@@ -129,7 +154,9 @@ def watch(*args):
     log.append(args)
 
 def test2():
-    
+    # Test getting objects created by the executed code.
+    # Test callbacks.
+
     c = compile('def func1():\n  return 1\ndef func2():\n  return 1 + func1()', '<string>', 'exec')
  
     m = Machine(c, verbose=False)
@@ -154,74 +181,7 @@ def test2():
 def test_cmp_op_not_in():
     assert _test(None, "0 not in [0]", "eval") == False
 
-def test_build_tuple():
-    assert _test(None, "(0, 1)", "eval") == (0, 1)
-
-def test_loop():
-    s = """
-for a in [0, 1]:
-    continue
-"""
-    _test(None, s, "exec")
-
-def test_func_args():
-    s = """
-def func(*args):
-    return args
-assert func(1, 2) == (1, 2)
-"""
-    _test(None, s, "exec")
-
-def test_class1():
-    s = """
-class Foo(object):
-    a = 1
-foo = Foo()
-"""
-    _test(None, s, 'exec')
-
-def test_class2():
-    s = """
-class Foo(object):
-    def func(self):
-        return 0
-foo = Foo()
-assert foo.func() == 0
-"""
-    _test(None, s, 'exec')
-
-def test_unpack():
-    s = """
-a, b, c = (1, 2, 3)
-assert a == 1
-assert b == 2
-assert c == 3
-"""
-    _test(None, s, 'exec')
-
-"""
-def test_raise():
-    
-    class TestException(Exception): pass
-
-    s = "\n\nraise TestException()\n"
-    c = compile(s, '<string>', 'exec')
-
-    m = Machine(c, verbose=True)
-
-    code_info(c)
-
-    try:
-        m.execute()
-    except Exception as e:
-        print(e)
-        raise
-    else:
-        raise Exception()
-   
-    pprint(m.inst_history)
-
-    assert m.contains_op_history(("RAISE_VARARGS", None))
 
 
-"""
+
+

@@ -12,6 +12,23 @@ from .assembler import *
 
 __all__ = ['Machine']
 
+def wrap_function(f, m):
+    def wrapped(*args):
+
+        args = list(args)
+        code = f.__code__
+        l = {}
+
+        varnames = list(code.co_varnames)
+        for _ in range(code.co_argcount):
+            l[varnames.pop(0)] = args.pop(0)
+        
+        if varnames:
+            l[varnames.pop(0)] = tuple(args)
+
+        return m.execute(f.__globals__, l)
+    return wrapped
+
 class FunctionType(object):
     def __init__(self, machine, code, globals_, name):
         self._machine = machine
@@ -49,7 +66,7 @@ class FunctionType(object):
         #self._print('args     = {}'.format(args))
         #self._print('varnames = {}'.format(varnames))
 
-        args = self.build_args(args)
+        args = list(args)
 
         for _ in range(c.co_argcount):
             l[varnames.pop(0)] = args.pop(0)
@@ -61,12 +78,7 @@ class FunctionType(object):
 
         #return self.wrapped(args)
 
-    def build_args(self, args):
-        return list(args)
 
-class FunctionTypeClassFunction(FunctionType):
-    def build_args(self, args):
-        return [self.object] + list(args)
         
 class InstructionIterator:
     def __init__(self, inst):
@@ -128,6 +140,7 @@ class Machine:
         self.ops = {
                 'BINARY_ADD': self.__inst_binary_add,
                 'BINARY_MULTIPLY': self.__inst_binary_multiply,
+                'BINARY_MATRIX_MULTIPLY': self.__inst_binary_matrix_multiply,
                 'BINARY_SUBTRACT': self.__inst_binary_subtract,
                 'BINARY_MODULO': self.__inst_binary_modulo,
                 'BINARY_SUBSCR': self.__inst_binary_subscr,
@@ -143,6 +156,7 @@ class Machine:
                 'FORMAT_VALUE': self.__inst_format_value,
                 'IMPORT_NAME': self.__inst_import_name,
                 'LOAD_ATTR': self.__inst_load_attr,
+                'STORE_ATTR': self.__inst_store_attr,
                 'LOAD_BUILD_CLASS': self.__inst_load_build_class,
                 'LOAD_CONST': self.__inst_load_const,
                 'LOAD_GLOBAL': self.__inst_load_global,
@@ -150,6 +164,7 @@ class Machine:
                 'LOAD_NAME': self.__inst_load_name,
                 'MAKE_FUNCTION': self.__inst_make_function,
                 'POP_TOP': self.__inst_pop_top,
+                'ROT_TWO': self.__inst_rot_two,
                 'RETURN_VALUE': self.__inst_return_value,
                 'STORE_NAME': self.__inst_store_name,
                 'STORE_FAST': self.__inst_store_fast,
@@ -349,6 +364,8 @@ class Machine:
 
         .. note: We might be able to bypass the call to ``builtins.__build_class__``
            entirely and manually construct a class object.
+
+           https://github.com/python/cpython/blob/master/Python/bltinmodule.c
         """
         self._print('build_class')
         self._print(callable_)
@@ -360,6 +377,7 @@ class Machine:
             c = args[0].__closure__[0].cell_contents.__code__
         
         # execute the original class source code
+        print('execute original class source code')
         machine = MachineClassSource(c, self.verbose)
         l = dict()
         machine.execute(self.globals_, l)
@@ -372,6 +390,9 @@ class Machine:
         a.load_const(None)
         a.return_value()
        
+        print('new code for class source')
+        dis.dis(a.code())
+
         #machine = Machine(self.verbose)
 
         f = types.FunctionType(a.code(), self.globals_, args[1])
@@ -394,9 +415,9 @@ class Machine:
         args = tuple(self.__stack[len(self.__stack) - i.arg:])
  
         self._print('call function')
-        self._print('function ', callable_)
-        self._print('i.arg    ', i.arg)
-        self._print('args     ', args)
+        self._print('\tfunction ', callable_)
+        self._print('\ti.arg    ', i.arg)
+        self._print('\targs     ', args)
 
         self.call_callbacks('CALL_FUNCTION', callable_, *args)
    
@@ -418,6 +439,9 @@ class Machine:
     def __inst_pop_top(self, c, i):
         self.__stack.pop()
     
+    def __inst_rot_two(self, c, i):
+        self.__stack += self.pop(2)
+
     def __inst_dup_top(self, c, i):
         self.__stack.append(self.__stack[-1])
 
@@ -482,6 +506,11 @@ class Machine:
         TOS = self.__stack.pop()
         TOS1 = self.__stack.pop()
         self.__stack.append(TOS1 * TOS)
+
+    def __inst_binary_matrix_multiply(self, c, i):
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        self.__stack.append(operator.matmul(TOS1, TOS))
 
     def __inst_unary_positive(self, c, i):
         TOS = self.__stack.pop()
@@ -561,72 +590,78 @@ class Machine:
         o = self.__stack.pop()
         self.call_callbacks('LOAD_ATTR', o, name)
         a = getattr(o, name)
-
-        if isinstance(a, FunctionTypeClassFunction):
-            a.object = o
-
         self.__stack.append(a)
     
+    def __inst_store_attr(self, c, i):
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        setattr(TOS, c.co_names[i.arg], TOS1)
+
     def __inst_compare_op(self, c, i):
-                TOS = self.__stack.pop()
-                TOS1 = self.__stack.pop()
-                self.__stack.append(Machine.cmp_op(i.arg)(TOS1, TOS))
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        self.__stack.append(Machine.cmp_op(i.arg)(TOS1, TOS))
 
     def __inst_import_name(self, c, i):
-                TOS = self.__stack.pop()
-                TOS1 = self.__stack.pop()
-                self.call_callbacks('IMPORT_NAME', c.co_names[i.arg], TOS, TOS1)
-                self.__stack.append(__import__(c.co_names[i.arg], fromlist=TOS, level=TOS1))
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        self.call_callbacks('IMPORT_NAME', c.co_names[i.arg], TOS, TOS1)
+        self.__stack.append(__import__(c.co_names[i.arg], fromlist=TOS, level=TOS1))
 
     def __inst_load_global(self, c, i):
-                name = c.co_names[i.arg]
-                self.__stack.append(self.load_name(name))
+        name = c.co_names[i.arg]
+        self.__stack.append(self.load_name(name))
 
     def __inst_load_fast(self, c, i):
-                name = c.co_varnames[i.arg]
-                self.__stack.append(self._locals[name])
+        name = c.co_varnames[i.arg]
+        self.__stack.append(self._locals[name])
    
     def __inst_store_fast(self, c, i): 
-                TOS = self.__stack.pop()
-                name = c.co_varnames[i.arg]
-                self._locals[name] = TOS
+        TOS = self.__stack.pop()
+        name = c.co_varnames[i.arg]
+        self._locals[name] = TOS
 
     def __inst_make_function(self, c, i):
-                if i.arg != 0:
-                    raise RuntimeError('not yet supported')
-                
-                n = dis.stack_effect(i.opcode, i.arg)
+        if i.arg != 0:
+            raise RuntimeError('not yet supported')
+        
+        n = dis.stack_effect(i.opcode, i.arg)
 
-                args = self.pop(-n)
+        args = self.pop(-n)
 
-                code = self.__stack.pop()
-                
-                m = Machine(code, self.verbose)
+        code = self.__stack.pop()
+        name = args[0]
+        func_raw = types.FunctionType(code, self.globals_, name)
 
-                # so that all instruction history is appended inst_history object of
-                # root Machine
-                m.inst_history = self.inst_history
-                
-                if isinstance(self, MachineClassSource):
-                    function_type = FunctionTypeClassFunction
-                else:
-                    function_type = FunctionType
+        m = Machine(code, self.verbose)
 
-                f = function_type(m, code, self.globals_, args[0])
-                
-                # experimenting
-                #f = f.wrapped
+        # so that all instruction history is appended inst_history object of
+        # root Machine
+        m.inst_history = self.inst_history
+        
+        if isinstance(self, MachineClassSource):
+            function_type = FunctionType
+            #function_type = FunctionTypeClassFunction
+        else:
+            function_type = FunctionType
 
-                self.__stack.append(f)
+        f = function_type(m, code, self.globals_, args[0])
+        
+        # experimenting
+        #f = f.wrapped
+
+        f = wrap_function(func_raw, m)
+
+        self.__stack.append(f)
 
     def __inst_build_slice(self, c, i):
-                TOS = self.__stack.pop()
-                TOS1 = self.__stack.pop()
-                if i.arg == 2:
-                    self.__stack.append(slice(TOS1, TOS))
-                else:
-                    TOS2 = self.__stack.pop()
-                    self.__stack.append(slice(TOS2, TOS1, TOS))
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        if i.arg == 2:
+            self.__stack.append(slice(TOS1, TOS))
+        else:
+            TOS2 = self.__stack.pop()
+            self.__stack.append(slice(TOS2, TOS1, TOS))
 
     def __inst_format_value(self, c, i):
         fmt_spec = ''
