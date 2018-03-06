@@ -343,9 +343,10 @@ class Machine:
     def store_name(self, name, val):
         """
         Implementation of the STORE_NAME operation
+        in global scope, locals and globals should reference the same dict so this would also
+        set the global
         """
         self._locals[name] = val
-        #self.globals_[name] = val
 
     def pop(self, n):
         """
@@ -355,6 +356,9 @@ class Machine:
         del self.__stack[len(self.__stack) - n:]
         return poped
         
+    def builtins_globals(self):
+        return self.globals_
+
     def build_class(self, callable_, args):
         """
         Implement ``builtins.__build_class__``.
@@ -426,6 +430,9 @@ class Machine:
 
         elif callable_ is builtins.__build_class__:
             ret = self.build_class(callable_, args)
+
+        elif callable_ is builtins.globals:
+            ret = self.builtins_globals()
 
         else:
             ret = callable_(*args)

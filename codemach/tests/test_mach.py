@@ -100,6 +100,10 @@ def end_format_value_0x5(m):
         "unpack.py",
         ("UNPACK_SEQUENCE", None),
         None),
+    (
+        "globals.py",
+        ("STORE_NAME", None),
+        None),
     ])
 def test_from_file(filename, inst, end):
     with open(os.path.join("codemach/tests/source", filename)) as f:
