@@ -106,7 +106,8 @@ def end_format_value_0x5(m):
         None),
     ])
 def test_from_file(filename, inst, end):
-    with open(os.path.join("codemach/tests/source", filename)) as f:
+    d = os.path.dirname(__file__)
+    with open(os.path.join(d, "source", filename)) as f:
         s = f.read()
     
     c = compile(s, '<string>', 'exec')
