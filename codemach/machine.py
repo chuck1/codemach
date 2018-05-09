@@ -12,6 +12,26 @@ from .assembler import *
 
 __all__ = ['Machine']
 
+def code_info(c):
+    print('------------')
+    print('argcount         ',c.co_argcount)
+    print('consts           ',c.co_consts)
+    print('names            ',c.co_names)
+    print('varnames         ',c.co_varnames)
+    print('co_cellvars      ', c.co_cellvars)
+    print('co_flags         ', c.co_flags)
+    print('co_freevars      ', c.co_freevars)
+    print('co_kwonlyargcount', c.co_kwonlyargcount)
+    print('co_lnotab        ', c.co_lnotab)
+    print('co_name          ', c.co_name)
+    print('co_nlocals       ', c.co_nlocals)
+    print('co_stacksize     ', c.co_stacksize)
+    dis.dis(c)
+    print('------------')
+    for const in c.co_consts:
+        if isinstance(const, types.CodeType):
+            code_info(const)
+
 def wrap_function(f, m):
     def wrapped(*args):
 
@@ -161,6 +181,8 @@ class Machine:
                 'LOAD_CONST': self.__inst_load_const,
                 'LOAD_GLOBAL': self.__inst_load_global,
                 'LOAD_FAST': self.__inst_load_fast,
+                'CALL_METHOD': self.__inst_call_method,
+                'LOAD_METHOD': self.__inst_load_method,
                 'LOAD_NAME': self.__inst_load_name,
                 'MAKE_FUNCTION': self.__inst_make_function,
                 'POP_TOP': self.__inst_pop_top,
@@ -318,6 +340,7 @@ class Machine:
                 ret = op(self.code, i)
             except Exception as e:
                 print('during machine exec {}: {}'.format(i.opname, e))
+                code_info(self.code)
                 if not self.verbose:
                     print('printing output')
                     print(self._output.getvalue())
@@ -589,8 +612,27 @@ class Machine:
                 name = c.co_names[i.arg]
                 self.__stack.append(self.load_name(name))
 
+    def __inst_load_method(self, c, i):
+        o = self.__stack.pop()
+        name = c.co_names[i.arg]
+        self.call_callbacks('LOAD_METHOD', o, name)
+        f = getattr(o, name)
+        self.__stack.append(f)
+        #self.__stack.append(TOS)
+
+    def __inst_call_method(self, c, i):
+        #print(i)
+        #print(self.__stack)
+        args = self.pop(i.arg)
+
+        self.call_callbacks('CALL_METHOD', args)
+
+        f = self.__stack.pop()
+        ret = f(*args)
+        self.__stack.append(ret)
+
     def __inst_build_tuple(self, c, i):
-                self.__stack.append(tuple(self.pop(i.arg)))
+        self.__stack.append(tuple(self.pop(i.arg)))
     
     def __inst_load_attr(self, c, i): 
         name = c.co_names[i.arg]

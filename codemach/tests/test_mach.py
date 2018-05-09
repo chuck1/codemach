@@ -4,27 +4,9 @@ import dis
 from pprint import pprint
 import pytest
 import codemach
+import codemach.machine
 from codemach.machine import Machine
 
-def code_info(c):
-    print('------------')
-    print('argcount         ',c.co_argcount)
-    print('consts           ',c.co_consts)
-    print('names            ',c.co_names)
-    print('varnames         ',c.co_varnames)
-    print('co_cellvars      ', c.co_cellvars)
-    print('co_flags         ', c.co_flags)
-    print('co_freevars      ', c.co_freevars)
-    print('co_kwonlyargcount', c.co_kwonlyargcount)
-    print('co_lnotab        ', c.co_lnotab)
-    print('co_name          ', c.co_name)
-    print('co_nlocals       ', c.co_nlocals)
-    print('co_stacksize     ', c.co_stacksize)
-    dis.dis(c)
-    print('------------')
-    for const in c.co_consts:
-        if isinstance(const, types.CodeType):
-            code_info(const)
 
 def _test(_, s, mode, globals_=None):
     #print('\nsource:\n{}\n'.format(s))
@@ -32,7 +14,7 @@ def _test(_, s, mode, globals_=None):
 
     m = Machine(c, verbose=True)
 
-    code_info(c)
+    codemach.machine.code_info(c)
 
     return m.execute(globals_=globals_)
 
@@ -82,7 +64,7 @@ def end_format_value_0x5(m):
         None),
     (
         "load_attr_0.py",
-        ("LOAD_ATTR", None),
+        ("LOAD_METHOD", None),
         None),
     (
         "class_function.py",
@@ -106,6 +88,7 @@ def end_format_value_0x5(m):
         None),
     ])
 def test_from_file(filename, inst, end):
+    print(filename, inst, end)
     d = os.path.dirname(__file__)
     with open(os.path.join(d, "source", filename)) as f:
         s = f.read()
@@ -114,9 +97,21 @@ def test_from_file(filename, inst, end):
 
     m = Machine(c, verbose=True)
 
-    code_info(c)
+    print('code:')
+    print(s)
+    print()
+
+    codemach.machine.code_info(c)
     
-    m.execute()
+    try:
+        m.execute()
+    except Exception as e:
+        print(e)
+        print(repr(e))
+        print(dir(e))
+        print(e.args)
+        print(e.args[4])
+        raise
 
     for i in m.inst_history:
         print(i)

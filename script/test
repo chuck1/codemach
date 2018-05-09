@@ -1,1 +1,2 @@
+. env/bin/activate
 pytest codemach -xv --ff
