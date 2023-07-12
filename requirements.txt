@@ -2,7 +2,7 @@ alabaster==0.7.10
 async-patterns==0.3b14
 attrs==17.4.0
 Babel==2.5.3
-certifi==2018.1.18
+certifi==2023.5.7
 chardet==3.0.4
 codecov==2.0.15
 -e git+git@github.com:chuck1/codemach@17db55528e087526e4c8af08d7a5c8240b2aa037#egg=codemach
