@@ -16,7 +16,7 @@ pytest==3.4.2
 requests==2.20.0
 certifi==2018.1.18
 coverage==4.5.1
-snowballstemmer==1.2.1
+snowballstemmer==2.2.0
 idna==2.6
 pytz==2018.3
 six==1.11.0
