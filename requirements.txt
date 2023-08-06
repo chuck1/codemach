@@ -15,7 +15,7 @@ MarkupSafe==1.0
 packaging==17.1
 pluggy==0.6.0
 py==1.5.2
-Pygments==2.7.4
+Pygments==2.16.0
 pyparsing==2.2.0
 pytest==3.4.1
 pytest-cov==2.5.1
