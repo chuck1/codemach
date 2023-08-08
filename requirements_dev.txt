@@ -10,7 +10,7 @@ pygments==2.7.4
 chardet==3.0.4
 sphinx==1.7.1
 markupsafe==1.0
-sphinxcontrib-websupport==1.0.1
+sphinxcontrib-websupport==1.2.5
 jinja2==2.11.3
 pytest==3.4.2
 requests==2.20.0
