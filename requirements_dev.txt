@@ -3,7 +3,7 @@ py==1.5.2
 pytest-cov==2.5.1
 babel==2.5.3
 urllib3==1.24.2
-alabaster==0.7.10
+alabaster==1.0.0
 imagesize==1.0.0
 docutils==0.14
 pygments==2.7.4
