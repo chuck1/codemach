@@ -8,7 +8,7 @@ codecov==2.0.15
 -e git+git@github.com:chuck1/codemach@17db55528e087526e4c8af08d7a5c8240b2aa037#egg=codemach
 coverage==4.5.1
 docutils==0.14
-idna==2.6
+idna==3.10
 imagesize==1.0.0
 Jinja2==2.11.3
 MarkupSafe==1.0
