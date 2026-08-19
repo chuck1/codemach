@@ -6,7 +6,7 @@ import operator
 import builtins
 from pprint import pprint
 
-import async_patterns
+#import async_patterns
 
 from .assembler import *
 
@@ -158,7 +158,8 @@ class Machine:
             self._output = io.StringIO()
 
         self.ops = {
-                'BINARY_ADD': self.__inst_binary_add,
+                'BINARY_OP':    self.__inst_binary_op,
+                'BINARY_ADD':   self.__inst_binary_add,
                 'BINARY_MULTIPLY': self.__inst_binary_multiply,
                 'BINARY_MATRIX_MULTIPLY': self.__inst_binary_matrix_multiply,
                 'BINARY_SUBTRACT': self.__inst_binary_subtract,
@@ -170,29 +171,34 @@ class Machine:
                 'BUILD_LIST': self.__build_list,
                 'BUILD_SLICE': self.__inst_build_slice,
                 'BUILD_TUPLE': self.__inst_build_tuple,
-                'CALL_FUNCTION': self.call_function,
+                'CALL':             self.__inst_call,
+                'CALL_METHOD':      self.__inst_call_method,
+                'CALL_FUNCTION':    self.call_function,
                 'COMPARE_OP': self.__inst_compare_op,
                 'DUP_TOP': self.__inst_dup_top,
                 'FORMAT_VALUE': self.__inst_format_value,
                 'IMPORT_NAME': self.__inst_import_name,
                 'LOAD_ATTR': self.__inst_load_attr,
-                'STORE_ATTR': self.__inst_store_attr,
+                'RESUME':       self.__inst_resume,
+                'STORE_ATTR':   self.__inst_store_attr,
                 'LOAD_BUILD_CLASS': self.__inst_load_build_class,
                 'LOAD_CONST': self.__inst_load_const,
                 'LOAD_GLOBAL': self.__inst_load_global,
                 'LOAD_FAST': self.__inst_load_fast,
-                'CALL_METHOD': self.__inst_call_method,
+                'LOAD_SMALL_INT':   self.__inst_load_small_int,
                 'LOAD_METHOD': self.__inst_load_method,
                 'LOAD_NAME': self.__inst_load_name,
+                'LOAD_FAST_BORROW_LOAD_FAST_BORROW':    self.__inst_load_fast_borrow_load_fast_borrow,
                 'MAKE_FUNCTION': self.__inst_make_function,
                 'POP_TOP': self.__inst_pop_top,
-                'ROT_TWO': self.__inst_rot_two,
+                'PUSH_NULL':    self.__inst_push_null,
+                'ROT_TWO':      self.__inst_rot_two,
                 'RETURN_VALUE': self.__inst_return_value,
-                'STORE_NAME': self.__inst_store_name,
-                'STORE_FAST': self.__inst_store_fast,
+                'STORE_NAME':   self.__inst_store_name,
+                'STORE_FAST':   self.__inst_store_fast,
                 'SETUP_EXCEPT': self.__inst_setup_except,
-                'SETUP_LOOP': self.__inst_setup_loop,
-                'GET_ITER': self.__inst_get_iter,
+                'SETUP_LOOP':   self.__inst_setup_loop,
+                'GET_ITER':     self.__inst_get_iter,
                 'FOR_ITER': self.__inst_for_iter,
                 'JUMP_ABSOLUTE': self.__inst_jump_absolute,
                 'JUMP_FORWARD': self.__inst_jump_forward,
@@ -259,7 +265,7 @@ class Machine:
                 Machine.exception_match,
                 'BAD')[i]
 
-    def execute(self, globals_=None, _locals=None):
+    def execute(self, globals_=None, locals_=None):
         """
         Execute a code object
         
@@ -278,10 +284,11 @@ class Machine:
         """
         if globals_ is None:
             globals_ = globals()
-        if _locals is None:
+
+        if locals_ is None:
             self._locals = globals_
         else:
-            self._locals = _locals
+            self._locals = locals_
        
         self.globals_ = globals_
 
@@ -346,18 +353,38 @@ class Machine:
                     print(self._output.getvalue())
                 raise
 
-        self._print('{:20} {}'.format(i.opname, [(repr(s) if not str(hex(id(s))) in repr(s) else s.__class__) for s in self.__stack ]))
+        self._print('{:20} {}'.format(
+            i.opname, 
+            [(repr(s) if not str(hex(id(s))) in repr(s) else s.__class__) for s in self.__stack ]))
 
         return ret
+
+    def load_local(self, name):
+
+        if name in self._locals:
+            return self._locals[name]
+
+        raise NameError()
 
     def load_name(self, name):
         """
         Implementation of the LOAD_NAME operation
         """
+
+        print("load name")
+        print(repr(name))
+        print(self.globals_.keys())
+
+        try:
+            return self.load_local(name)
+        except NameError:
+            pass
+
         if name in self.globals_:
             return self.globals_[name]
         
-        b = self.globals_['__builtins__']
+        b = self.globals_.get('__builtins__', {})
+
         if isinstance(b, dict):
             return b[name]
         else:
@@ -430,6 +457,37 @@ class Machine:
                  
         return callable_(*args)
 
+    def __inst_call(self, c, i):
+        print("CALL")
+        print(f"i: {i!r}")
+        print(f"stack: {self.__stack!r}")
+        
+        args = self.pop(i.arg)
+
+        print(f"args: {args!r}")
+
+        #self.call_callbacks('CALL_METHOD', args)
+
+        o = self.__stack.pop()
+
+        f = self.__stack.pop()
+        
+        ret = f(*args)
+        
+        self.__stack.append(ret)
+
+    def __inst_call_method(self, c, i):
+        #print(i)
+        #print(self.__stack)
+        args = self.pop(i.arg)
+
+        self.call_callbacks('CALL_METHOD', args)
+
+        f = self.__stack.pop()
+        ret = f(*args)
+        self.__stack.append(ret)
+
+
     def call_function(self, c, i):
         """
         Implement the CALL_FUNCTION_ operation.
@@ -465,6 +523,9 @@ class Machine:
     
     def __build_list(self, c, i):
         self.__stack.append(list(self.pop(i.arg)))
+
+    def __inst_resume(self, c, i):
+        pass
 
     def __inst_pop_top(self, c, i):
         self.__stack.pop()
@@ -532,6 +593,9 @@ class Machine:
 
         self.__blocks[-1].raise_varargs(e, args)
 
+    def __inst_push_null(self, c, i):
+        self.__stack.append(None)
+
     def __inst_binary_multiply(self, c, i):
         TOS = self.__stack.pop()
         TOS1 = self.__stack.pop()
@@ -560,10 +624,29 @@ class Machine:
         TOS1 = self.__stack.pop()
         self.__stack.append(TOS1 % TOS)
 
+    def __inst_binary_op(self, c, i):
+        print("binary op")
+        print(f"c:     {c!r}")
+        #print(f"c: {dir(c)!r}")
+        print(f"i:     {i!r}")
+        print(f"i.arg: {i.arg!r}")
+        print(f"stack: {self.__stack!r}")
+
+        x = self.__stack.pop()
+        y = self.__stack.pop()
+        
+        #self.__stack.append(TOS1 + TOS)
+
+        if i.argrepr == "+":
+            self.__stack.append(x + y)
+            return
+
+        raise Exception(f"unhandled op: {i.argrepr!r}")
+
     def __inst_binary_add(self, c, i):
-                TOS = self.__stack.pop()
-                TOS1 = self.__stack.pop()
-                self.__stack.append(TOS1 + TOS)
+        TOS = self.__stack.pop()
+        TOS1 = self.__stack.pop()
+        self.__stack.append(TOS1 + TOS)
 
     def __inst_binary_subtract(self, c, i):
                 TOS = self.__stack.pop()
@@ -606,11 +689,11 @@ class Machine:
         self.store_name(name, TOS)
     
     def __inst_load_const(self, c, i):
-                self.__stack.append(c.co_consts[i.arg])
+        self.__stack.append(c.co_consts[i.arg])
 
     def __inst_load_name(self, c, i):
-                name = c.co_names[i.arg]
-                self.__stack.append(self.load_name(name))
+        name = c.co_names[i.arg]
+        self.__stack.append(self.load_name(name))
 
     def __inst_load_method(self, c, i):
         o = self.__stack.pop()
@@ -620,16 +703,10 @@ class Machine:
         self.__stack.append(f)
         #self.__stack.append(TOS)
 
-    def __inst_call_method(self, c, i):
-        #print(i)
-        #print(self.__stack)
-        args = self.pop(i.arg)
-
-        self.call_callbacks('CALL_METHOD', args)
-
-        f = self.__stack.pop()
-        ret = f(*args)
-        self.__stack.append(ret)
+    def __inst_load_small_int(self, c, i):
+        #print("load small int")
+        #print(repr(i.arg))
+        self.__stack.append(i.arg)
 
     def __inst_build_tuple(self, c, i):
         self.__stack.append(tuple(self.pop(i.arg)))
@@ -665,21 +742,63 @@ class Machine:
         name = c.co_varnames[i.arg]
         self.__stack.append(self._locals[name])
    
+    def __inst_load_fast_borrow_load_fast_borrow(self, c, i):
+        print("load fast borrow x2")
+        print(f"c: {c!r}")
+        print(f"c: {dir(c)!r}")
+        print(f"i: {i!r}")
+        print(f"stack: {self.__stack!r}")
+        print(repr(i.arg))
+        print(f"co_varnames: {c.co_varnames!r}")
+
+
+        idx0 = i.arg >> 4
+        idx1 = i.arg & 15
+        
+        print(f"idx0: {idx0}")
+        print(f"idx1: {idx1}")
+
+        name0 = c.co_varnames[idx0]
+        name1 = c.co_varnames[idx1]
+
+        print(f"name0: {name0!r}")
+        print(f"name1: {name1!r}")
+
+        self.__stack.append(self.load_local(name0))
+        self.__stack.append(self.load_local(name1))
+
+        #raise Exception("WIP")
+
     def __inst_store_fast(self, c, i): 
         TOS = self.__stack.pop()
         name = c.co_varnames[i.arg]
         self._locals[name] = TOS
 
     def __inst_make_function(self, c, i):
+
         if i.arg != 0:
-            raise RuntimeError('not yet supported')
+            print("make function")
+            print(f"c: {c!r}")
+            print(f"i: {i!r}")
+            print(f"i.arg: {i.arg!r}")
+            #raise RuntimeError('not yet supported')
         
         n = dis.stack_effect(i.opcode, i.arg)
+
+        print(f"n: {n}")
 
         args = self.pop(-n)
 
         code = self.__stack.pop()
-        name = args[0]
+
+        print(f"code: {code!r}")
+        print(repr(code.co_name))
+        print(repr(code.co_qualname))
+   
+        name = code.co_name
+        #if args:
+        #    name = args[0]
+
         func_raw = types.FunctionType(code, self.globals_, name)
 
         m = Machine(code, self.verbose)
@@ -694,12 +813,14 @@ class Machine:
         else:
             function_type = FunctionType
 
-        f = function_type(m, code, self.globals_, args[0])
+        f = function_type(m, code, self.globals_, name)
         
         # experimenting
         #f = f.wrapped
 
         f = wrap_function(func_raw, m)
+
+        print(repr(f))
 
         self.__stack.append(f)
 
