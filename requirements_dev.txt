@@ -12,7 +12,7 @@ sphinx==1.7.1
 markupsafe==1.0
 sphinxcontrib-websupport==1.0.1
 jinja2==2.11.3
-pytest==3.4.2
+pytest==8.0.1
 requests==2.20.0
 certifi==2018.1.18
 coverage==4.5.1
